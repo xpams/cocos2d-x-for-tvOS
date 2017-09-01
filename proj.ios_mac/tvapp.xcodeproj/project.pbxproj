@@ -69,11 +69,13 @@
 		8B7854F21CCA37060037549D /* Marker Felt.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8B7854C31CCA33CA0037549D /* Marker Felt.ttf */; };
 		8B7854F31CCA37060037549D /* arial.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8B7854C21CCA33CA0037549D /* arial.ttf */; };
 		8B7854F41CCA37060037549D /* Marker Felt.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8B7854C31CCA33CA0037549D /* Marker Felt.ttf */; };
+		8BAD0D5E1F56BF18004D8DD7 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8BAD0D5D1F56BF18004D8DD7 /* CoreText.framework */; };
+		8BAD0D601F56BF23004D8DD7 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8BAD0D5F1F56BF23004D8DD7 /* CoreText.framework */; };
+		8BAD0D891F56CAFC004D8DD7 /* AppController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 503AE0FB17EB989F00D1A890 /* AppController.mm */; };
+		8BAD0D8A1F56CAFC004D8DD7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 503AE0FC17EB989F00D1A890 /* main.m */; };
+		8BAD0D8B1F56CAFC004D8DD7 /* RootViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 503AE0FF17EB989F00D1A890 /* RootViewController.mm */; };
 		9ED42A821BA8C57B00C25D7A /* TVMLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9ED42A801BA8C57B00C25D7A /* TVMLKit.framework */; };
 		9ED42A831BA8C57B00C25D7A /* TVServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9ED42A811BA8C57B00C25D7A /* TVServices.framework */; };
-		9EE108761BA8A43600078FAA /* AppController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 503AE0FB17EB989F00D1A890 /* AppController.mm */; };
-		9EE108771BA8A45800078FAA /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 503AE0FC17EB989F00D1A890 /* main.m */; };
-		9EE108781BA8A46000078FAA /* RootViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 503AE0FF17EB989F00D1A890 /* RootViewController.mm */; };
 		9EE1087B1BA8A72800078FAA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9EE108791BA8A72800078FAA /* Assets.xcassets */; };
 		9EE1087C1BA8A72800078FAA /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9EE1087A1BA8A72800078FAA /* Info.plist */; };
 		9EF9A8D21BA89A0E00102D0A /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EF9A8D11BA89A0E00102D0A /* AudioToolbox.framework */; };
@@ -146,7 +148,7 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 1AC6FAE5180E9839004C840B /* cocos2d_libs.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 9EF9A1101BA7A6D600102D0A;
+			remoteGlobalIDString = 507B39BF1C31BDD30067B53E;
 			remoteInfo = "libcocos2d tvOS";
 		};
 /* End PBXContainerItemProxy section */
@@ -206,6 +208,8 @@
 		8B7854C21CCA33CA0037549D /* arial.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = arial.ttf; sourceTree = "<group>"; };
 		8B7854C31CCA33CA0037549D /* Marker Felt.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Marker Felt.ttf"; sourceTree = "<group>"; };
 		8B7854C91CCA33CA0037549D /* .gitkeep */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitkeep; sourceTree = "<group>"; };
+		8BAD0D5D1F56BF18004D8DD7 /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS10.2.sdk/System/Library/Frameworks/CoreText.framework; sourceTree = DEVELOPER_DIR; };
+		8BAD0D5F1F56BF23004D8DD7 /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS10.3.sdk/System/Library/Frameworks/CoreText.framework; sourceTree = DEVELOPER_DIR; };
 		9ED42A801BA8C57B00C25D7A /* TVMLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TVMLKit.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS9.0.sdk/System/Library/Frameworks/TVMLKit.framework; sourceTree = DEVELOPER_DIR; };
 		9ED42A811BA8C57B00C25D7A /* TVServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TVServices.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS9.0.sdk/System/Library/Frameworks/TVServices.framework; sourceTree = DEVELOPER_DIR; };
 		9EE108791BA8A72800078FAA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = tv/Assets.xcassets; sourceTree = SOURCE_ROOT; };
@@ -238,6 +242,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8BAD0D601F56BF23004D8DD7 /* CoreText.framework in Frameworks */,
 				ED545A7C1B68A1F400C3958E /* libiconv.dylib in Frameworks */,
 				52B47A471A53D09C004E4C60 /* Security.framework in Frameworks */,
 				1AC6FB30180E99EB004C840B /* libcocos2d iOS.a in Frameworks */,
@@ -277,6 +282,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8BAD0D5E1F56BF18004D8DD7 /* CoreText.framework in Frameworks */,
 				9ED42A821BA8C57B00C25D7A /* TVMLKit.framework in Frameworks */,
 				9ED42A831BA8C57B00C25D7A /* TVServices.framework in Frameworks */,
 				9EF9A8E71BA89A8200102D0A /* libcocos2d tvOS.a in Frameworks */,
@@ -350,6 +356,8 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				8BAD0D5F1F56BF23004D8DD7 /* CoreText.framework */,
+				8BAD0D5D1F56BF18004D8DD7 /* CoreText.framework */,
 				9ED42A801BA8C57B00C25D7A /* TVMLKit.framework */,
 				9ED42A811BA8C57B00C25D7A /* TVServices.framework */,
 				9EF9A8E51BA89A7700102D0A /* libiconv.tbd */,
@@ -709,10 +717,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8BAD0D891F56CAFC004D8DD7 /* AppController.mm in Sources */,
+				8BAD0D8B1F56CAFC004D8DD7 /* RootViewController.mm in Sources */,
 				9EF9A8EA1BA89E2D00102D0A /* AppDelegate.cpp in Sources */,
-				9EE108781BA8A46000078FAA /* RootViewController.mm in Sources */,
-				9EE108761BA8A43600078FAA /* AppController.mm in Sources */,
-				9EE108771BA8A45800078FAA /* main.m in Sources */,
+				8BAD0D8A1F56CAFC004D8DD7 /* main.m in Sources */,
 				9EF9A8EB1BA89E3100102D0A /* HelloWorldScene.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

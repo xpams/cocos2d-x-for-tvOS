@@ -332,7 +332,7 @@ static BOOL configured = FALSE;
 -(BOOL) isOtherAudioPlaying
 {
     // AudioSessionGetProperty removed from tvOS 9.1
-#if defined(CC_TARGET_OS_TVOS)
+#if defined(CC_TARGET_OS_APPLETV)
     return false;
 #else
     UInt32 isPlaying = 0;
@@ -417,7 +417,7 @@ static BOOL configured = FALSE;
     if ((self = [super init])) {
 
         // 'delegate' not supported on tvOS
-#if !defined(CC_TARGET_OS_TVOS)
+#if !defined(CC_TARGET_OS_APPLETV)
         //Initialise the audio session
         AVAudioSession* session = [AVAudioSession sharedInstance];
         session.delegate = self;
@@ -491,7 +491,7 @@ static BOOL configured = FALSE;
 //determine ringer switch state
 -(BOOL) isDeviceMuted {
 
-#if TARGET_IPHONE_SIMULATOR || defined(CC_TARGET_OS_TVOS)
+#if TARGET_IPHONE_SIMULATOR || defined(CC_TARGET_OS_APPLETV)
     //Calling audio route stuff on the simulator causes problems
     return NO;
 #else    

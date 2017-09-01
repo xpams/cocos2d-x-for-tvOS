@@ -25,7 +25,7 @@
 #define LOG_TAG "AudioEngine-inl.mm"
 
 #include "platform/CCPlatformConfig.h"
-#if CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC
+#if CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC || CC_TARGET_PLATFORM == CC_PLATFORM_TVOS
 
 #include "audio/apple/AudioEngine-inl.h"
 
@@ -44,7 +44,7 @@ using namespace cocos2d::experimental;
 static ALCdevice *s_ALDevice = nullptr;
 static ALCcontext *s_ALContext = nullptr;
 
-#if CC_TARGET_PLATFORM == CC_PLATFORM_IOS
+#if CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_TVOS
 @interface AudioEngineSessionHandler : NSObject
 {
 }
@@ -57,7 +57,7 @@ static ALCcontext *s_ALContext = nullptr;
 @implementation AudioEngineSessionHandler
 
 // only enable it on iOS. Disable it on tvOS
-#if !defined(CC_TARGET_OS_TVOS)
+#if !defined(CC_TARGET_OS_APPLETV)
 void AudioEngineInterruptionListenerCallback(void* user_data, UInt32 interruption_state)
 {
     if (kAudioSessionBeginInterruption == interruption_state)
@@ -85,7 +85,7 @@ void AudioEngineInterruptionListenerCallback(void* user_data, UInt32 interruptio
       }
     // only enable it on iOS. Disable it on tvOS
     // AudioSessionInitialize removed from tvOS
-#if !defined(CC_TARGET_OS_TVOS)
+#if !defined(CC_TARGET_OS_APPLETV)
       else {
         AudioSessionInitialize(NULL, NULL, AudioEngineInterruptionListenerCallback, self);
       }
@@ -216,7 +216,7 @@ AudioEngineImpl::~AudioEngineImpl()
         alcCloseDevice(s_ALDevice);
     }
 
-#if CC_TARGET_PLATFORM == CC_PLATFORM_IOS
+#if CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_TVOS
     [s_AudioEngineSessionHandler release];
 #endif
 }
@@ -225,7 +225,7 @@ bool AudioEngineImpl::init()
 {
     bool ret = false;
     do{
-#if CC_TARGET_PLATFORM == CC_PLATFORM_IOS
+#if CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_TVOS
         s_AudioEngineSessionHandler = [[AudioEngineSessionHandler alloc] init];
 #endif
 

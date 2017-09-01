@@ -181,7 +181,7 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 
 - (void)didMoveToWindow
 {
-#if !defined(CC_TARGET_OS_TVOS)
+#if !defined(CC_TARGET_OS_APPLETV)
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(onUIKeyboardNotification:)
                                                  name:UIKeyboardWillShowNotification object:nil];
@@ -735,7 +735,7 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 
 #pragma mark - UIKeyboard notification
 
-#if !defined(CC_TARGET_OS_TVOS)
+#if !defined(CC_TARGET_OS_APPLETV)
 - (void)onUIKeyboardNotification:(NSNotification *)notif
 {
     NSString * type = notif.name;
@@ -856,7 +856,7 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 }
 #endif
 
-#if !defined(CC_TARGET_OS_TVOS)
+#if !defined(CC_TARGET_OS_APPLETV)
 UIInterfaceOrientation getFixedOrientation(UIInterfaceOrientation statusBarOrientation)
 {
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0)
@@ -883,7 +883,7 @@ UIInterfaceOrientation getFixedOrientation(UIInterfaceOrientation statusBarOrien
     
     dis /= self.contentScaleFactor;
 
-#if defined(CC_TARGET_OS_TVOS)
+#if defined(CC_TARGET_OS_APPLETV)
     self.frame = CGRectMake(originalRect_.origin.x, originalRect_.origin.y - dis, originalRect_.size.width, originalRect_.size.height);
 #else
     switch (getFixedOrientation([[UIApplication sharedApplication] statusBarOrientation]))

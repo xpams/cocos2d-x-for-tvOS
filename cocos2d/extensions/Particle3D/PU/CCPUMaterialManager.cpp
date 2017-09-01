@@ -34,7 +34,7 @@
 #elif (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
 #include "platform/android/CCFileUtils-android.h"
 #include <android/asset_manager.h>
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC || CC_TARGET_PLATFORM == CC_PLATFORM_TVOS)
 #include <ftw.h>
 #elif (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX || CC_TARGET_PLATFORM == CC_PLATFORM_TIZEN)
 #include <sys/types.h>
@@ -111,7 +111,7 @@ void PUMaterialCache::addMaterial( PUMaterial *material )
     _materialMap.push_back(material);
 }
 
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC || CC_TARGET_PLATFORM == CC_PLATFORM_TVOS)
 int iterPath(const char *fpath, const struct stat* /*sb*/, int typeflag)
 {
     if(typeflag == FTW_F)
@@ -159,7 +159,7 @@ bool PUMaterialCache::loadMaterialsFromSearchPaths( const std::string &fileFolde
     }
     AAssetDir_close(dir);
 
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC || CC_TARGET_PLATFORM == CC_PLATFORM_TVOS)
     ftw(fileFolder.c_str(), iterPath, 500);
 #elif (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX || CC_TARGET_PLATFORM == CC_PLATFORM_TIZEN)
     DIR *d; //dir handle

@@ -34,7 +34,7 @@
 #include "renderer/CCGLProgram.h"
 #include "platform/CCGL.h"
 
-#if !defined(NDEBUG) && CC_TARGET_PLATFORM == CC_PLATFORM_IOS
+#if !defined(NDEBUG) && (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_TVOS)
 
 /// Basic wrapper for glInsertEventMarkerEXT() depending on the current build settings and platform.
 #define CCGL_DEBUG_INSERT_EVENT_MARKER(__message__) glInsertEventMarkerEXT(0, __message__)

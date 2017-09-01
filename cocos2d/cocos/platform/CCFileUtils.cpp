@@ -46,7 +46,7 @@ NS_CC_BEGIN
 
 // Implement DictMaker
 
-#if (CC_TARGET_PLATFORM != CC_PLATFORM_IOS) && (CC_TARGET_PLATFORM != CC_PLATFORM_MAC)
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_IOS) && (CC_TARGET_PLATFORM != CC_PLATFORM_MAC) && (CC_TARGET_PLATFORM != CC_PLATFORM_TVOS)
 
 typedef enum
 {
@@ -1422,7 +1422,7 @@ bool FileUtils::createDirectory(const std::string& path)
 
 bool FileUtils::removeDirectory(const std::string& path)
 {
-#if !defined(CC_TARGET_OS_TVOS)
+#if !defined(CC_TARGET_OS_APPLETV)
     std::string command = "rm -r ";
     // Path may include space.
     command += "\"" + path + "\"";

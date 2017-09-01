@@ -509,7 +509,7 @@ void EditBox::onEnter(void)
     {
         _editBoxImpl->onEnter();
     }
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC  || CC_TARGET_PLATFORM == CC_PLATFORM_TVOS)
     this->schedule(CC_SCHEDULE_SELECTOR(EditBox::updatePosition), CHECK_EDITBOX_POSITION_INTERVAL);
 #endif
 }

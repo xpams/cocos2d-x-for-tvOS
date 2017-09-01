@@ -32,7 +32,7 @@
 #include <Cocoa/Cocoa.h>
 #include <string>
 
-#elif CC_TARGET_PLATFORM == CC_PLATFORM_IOS
+#elif CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_TVOS
 
 #import <UIKit/UIKit.h>
 

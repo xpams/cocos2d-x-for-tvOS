@@ -1,6 +1,6 @@
 /****************************************************************************
  Copyright (c) 2010-2012 cocos2d-x.org
- Copyright (c) 2013-2014 Chukong Technologies Inc.
+ Copyright (c) 2013-2017 Chukong Technologies Inc.
  
  http://www.cocos2d-x.org
  
@@ -30,11 +30,11 @@
 #import <UIKit/UIKit.h>
 
 #import "math/CCGeometry.h"
-#import "CCDirectorCaller-tvos.h"
+#import "platform/ios/CCDirectorCaller-ios.h"
 
 NS_CC_BEGIN
 
-Application* Application::sm_pSharedApplication = 0;
+Application* Application::sm_pSharedApplication = nullptr;
 
 Application::Application()
 {
@@ -50,7 +50,7 @@ Application::~Application()
 
 int Application::run()
 {
-    if (applicationDidFinishLaunching()) 
+    if (applicationDidFinishLaunching())
     {
         [[CCDirectorCaller sharedDirectorCaller] startMainLoop];
     }
@@ -60,6 +60,11 @@ int Application::run()
 void Application::setAnimationInterval(float interval)
 {
     [[CCDirectorCaller sharedDirectorCaller] setAnimationInterval: interval ];
+}
+
+void Application::setAnimationInterval(float interval, SetIntervalReason reason)
+{
+    setAnimationInterval(interval);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -124,12 +129,27 @@ LanguageType Application::getCurrentLanguage()
     if ([languageCode isEqualToString:@"ro"]) return LanguageType::ROMANIAN;
     if ([languageCode isEqualToString:@"bg"]) return LanguageType::BULGARIAN;
     return LanguageType::ENGLISH;
-
+    
 }
 
 Application::Platform Application::getTargetPlatform()
 {
-    return Platform::OS_APPLETV;
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) // idiom for iOS <= 3.2, otherwise: [UIDevice userInterfaceIdiom] is faster.
+    {
+        return Platform::OS_IPAD;
+    }
+    else
+    {
+        return Platform::OS_IPHONE;
+    }
+}
+
+std::string Application::getVersion() {
+    NSString* version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+    if (version) {
+        return [version UTF8String];
+    }
+    return "";
 }
 
 bool Application::openURL(const std::string &url)
@@ -140,9 +160,9 @@ bool Application::openURL(const std::string &url)
 }
 
 void Application::applicationScreenSizeChanged(int newWidth, int newHeight) {
-
+    
 }
 
 NS_CC_END
 
-#endif // CC_PLATFORM_TVOS
+#endif // CC_PLATFORM_IOS

@@ -36,7 +36,7 @@
 #import <UIKit/UIKit.h>
 
 // Accelerometer
-#if !defined(CC_TARGET_OS_TVOS)
+#if !defined(CC_TARGET_OS_APPLETV)
 #import<CoreMotion/CoreMotion.h>
 #endif
 #import<CoreFoundation/CoreFoundation.h>
@@ -165,7 +165,7 @@ static CGSize _calculateShrinkedSizeForString(NSAttributedString **str, id font,
 
 #define SENSOR_DELAY_GAME 0.02
 
-#if !defined(CC_TARGET_OS_TVOS)
+#if !defined(CC_TARGET_OS_APPLETV)
 @interface CCAccelerometerDispatcher : NSObject<UIAccelerometerDelegate>
 {
     cocos2d::Acceleration *_acceleration;
@@ -266,7 +266,7 @@ static CCAccelerometerDispatcher* s_pAccelerometerDispatcher;
     dispatcher->dispatchEvent(&event);
 }
 @end
-#endif // !defined(CC_TARGET_OS_TVOS)
+#endif // !defined(CC_TARGET_OS_APPLETV)
 
 
 //
@@ -299,14 +299,14 @@ int Device::getDPI()
 
 void Device::setAccelerometerEnabled(bool isEnabled)
 {
-#if !defined(CC_TARGET_OS_TVOS)
+#if !defined(CC_TARGET_OS_APPLETV)
     [[CCAccelerometerDispatcher sharedAccelerometerDispatcher] setAccelerometerEnabled:isEnabled];
 #endif
 }
 
 void Device::setAccelerometerInterval(float interval)
 {
-#if !defined(CC_TARGET_OS_TVOS)
+#if !defined(CC_TARGET_OS_APPLETV)
     [[CCAccelerometerDispatcher sharedAccelerometerDispatcher] setAccelerometerInterval:interval];
 #endif
 }

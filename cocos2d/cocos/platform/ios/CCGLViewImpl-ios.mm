@@ -142,7 +142,7 @@ bool GLViewImpl::initWithRect(const std::string& viewName, const Rect& rect, flo
                                    numberOfSamples: 0];
 
     // Not available on tvOS
-#if !defined(CC_TARGET_OS_TVOS)
+#if !defined(CC_TARGET_OS_APPLETV)
     [eaglview setMultipleTouchEnabled:YES];
 #endif
 

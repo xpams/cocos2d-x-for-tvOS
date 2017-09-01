@@ -6,8 +6,6 @@ LOCAL_MODULE := recast_static
 
 LOCAL_MODULE_FILENAME := librecast
 
-LOCAL_ARM_MODE := arm
-
 LOCAL_SRC_FILES := \
 DebugUtils/DebugDraw.cpp \
 DebugUtils/DetourDebugDraw.cpp \

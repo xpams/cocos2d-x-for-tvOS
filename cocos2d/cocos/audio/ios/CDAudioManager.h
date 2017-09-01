@@ -148,7 +148,7 @@ typedef enum {
  */
 
 // AVAudioSessionDelegate not available on tvOS
-#if defined(CC_TARGET_OS_TVOS)
+#if defined(CC_TARGET_OS_APPLETV)
 @interface CDAudioManager : NSObject <CDLongAudioSourceDelegate, CDAudioInterruptProtocol> {
 #else
 @interface CDAudioManager : NSObject <CDLongAudioSourceDelegate, CDAudioInterruptProtocol, AVAudioSessionDelegate> {

@@ -52,6 +52,7 @@ public:
         OS_MAC,         /**< Mac OS X*/
         OS_ANDROID,     /**< Android */
         OS_IPHONE,      /**< iPhone */
+        OS_APPLETV,/** AppleTV **/
         OS_IPAD,        /**< iPad */
         OS_BLACKBERRY,  /**< BlackBerry */
         OS_NACL,        /**< Native Client in Chrome */

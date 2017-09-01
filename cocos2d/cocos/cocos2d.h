@@ -249,6 +249,13 @@ THE SOFTWARE.
 	#include "platform/tizen/CCStdC-tizen.h"
 #endif
 
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_TVOS)
+    #include "platform/tvos/CCApplication-tvos.h"
+    #include "platform/tvos/CCGLViewImpl-tvos.h"
+    #include "platform/tvos/CCGL-tvos.h"
+    #include "platform/tvos/CCStdC-tvos.h"
+#endif // CC_TARGET_PLATFORM == CC_PLATFORM_TVOS
+
 // script_support
 #include "base/CCScriptSupport.h"
 
