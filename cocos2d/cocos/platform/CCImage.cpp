@@ -2182,7 +2182,7 @@ bool Image::initWithRawData(const unsigned char * data, ssize_t /*dataLen*/, int
 }
 
 
-#if ((CC_TARGET_PLATFORM != CC_PLATFORM_IOS) && (CC_TARGET_PLATFORM == CC_PLATFORM_TVOS))
+#if ((CC_TARGET_PLATFORM != CC_PLATFORM_IOS) && (CC_TARGET_PLATFORM != CC_PLATFORM_TVOS))
 bool Image::saveToFile(const std::string& filename, bool isToRGB)
 {
     //only support for Texture2D::PixelFormat::RGB888 or Texture2D::PixelFormat::RGBA8888 uncompressed data

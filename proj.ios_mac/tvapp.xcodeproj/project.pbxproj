@@ -263,12 +263,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5087E78B17EB975400C73F5D /* OpenGL.framework in Frameworks */,
 				ED545A7E1B68A1FA00C3958E /* libiconv.dylib in Frameworks */,
 				1AC6FB21180E996B004C840B /* libcocos2d Mac.a in Frameworks */,
 				5087E76717EB910900C73F5D /* libz.dylib in Frameworks */,
 				8262943E1AAF051F00CB7CF7 /* Security.framework in Frameworks */,
 				503AE11B17EB9C5A00D1A890 /* IOKit.framework in Frameworks */,
-				5087E78B17EB975400C73F5D /* OpenGL.framework in Frameworks */,
 				5087E78917EB974C00C73F5D /* AppKit.framework in Frameworks */,
 				5087E76317EB910900C73F5D /* Foundation.framework in Frameworks */,
 				5087E76817EB910900C73F5D /* QuartzCore.framework in Frameworks */,
