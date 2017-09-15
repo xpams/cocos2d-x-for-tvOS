@@ -25,7 +25,7 @@
 
 #include "base/CCController.h"
 #include "platform/CCPlatformConfig.h"
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC || CC_TARGET_PLATFORM == CC_PLATFORM_TVOS)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_TVOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 
 #include "base/ccMacros.h"
 #include "base/CCEventDispatcher.h"
@@ -300,7 +300,7 @@ void Controller::registerListeners()
             }
         };
     }
-#if defined(CC_TARGET_OS_APPLETV)
+#if defined(CC_TARGET_OS_TVOS)
     else if (_impl->_gcController.microGamepad != nil)
     {
         _impl->_gcController.microGamepad.dpad.up.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed){
