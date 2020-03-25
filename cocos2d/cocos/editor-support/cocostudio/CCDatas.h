@@ -1,5 +1,6 @@
 ﻿/****************************************************************************
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -31,15 +32,15 @@ THE SOFTWARE.
 #include "base/CCMap.h"
 #include "math/CCAffineTransform.h"
 
-#include "cocostudio/CCArmatureDefine.h"
+#include "editor-support/cocostudio/CCArmatureDefine.h"
 #include "2d/CCTweenFunction.h"
-#include "cocostudio/CocosStudioExport.h"
+#include "editor-support/cocostudio/CocosStudioExport.h"
 
 
 #define CC_CREATE_NO_PARAM_NO_INIT(varType)\
 public: \
-    static inline varType *create(void){ \
-    varType *var = new varType();\
+    static inline varType *create(){ \
+    varType *var = new (std::nothrow) varType();\
     if (var)\
 {\
     var->autorelease();\
@@ -51,8 +52,8 @@ public: \
 
 #define CC_CREATE_NO_PARAM(varType)\
 public: \
-    static inline varType *create(void){ \
-    varType *var = new varType();\
+    static inline varType *create(){ \
+    varType *var = new (std::nothrow) varType();\
     if (var && var->init())\
 {\
     var->autorelease();\
@@ -82,7 +83,7 @@ public:
      * @js NA
      * @lua NA
      */
-    ~BaseData(void);
+    ~BaseData();
 
     /*
     * Copy data from node
@@ -108,7 +109,7 @@ public:
     /**
     * x y skewX skewY scaleX scaleY used to calculate transform matrix
     * skewX, skewY can have rotation effect
-    * To get more matrix information, you can have a look at this pape : http://www.senocular.com/flash/tutorials/transformmatrix/
+    * To get more matrix information, you can have a look at this paper : http://www.senocular.com/flash/tutorials/transformmatrix/
     */
     float skewX;
     float skewY;
@@ -143,7 +144,7 @@ class CC_STUDIO_DLL DisplayData : public cocos2d::Ref
 public:
     CC_CREATE_NO_PARAM_NO_INIT(DisplayData)
 
-    static const std::string changeDisplayToTexture(const std::string& displayName);
+    static std::string changeDisplayToTexture(const std::string& displayName);
 public:
     /**
      * @js ctor
@@ -153,7 +154,7 @@ public:
      * @js NA
      * @lua NA
      */
-    virtual ~DisplayData(void) {}
+    virtual ~DisplayData() {}
 
     virtual void copy(DisplayData *displayData);
 
@@ -243,12 +244,12 @@ public:
     /**
      * @js ctor
      */
-    BoneData(void);
+    BoneData();
     /**
      * @js NA
      * @lua NA
      */
-    ~BoneData(void);
+    ~BoneData();
 
     virtual bool init();
 
@@ -375,7 +376,7 @@ public:
      * @js NA
      * @lua NA
      */
-    ~MovementBoneData(void);
+    ~MovementBoneData();
 
     virtual bool init();
 
@@ -402,12 +403,12 @@ public:
     /**
      * @js ctor
      */
-    MovementData(void);
+    MovementData();
     /**
      * @js NA
      * @lua NA
      */
-    ~MovementData(void);
+    ~MovementData();
 
     void addMovementBoneData(MovementBoneData *movBoneData);
     MovementBoneData *getMovementBoneData(const std::string& boneName);
@@ -441,7 +442,7 @@ public:
     cocos2d::tweenfunc::TweenType tweenEasing;
 
     /**
-    * @brief    save movment bone data
+    * @brief    save movement bone data
     * @key    const std::string& 
     * @value    MovementBoneData *
     */
@@ -450,7 +451,7 @@ public:
 
 
 /**
-*  AnimationData include all movement infomation for the Armature
+*  AnimationData include all movement information for the Armature
 *  The struct is AnimationData -> MovementData -> MovementBoneData -> FrameData
 *                                              -> MovementFrameData
 *  @js NA
@@ -464,12 +465,12 @@ public:
     /**
      * @js ctor
      */
-    AnimationData(void);
+    AnimationData();
     /**
      * @js NA
      * @lua NA
      */
-    ~AnimationData(void);
+    ~AnimationData();
 
     void addMovement(MovementData *movData);
     MovementData *getMovement(const std::string& movementName);
@@ -500,7 +501,7 @@ public:
      * @js NA
      * @lua NA
      */
-    ~ContourData(void);
+    ~ContourData();
 
     virtual bool init();
     virtual void addVertex(cocos2d::Vec2 &vertex);
@@ -529,7 +530,7 @@ public:
      * @js NA
      * @lua NA
      */
-    ~TextureData(void);
+    ~TextureData();
 
     virtual bool init();
 

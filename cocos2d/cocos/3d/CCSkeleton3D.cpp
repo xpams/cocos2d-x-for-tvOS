@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2014 Chukong Technologies Inc.
+ Copyright (c) 2014-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos2d-x.org
 
@@ -201,7 +202,7 @@ void Bone3D::updateLocalMat()
         Quaternion quat(Quaternion::ZERO);
         
         float total = 0.f;
-        for (auto it: _blendStates) {
+        for (const auto& it: _blendStates) {
             total += it.weight;
         }
         if (total)
@@ -303,12 +304,11 @@ Bone3D* Skeleton3D::getRootBone(int index) const
 
 int Skeleton3D::getBoneIndex(Bone3D* bone) const
 {
-    int i = 0;
-    for (; i < _bones.size(); i++) {
+    for (ssize_t i = 0, size = _bones.size(); i < size; ++i) {
         if (_bones.at(i) == bone)
-            return i;
+            return static_cast<int>(i);
     }
-    
+
     return -1;
 }
 

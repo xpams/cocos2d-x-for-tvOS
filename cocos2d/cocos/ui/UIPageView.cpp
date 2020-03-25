@@ -1,5 +1,6 @@
 /****************************************************************************
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -23,39 +24,28 @@ THE SOFTWARE.
 ****************************************************************************/
 
 #include "ui/UIPageView.h"
+#include "ui/UIPageViewIndicator.h"
 
 NS_CC_BEGIN
 
 namespace ui {
-    
+
 IMPLEMENT_CLASS_GUI_INFO(PageView)
 
 PageView::PageView():
-_isAutoScrolling(false),
-_autoScrollDistance(0.0f),
-_autoScrollSpeed(0.0f),
-_autoScrollDirection(AutoScrollDirection::LEFT),
-_direction(Direction::HORIZONTAL),
-_curPageIdx(-1),
-_touchMoveDirection(TouchDirection::LEFT),
-_leftBoundaryChild(nullptr),
-_rightBoundaryChild(nullptr),
-_leftBoundary(0.0f),
-_rightBoundary(0.0f),
-_customScrollThreshold(0.0),
-_usingCustomScrollThreshold(false),
+_indicator(nullptr),
+_indicatorPositionAsAnchorPoint(Vec2(0.5f, 0.1f)),
+_currentPageIndex(-1),
 _childFocusCancelOffset(5.0f),
-_pageViewEventListener(nullptr),
-_pageViewEventSelector(nullptr),
-_eventCallback(nullptr)
+_eventCallback(nullptr),
+_autoScrollStopEpsilon(0.001f),
+_previousPageIndex(-1),
+_isTouchBegin(false)
 {
-    this->setTouchEnabled(true);
 }
 
 PageView::~PageView()
 {
-    _pageViewEventListener = nullptr;
-    _pageViewEventSelector = nullptr;
 }
 
 PageView* PageView::create()
@@ -69,691 +59,225 @@ PageView* PageView::create()
     CC_SAFE_DELETE(widget);
     return nullptr;
 }
-    
-void PageView::onEnter()
-{
-#if CC_ENABLE_SCRIPT_BINDING
-    if (_scriptType == kScriptTypeJavascript)
-    {
-        if (ScriptEngineManager::sendNodeEventToJSExtended(this, kNodeOnEnter))
-            return;
-    }
-#endif
-    
-    Layout::onEnter();
-    scheduleUpdate();
-}
 
 bool PageView::init()
 {
-    if (Layout::init())
+    if (ListView::init())
     {
-        setClippingEnabled(true);
+        setDirection(Direction::HORIZONTAL);
+        setMagneticType(MagneticType::CENTER);
+        setScrollBarEnabled(false);
         return true;
     }
     return false;
 }
 
-void PageView::addWidgetToPage(Widget *widget, ssize_t pageIdx, bool forceCreate)
+void PageView::doLayout()
 {
-    if (!widget || pageIdx < 0)
-    {
-        return;
-    }
-   
-    ssize_t pageCount = this->getPageCount();
-    if (pageIdx < 0 || pageIdx >= pageCount)
-    {
-        if (forceCreate)
-        {
-            if (pageIdx > pageCount)
-            {
-                CCLOG("pageIdx is %d, it will be added as page id [%d]",static_cast<int>(pageIdx),static_cast<int>(pageCount));
-            }
-            Layout* newPage = createPage();
-            newPage->addChild(widget);
-            addPage(newPage);
-        }
-    }
-    else
-    {
-        Node * page = _pages.at(pageIdx);
-        page->addChild(widget);
-    }
-}
-
-Layout* PageView::createPage()
-{
-    Layout* newPage = Layout::create();
-    newPage->setContentSize(getContentSize());
-    return newPage;
-}
-
-void PageView::addPage(Layout* page)
-{
-    if (!page || _pages.contains(page))
+    if(!_innerContainerDoLayoutDirty)
     {
         return;
     }
 
-    
-    addChild(page);
-    _pages.pushBack(page);
-    if (_curPageIdx == -1)
+    ListView::doLayout();
+    if(_indicator != nullptr)
     {
-        _curPageIdx = 0;
+        _currentPageIndex = getIndex(getCenterItemInCurrentView());
+        _indicator->indicate(_currentPageIndex);
     }
-    _doLayoutDirty = true;
+    _innerContainerDoLayoutDirty = false;
 }
 
-void PageView::insertPage(Layout* page, int idx)
+void PageView::setDirection(PageView::Direction direction)
 {
-    if (idx < 0 || !page || _pages.contains(page))
+    ListView::setDirection(direction);
+    if(direction == Direction::HORIZONTAL)
     {
-        return;
+        _indicatorPositionAsAnchorPoint = Vec2(0.5f, 0.1f);
     }
-   
-    
-    ssize_t pageCount = this->getPageCount();
-    if (idx >= pageCount)
+    else if(direction == Direction::VERTICAL)
     {
-        addPage(page);
+        _indicatorPositionAsAnchorPoint = Vec2(0.1f, 0.5f);
     }
-    else
+
+    if(_indicator != nullptr)
     {
-        _pages.insert(idx, page);
-        addChild(page);
-        if(_curPageIdx == -1)
-        {
-            _curPageIdx = 0;
-        }
+        _indicator->setDirection(direction);
+        refreshIndicatorPosition();
     }
-    
-    _doLayoutDirty = true;
 }
 
-
-void PageView::removePage(Layout* page)
+void PageView::addPage(Widget* page)
 {
-    if (!page)
-    {
-        return;
-    }
-    removeChild(page);
-    _pages.eraseObject(page);
-    auto pageCount = _pages.size();
-    if (_curPageIdx >= pageCount)
-    {
-        _curPageIdx = pageCount - 1;
-    }
+    pushBackCustomItem(page);
+}
 
-    _doLayoutDirty = true;
+void PageView::insertPage(Widget* page, int idx)
+{
+    insertCustomItem(page, idx);
+}
+
+void PageView::removePage(Widget* page)
+{
+    removeItem(getIndex(page));
 }
 
 void PageView::removePageAtIndex(ssize_t index)
 {
-    if (index < 0 || index >= this->getPages().size())
-    {
-        return;
-    }
-    Layout* page = _pages.at(index);
-    removePage(page);
+    removeItem(index);
 }
-    
+
 void PageView::removeAllPages()
 {
-    for(const auto& node : _pages)
-    {
-        removeChild(node);
-    }
-    _pages.clear();
-    _curPageIdx = -1;
+    removeAllItems();
 }
 
-void PageView::updateBoundaryPages()
+ssize_t PageView::getCurrentPageIndex()
 {
-    if (_pages.size() <= 0)
-    {
-        _leftBoundaryChild = nullptr;
-        _rightBoundaryChild = nullptr;
-        return;
+    //The _currentPageIndex is lazy calculated
+    if (_innerContainerDoLayoutDirty) {
+        _currentPageIndex = getIndex(getCenterItemInCurrentView());
     }
-    _leftBoundaryChild = _pages.at(0);
-    _rightBoundaryChild = _pages.at(this->getPageCount()-1);
+    return _currentPageIndex;
 }
 
-ssize_t PageView::getPageCount()const
+void PageView::setCurrentPageIndex(ssize_t index)
 {
-    return _pages.size();
-}
-
-float PageView::getPositionXByIndex(ssize_t idx)const
-{
-    return (getContentSize().width * (idx-_curPageIdx));
-}
-    
-float PageView::getPositionYByIndex(ssize_t idx)const
-{
-    return (getContentSize().height * (idx-_curPageIdx));
-}
-
-void PageView::onSizeChanged()
-{
-    Layout::onSizeChanged();
-    if (_direction == Direction::HORIZONTAL)
-    {
-        _rightBoundary = getContentSize().width;
-    }
-    else
-    {
-        _rightBoundary = getContentSize().height;
-    }
-    
-    _doLayoutDirty = true;
-}
-
-void PageView::updateAllPagesSize()
-{
-    Size selfSize = getContentSize();
-    for (auto& page : _pages)
-    {
-        page->setContentSize(selfSize);
-    }
-}
-
-void PageView::updateAllPagesPosition()
-{
-    ssize_t pageCount = this->getPageCount();
-    
-    if (pageCount <= 0)
-    {
-        _curPageIdx = -1;
-        return;
-    }
-    
-    if (_curPageIdx >= pageCount)
-    {
-        _curPageIdx = pageCount-1;
-    }
-    // If the layout is dirty, don't trigger auto scroll
-    _isAutoScrolling = false;
-
-    for (int i=0; i<pageCount; i++)
-    {
-        Layout* page = _pages.at(i);
-        Vec2 newPosition;
-
-        if (_direction == Direction::HORIZONTAL)
-        {
-            float pageWidth = getContentSize().width;
-            newPosition =  Vec2((i-_curPageIdx) * pageWidth, 0);
-        }
-        else if(_direction == Direction::VERTICAL)
-        {
-            float pageHeight = getContentSize().height;
-            newPosition = Vec2(0,(i-_curPageIdx) * pageHeight * -1);
-
-        }
-        page->setPosition(newPosition);
-    }
-}
-
-void PageView::setCurPageIndex( ssize_t index )
-{
-    if (index < 0 || index >= this->getPageCount())
-    {
-        return;
-    }
-    _curPageIdx = index;
-    _doLayoutDirty = true;
+    jumpToItem(index, Vec2::ANCHOR_MIDDLE, Vec2::ANCHOR_MIDDLE);
 }
 
 void PageView::scrollToPage(ssize_t idx)
 {
-    if (idx < 0 || idx >= this->getPageCount())
-    {
-        return;
-    }
-    _curPageIdx = idx;
-    Layout* curPage = _pages.at(idx);
-    if (_direction == Direction::HORIZONTAL)
-    {
-        _autoScrollDistance = -(curPage->getPosition().x);
-        if (_autoScrollDistance > 0)
-        {
-            _autoScrollDirection = AutoScrollDirection::RIGHT;
-        }
-        else
-        {
-            _autoScrollDirection = AutoScrollDirection::LEFT;
-        }
-    }
-    else if(_direction == Direction::VERTICAL)
-    {
-        _autoScrollDistance = -curPage->getPosition().y;
-        if (_autoScrollDistance > 0)
-        {
-            _autoScrollDirection = AutoScrollDirection::DOWN;
-        }
-        else
-        {
-            _autoScrollDirection = AutoScrollDirection::UP;
-        }
-    }
-    _autoScrollSpeed = fabs(_autoScrollDistance)/0.2f;
-    _isAutoScrolling = true;
+    scrollToItem(idx);
 }
     
-void PageView::setDirection(cocos2d::ui::PageView::Direction direction)
+void PageView::scrollToPage(ssize_t idx, float time)
 {
-    this->_direction = direction;
-}
-    
-PageView::Direction PageView::getDirection()const
-{
-    return this->_direction;
+    scrollToItem(idx, time);
 }
 
-void PageView::update(float dt)
+void PageView::scrollToItem(ssize_t itemIndex)
 {
-    if (_isAutoScrolling)
-    {
-        this->autoScroll(dt);
+    if (_innerContainerDoLayoutDirty) {
+        this->forceDoLayout();
     }
+    ListView::scrollToItem(itemIndex, Vec2::ANCHOR_MIDDLE, Vec2::ANCHOR_MIDDLE);
 }
-    
-void PageView::autoScroll(float dt)
-    {
-        float step = _autoScrollSpeed*dt;
-        int  sign = 1;
-        switch (_autoScrollDirection)
-        {
-            case AutoScrollDirection::LEFT:
-            case AutoScrollDirection::UP:
-            {
-                if (_autoScrollDistance + step >= 0.0f)
-                {
-                    step = -_autoScrollDistance;
-                    _isAutoScrolling = false;
-                    _autoScrollDistance = 0.0f;
-                }
-                else
-                {
-                    _autoScrollDistance += step;
-                }
-                sign = -1;
-                break;
-            }
-                break;
-            case AutoScrollDirection::RIGHT:
-            case AutoScrollDirection::DOWN:
-            {
-                if (_autoScrollDistance - step <= 0.0f)
-                {
-                    step = _autoScrollDistance;
-                    _autoScrollDistance = 0.0f;
-                    _isAutoScrolling = false;
-                }
-                else
-                {
-                    _autoScrollDistance -= step;
-                }
-                break;
-            }
-            default:
-                break;
-        }
-        
-        if (_direction == Direction::HORIZONTAL)
-        {
-            scrollPages(Vec2(step * sign, 0));
-        }
-        else
-        {
-            scrollPages(Vec2(0, step * sign));
-        }
 
-        if (!_isAutoScrolling)
-        {
-            pageTurningEvent();
-        }
+void PageView::scrollToItem(ssize_t itemIndex, float time)
+{
+    if (_innerContainerDoLayoutDirty) {
+        this->forceDoLayout();
     }
-
-bool PageView::onTouchBegan(Touch *touch, Event *unusedEvent)
-{
-    bool pass = Layout::onTouchBegan(touch, unusedEvent);
-    return pass;
+    ListView::scrollToItem(itemIndex, Vec2::ANCHOR_MIDDLE, Vec2::ANCHOR_MIDDLE, time >= 0 ? time : _scrollTime);
 }
 
-void PageView::onTouchMoved(Touch *touch, Event *unusedEvent)
+void PageView::setAutoScrollStopEpsilon(float epsilon)
 {
-    Layout::onTouchMoved(touch, unusedEvent);
-    if (!_isInterceptTouch)
+    _autoScrollStopEpsilon = epsilon;
+}
+
+void PageView::moveInnerContainer(const Vec2& deltaMove, bool canStartBounceBack)
+{
+    ListView::moveInnerContainer(deltaMove, canStartBounceBack);
+    _currentPageIndex = getIndex(getCenterItemInCurrentView());
+    if(_indicator != nullptr)
     {
-        handleMoveLogic(touch);
+        _indicator->indicate(_currentPageIndex);
     }
 }
 
-void PageView::onTouchEnded(Touch *touch, Event *unusedEvent)
+void PageView::onItemListChanged()
 {
-    Layout::onTouchEnded(touch, unusedEvent);
-    if (!_isInterceptTouch)
+    ListView::onItemListChanged();
+    if(_indicator != nullptr)
     {
-        handleReleaseLogic(touch);
-    }
-    _isInterceptTouch = false;
-}
-    
-void PageView::onTouchCancelled(Touch *touch, Event *unusedEvent)
-{
-    Layout::onTouchCancelled(touch, unusedEvent);
-    if (!_isInterceptTouch)
-    {
-        handleReleaseLogic(touch);
-    }
-    _isInterceptTouch = false;
-}
-
-void PageView::doLayout()
-{
-    if (!_doLayoutDirty)
-    {
-        return;
-    }
-    
-    updateAllPagesPosition();
-    updateAllPagesSize();
-    updateBoundaryPages();
-
-    
-    _doLayoutDirty = false;
-}
-
-void PageView::movePages(Vec2 offset)
-{
-    for (auto& page : this->getPages())
-    {
-        Vec2 oldPosition = page->getPosition();
-        page->setPosition(oldPosition + offset);
+        _indicator->reset(_items.size());
     }
 }
 
-bool PageView::scrollPages(Vec2 touchOffset)
+void PageView::onSizeChanged()
 {
-    if (this->getPageCount() <= 0)
-    {
-        return false;
-    }
-    
-    if (!_leftBoundaryChild || !_rightBoundaryChild)
-    {
-        return false;
-    }
-    
-    Vec2 realOffset = touchOffset;
-    
-    switch (_touchMoveDirection)
-    {
-        case TouchDirection::LEFT: // left
-            if (_rightBoundaryChild->getRightBoundary() + touchOffset.x <= _rightBoundary)
-            {
-                realOffset.x = _rightBoundary - _rightBoundaryChild->getRightBoundary();
-                realOffset.y = 0;
-                movePages(realOffset);
-                return false;
-            }
-            break;
-            
-        case TouchDirection::RIGHT: // right
-            if (_leftBoundaryChild->getLeftBoundary() + touchOffset.x >= _leftBoundary)
-            {
-                realOffset.x = _leftBoundary - _leftBoundaryChild->getLeftBoundary();
-                realOffset.y = 0;
-                movePages(realOffset);
-                return false;
-            }
-            break;
-        case TouchDirection::UP:
-        {
-            if (_rightBoundaryChild->getBottomBoundary() + touchOffset.y >= _leftBoundary)
-            {
-                realOffset.y = _leftBoundary - _rightBoundaryChild->getBottomBoundary();
-                realOffset.x = 0;
-                movePages(realOffset);
-                return false;
-            }
-           
-        }break;
-        case TouchDirection::DOWN:
-        {
-            if (_leftBoundaryChild->getTopBoundary() + touchOffset.y <= _rightBoundary)
-            {
-                realOffset.y = _rightBoundary - _leftBoundaryChild->getTopBoundary();
-                realOffset.x = 0;
-                movePages(realOffset);
-                return false;
-            }
-        }break;
-        default:
-            break;
-    }
-    
-    movePages(realOffset);
-    return true;
+    ListView::onSizeChanged();
+    refreshIndicatorPosition();
 }
 
-
-void PageView::handleMoveLogic(Touch *touch)
+void PageView::refreshIndicatorPosition()
 {
-    Vec2 touchPoint = touch->getLocation();
-    
-    Vec2 offset;
-    offset = touchPoint - touch->getPreviousLocation();
-
-    if (_direction == Direction::HORIZONTAL)
+    if(_indicator != nullptr)
     {
-        if (offset.x < 0)
-        {
-            _touchMoveDirection = TouchDirection::LEFT;
-        }
-        else if (offset.x > 0)
-        {
-            _touchMoveDirection = TouchDirection::RIGHT;
-        }
-        offset.y = 0;
+        const Size& contentSize = getContentSize();
+        float posX = contentSize.width * _indicatorPositionAsAnchorPoint.x;
+        float posY = contentSize.height * _indicatorPositionAsAnchorPoint.y;
+        _indicator->setPosition(Vec2(posX, posY));
     }
-    else
-    {
-        offset.x = 0;
-        if(offset.y > 0)
-        {
-            _touchMoveDirection = TouchDirection::UP;
-        }
-        else if(offset.y < 0)
-        {
-            _touchMoveDirection = TouchDirection::DOWN;
-        }
-    }
-   
-    scrollPages(offset);
-}
-    
-void PageView::setCustomScrollThreshold(float threshold)
-{
-    CCASSERT(threshold > 0, "Invalid threshold!");
-    _customScrollThreshold = threshold;
-    this->setUsingCustomScrollThreshold(true);
 }
 
-float PageView::getCustomScrollThreshold()const
+void PageView::handlePressLogic(Touch *touch)
 {
-    return _customScrollThreshold;
-}
-    
-void PageView::setUsingCustomScrollThreshold(bool flag)
-{
-    _usingCustomScrollThreshold = flag;
-}
-    
-bool PageView::isUsingCustomScrollThreshold()const
-{
-    return _usingCustomScrollThreshold;
+    ListView::handlePressLogic(touch);
+    if (!_isTouchBegin) {
+        _currentPageIndex = getIndex(getCenterItemInCurrentView());
+        _previousPageIndex = _currentPageIndex;
+        _isTouchBegin = true;
+    }
 }
 
 void PageView::handleReleaseLogic(Touch *touch)
 {
-    if (this->getPageCount() <= 0)
+    // Use `ScrollView` method in order to avoid `startMagneticScroll()` by `ListView`.
+    ScrollView::handleReleaseLogic(touch);
+
+    if(_items.empty())
     {
         return;
     }
-    Widget* curPage = dynamic_cast<Widget*>(this->getPages().at(_curPageIdx));
-    if (curPage)
-    {
-        Vec2 curPagePos = curPage->getPosition();
-        ssize_t pageCount = this->getPageCount();
-        
-        auto contentSize = getContentSize();
-       
-        float moveBoundray = 0.0f;
-        float scrollDistance;
-        if (_direction == Direction::HORIZONTAL)
-        {
-            curPagePos.y = 0;
-            moveBoundray = curPagePos.x;
-            scrollDistance = contentSize.width / 2.0;
-        }
-        else if(_direction == Direction::VERTICAL)
-        {
-            curPagePos.x = 0;
-            moveBoundray = curPagePos.y;
-            scrollDistance  = contentSize.height / 2.0;
-        }
+    Vec2 touchMoveVelocity = flattenVectorByDirection(calculateTouchMoveVelocity());
 
-        if (!_usingCustomScrollThreshold)
+    static const float INERTIA_THRESHOLD = 500;
+    if(touchMoveVelocity.length() < INERTIA_THRESHOLD)
+    {
+        startMagneticScroll();
+    }
+    else
+    {
+        // Handle paging by inertia force.
+        Widget* currentPage = getItem(_currentPageIndex);
+        Vec2 destination = calculateItemDestination(Vec2::ANCHOR_MIDDLE, currentPage, Vec2::ANCHOR_MIDDLE);
+        Vec2 deltaToCurrentpage = destination - getInnerContainerPosition();
+        deltaToCurrentpage = flattenVectorByDirection(deltaToCurrentpage);
+
+        // If the direction of displacement to current page and the direction of touch are same, just start magnetic scroll to the current page.
+        // Otherwise, move to the next page of touch direction.
+        if(touchMoveVelocity.x * deltaToCurrentpage.x > 0 || touchMoveVelocity.y * deltaToCurrentpage.y > 0)
         {
-            _customScrollThreshold = scrollDistance;
+            startMagneticScroll();
         }
-        float boundary = _customScrollThreshold;
-        
-        if (_direction == Direction::HORIZONTAL)
+        else
         {
-            if (moveBoundray <= -boundary)
+            if(touchMoveVelocity.x < 0 || touchMoveVelocity.y > 0)
             {
-                if (_curPageIdx >= pageCount-1)
-                {
-                    scrollPages(curPagePos);
-                }
-                else
-                {
-                    scrollToPage(_curPageIdx+1);
-                }
-            }
-            else if (moveBoundray >= boundary)
-            {
-                if (_curPageIdx <= 0)
-                {
-                    scrollPages(curPagePos);
-                }
-                else
-                {
-                    scrollToPage(_curPageIdx-1);
-                }
+                ++_currentPageIndex;
             }
             else
             {
-                scrollToPage(_curPageIdx);
+                --_currentPageIndex;
             }
-        }
-        else if(_direction == Direction::VERTICAL)
-        {
-            if (moveBoundray >= boundary)
-            {
-                if (_curPageIdx >= pageCount-1)
-                {
-                    scrollPages(curPagePos);
-                }
-                else
-                {
-                    scrollToPage(_curPageIdx+1);
-                }
-            }
-            else if (moveBoundray <= -boundary)
-            {
-                if (_curPageIdx <= 0)
-                {
-                    scrollPages(curPagePos);
-                }
-                else
-                {
-                    scrollToPage(_curPageIdx-1);
-                }
-            }
-            else
-            {
-                scrollToPage(_curPageIdx);
-            }
+            _currentPageIndex = MIN(_currentPageIndex, _items.size() - 1);
+            _currentPageIndex = MAX(_currentPageIndex, 0);
+            scrollToItem(_currentPageIndex);
         }
     }
 }
 
-
-void PageView::interceptTouchEvent(TouchEventType event, Widget *sender, Touch *touch)
+float PageView::getAutoScrollStopEpsilon() const
 {
-    if (!_touchEnabled)
-    {
-        Layout::interceptTouchEvent(event, sender, touch);
-        return;
-    }
-    Vec2 touchPoint = touch->getLocation();
-    
-    switch (event)
-    {
-        case TouchEventType::BEGAN:
-        {
-            _touchBeganPosition = touch->getLocation();
-            _isInterceptTouch = true;
-        }
-        break;
-        case TouchEventType::MOVED:
-        {
-            float offset = 0;
-            if (_direction == Direction::HORIZONTAL)
-            {
-                offset = fabs(sender->getTouchBeganPosition().x - touchPoint.x);
-            }
-            else if(_direction == Direction::VERTICAL)
-            {
-                offset = fabs(sender->getTouchBeganPosition().y - touchPoint.y);
-            }
-            _touchMovePosition = touch->getLocation();
-            if (offset > _childFocusCancelOffset)
-            {
-                sender->setHighlighted(false);
-                handleMoveLogic(touch);
-            }
-        }
-        break;
-        case TouchEventType::CANCELED:
-        case TouchEventType::ENDED:
-        {
-            _touchEndPosition = touch->getLocation();
-            handleReleaseLogic(touch);
-            if (sender->isSwallowTouches())
-            {
-                _isInterceptTouch = false;
-            }
-        }
-            break;
-    }
+    return _autoScrollStopEpsilon;
 }
 
 void PageView::pageTurningEvent()
 {
     this->retain();
-    if (_pageViewEventListener && _pageViewEventSelector)
-    {
-        (_pageViewEventListener->*_pageViewEventSelector)(this, PAGEVIEW_EVENT_TURNING);
-    }
     if (_eventCallback)
     {
         _eventCallback(this,EventType::TURNING);
@@ -762,37 +286,19 @@ void PageView::pageTurningEvent()
     {
         _ccEventCallback(this, static_cast<int>(EventType::TURNING));
     }
+    _isTouchBegin = false;
     this->release();
 }
 
-void PageView::addEventListenerPageView(Ref *target, SEL_PageViewEvent selector)
-{
-    _pageViewEventListener = target;
-    _pageViewEventSelector = selector;
-}
-    
 void PageView::addEventListener(const ccPageViewCallback& callback)
 {
     _eventCallback = callback;
-}
-
-ssize_t PageView::getCurPageIndex() const
-{
-    return _curPageIdx;
-}
-
-Vector<Layout*>& PageView::getPages()
-{
-    return _pages;
-}
-    
-Layout* PageView::getPage(ssize_t index)
-{
-    if (index < 0 || index >= this->getPages().size())
-    {
-        return nullptr;
-    }
-    return _pages.at(index);
+    ccScrollViewCallback scrollViewCallback = [=](Ref* /*ref*/, ScrollView::EventType type) -> void{
+        if (type == ScrollView::EventType::AUTOSCROLL_ENDED && _previousPageIndex != _currentPageIndex) {
+            pageTurningEvent();
+        }
+    };
+    this->addEventListener(scrollViewCallback);
 }
 
 std::string PageView::getDescription() const
@@ -805,29 +311,170 @@ Widget* PageView::createCloneInstance()
     return PageView::create();
 }
 
-void PageView::copyClonedWidgetChildren(Widget* model)
-{
-    auto modelPages = static_cast<PageView*>(model)->getPages();
-    for (auto& page : modelPages)
-    {
-        addPage(static_cast<Layout*>(page->clone()));
-    }
-}
-
 void PageView::copySpecialProperties(Widget *widget)
 {
     PageView* pageView = dynamic_cast<PageView*>(widget);
     if (pageView)
     {
-        Layout::copySpecialProperties(widget);
+        ListView::copySpecialProperties(widget);
         _eventCallback = pageView->_eventCallback;
         _ccEventCallback = pageView->_ccEventCallback;
-        _pageViewEventListener = pageView->_pageViewEventListener;
-        _pageViewEventSelector = pageView->_pageViewEventSelector;
-        _usingCustomScrollThreshold = pageView->_usingCustomScrollThreshold;
-        _customScrollThreshold = pageView->_customScrollThreshold;
-        _direction = pageView->_direction;
+        _currentPageIndex = pageView->_currentPageIndex;
+        _previousPageIndex = pageView->_previousPageIndex;
+        _childFocusCancelOffset = pageView->_childFocusCancelOffset;
+        _autoScrollStopEpsilon = pageView->_autoScrollStopEpsilon;
+        _indicatorPositionAsAnchorPoint = pageView->_indicatorPositionAsAnchorPoint;
+        _isTouchBegin = pageView->_isTouchBegin;
     }
+}
+
+void PageView::setIndicatorEnabled(bool enabled)
+{
+    if(enabled == (_indicator != nullptr))
+    {
+        return;
+    }
+
+    if(!enabled)
+    {
+        removeProtectedChild(_indicator);
+        _indicator = nullptr;
+    }
+    else
+    {
+        _indicator = PageViewIndicator::create();
+        _indicator->setDirection(getDirection());
+        addProtectedChild(_indicator, 10000);
+        setIndicatorSelectedIndexColor(Color3B(100, 100, 255));
+        refreshIndicatorPosition();
+    }
+}
+
+void PageView::setIndicatorPositionAsAnchorPoint(const Vec2& positionAsAnchorPoint)
+{
+    _indicatorPositionAsAnchorPoint = positionAsAnchorPoint;
+    refreshIndicatorPosition();
+}
+
+const Vec2& PageView::getIndicatorPositionAsAnchorPoint() const
+{
+    return _indicatorPositionAsAnchorPoint;
+}
+
+void PageView::setIndicatorPosition(const Vec2& position)
+{
+    if(_indicator != nullptr)
+    {
+        const Size& contentSize = getContentSize();
+        _indicatorPositionAsAnchorPoint.x = position.x / contentSize.width;
+        _indicatorPositionAsAnchorPoint.y = position.y / contentSize.height;
+        _indicator->setPosition(position);
+    }
+}
+
+const Vec2& PageView::getIndicatorPosition() const
+{
+    CCASSERT(_indicator != nullptr, "");
+    return _indicator->getPosition();
+}
+
+void PageView::setIndicatorSpaceBetweenIndexNodes(float spaceBetweenIndexNodes)
+{
+    if(_indicator != nullptr)
+    {
+        _indicator->setSpaceBetweenIndexNodes(spaceBetweenIndexNodes);
+    }
+}
+float PageView::getIndicatorSpaceBetweenIndexNodes() const
+{
+    CCASSERT(_indicator != nullptr, "");
+    return _indicator->getSpaceBetweenIndexNodes();
+}
+
+void PageView::setIndicatorSelectedIndexColor(const Color3B& color)
+{
+    if(_indicator != nullptr)
+    {
+        _indicator->setSelectedIndexColor(color);
+    }
+}
+
+const Color3B& PageView::getIndicatorSelectedIndexColor() const
+{
+    CCASSERT(_indicator != nullptr, "");
+    return _indicator->getSelectedIndexColor();
+}
+
+void PageView::setIndicatorIndexNodesColor(const Color3B& color)
+{
+    if(_indicator != nullptr)
+    {
+        _indicator->setIndexNodesColor(color);
+    }
+}
+
+const Color3B& PageView::getIndicatorIndexNodesColor() const
+{
+    CCASSERT(_indicator != nullptr, "");
+    return _indicator->getIndexNodesColor();
+}
+    
+void PageView::setIndicatorSelectedIndexOpacity(uint8_t opacity)
+{
+    if(_indicator != nullptr)
+    {
+        _indicator->setSelectedIndexOpacity(opacity);
+    }
+}
+
+uint8_t PageView::getIndicatorSelectedIndexOpacity() const
+{
+    CCASSERT(_indicator != nullptr, "");
+    return _indicator->getSelectedIndexOpacity();
+}
+
+void PageView::setIndicatorIndexNodesOpacity(uint8_t opacity)
+{
+    if(_indicator != nullptr)
+    {
+        _indicator->setIndexNodesOpacity(opacity);
+    }
+}
+
+uint8_t PageView::getIndicatorIndexNodesOpacity() const
+{
+    CCASSERT(_indicator != nullptr, "");
+    return _indicator->getIndexNodesOpacity();
+}
+
+void PageView::setIndicatorIndexNodesScale(float indexNodesScale)
+{
+    if(_indicator != nullptr)
+    {
+        _indicator->setIndexNodesScale(indexNodesScale);
+        _indicator->indicate(_currentPageIndex);
+    }
+}
+
+float PageView::getIndicatorIndexNodesScale() const
+{
+    CCASSERT(_indicator != nullptr, "");
+    return _indicator->getIndexNodesScale();
+}
+
+void PageView::setIndicatorIndexNodesTexture(const std::string& texName,Widget::TextureResType texType)
+{
+    if(_indicator != nullptr)
+    {
+        _indicator->setIndexNodesTexture(texName, texType);
+        _indicator->indicate(_currentPageIndex);
+    }
+}
+
+void PageView::remedyLayoutParameter(Widget *item)
+{
+    item->setContentSize(this->getContentSize());
+    ListView::remedyLayoutParameter(item);
 }
 
 }

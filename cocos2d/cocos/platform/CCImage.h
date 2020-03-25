@@ -1,6 +1,7 @@
 /****************************************************************************
 Copyright (c) 2010-2012 cocos2d-x.org
-Copyright (c) 2013-2015 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -30,11 +31,7 @@ THE SOFTWARE.
 #include "base/CCRef.h"
 #include "renderer/CCTexture2D.h"
 
-#if defined(CC_USE_WIC)
-#include "WICImageLoader-winrt.h"
-#endif
-
-// premultiply alpha, or the effect will wrong when want to use other pixel format in Texture2D,
+// premultiply alpha, or the effect will be wrong when using other pixel formats in Texture2D,
 // such as RGB888, RGB5A1
 #define CC_RGB_PREMULTIPLY_ALPHA(vr, vg, vb, va) \
     (unsigned)(((unsigned)((unsigned char)(vr) * ((unsigned char)(va) + 1)) >> 8) | \
@@ -80,8 +77,6 @@ public:
         JPG,
         //! PNG
         PNG,
-        //! TIFF
-        TIFF,
         //! WebP
         WEBP,
         //! PVR
@@ -99,6 +94,21 @@ public:
         //! Unknown format
         UNKNOWN
     };
+
+    /**
+     * Enables or disables premultiplied alpha for PNG files.
+     *
+     *  @param enabled (default: true)
+     */
+    static void setPNGPremultipliedAlphaEnabled(bool enabled) { PNG_PREMULTIPLIED_ALPHA_ENABLED = enabled; }
+    
+    /** treats (or not) PVR files as if they have alpha premultiplied.
+     Since it is impossible to know at runtime if the PVR images have the alpha channel premultiplied, it is
+     possible load them as if they have (or not) the alpha channel premultiplied.
+     
+     By default it is disabled.
+     */
+    static void setPVRImagesHavePremultipliedAlpha(bool haveAlphaPremultiplied);
 
     /**
     @brief Load the image from the specified path.
@@ -121,16 +131,16 @@ public:
     bool initWithRawData(const unsigned char * data, ssize_t dataLen, int width, int height, int bitsPerComponent, bool preMulti = false);
 
     // Getters
-    inline unsigned char *   getData()               { return _data; }
-    inline ssize_t           getDataLen()            { return _dataLen; }
-    inline Format            getFileType()           {return _fileType; }
-    inline Texture2D::PixelFormat getRenderFormat()  { return _renderFormat; }
-    inline int               getWidth()              { return _width; }
-    inline int               getHeight()             { return _height; }
-    inline int               getNumberOfMipmaps()    { return _numberOfMipmaps; }
-    inline MipmapInfo*       getMipmaps()            { return _mipmaps; }
-    inline bool              hasPremultipliedAlpha() { return _hasPremultipliedAlpha; }
-    CC_DEPRECATED_ATTRIBUTE inline bool isPremultipliedAlpha()  { return _hasPremultipliedAlpha;   }
+    unsigned char *   getData()               { return _data; }
+    ssize_t           getDataLen()            { return _dataLen; }
+    Format            getFileType()           { return _fileType; }
+    backend::PixelFormat getPixelFormat()  { return _pixelFormat; }
+    int               getWidth()              { return _width; }
+    int               getHeight()             { return _height; }
+    int               getNumberOfMipmaps()    { return _numberOfMipmaps; }
+    MipmapInfo*       getMipmaps()            { return _mipmaps; }
+    bool              hasPremultipliedAlpha() { return _hasPremultipliedAlpha; }
+    std::string getFilePath() const { return _filePath; }
 
     int                      getBitPerPixel();
     bool                     hasAlpha();
@@ -143,24 +153,12 @@ public:
      @param    isToRGB        whether the image is saved as RGB format.
      */
     bool saveToFile(const std::string &filename, bool isToRGB = true);
-    
-    
-    /** treats (or not) PVR files as if they have alpha premultiplied.
-     Since it is impossible to know at runtime if the PVR images have the alpha channel premultiplied, it is
-     possible load them as if they have (or not) the alpha channel premultiplied.
-     
-     By default it is disabled.
-     */
-    static void setPVRImagesHavePremultipliedAlpha(bool haveAlphaPremultiplied);
+    void premultiplyAlpha();
+    void reversePremultipliedAlpha();   
 
 protected:
-#if defined(CC_USE_WIC)
-    bool encodeWithWIC(const std::string& filePath, bool isToRGB, GUID containerFormat);
-    bool decodeWithWIC(const unsigned char *data, ssize_t dataLen);
-#endif
     bool initWithJpgData(const unsigned char *  data, ssize_t dataLen);
     bool initWithPngData(const unsigned char * data, ssize_t dataLen);
-    bool initWithTiffData(const unsigned char * data, ssize_t dataLen);
     bool initWithWebpData(const unsigned char * data, ssize_t dataLen);
     bool initWithPVRData(const unsigned char * data, ssize_t dataLen);
     bool initWithPVRv2Data(const unsigned char * data, ssize_t dataLen);
@@ -174,32 +172,36 @@ protected:
     bool saveImageToPNG(const std::string& filePath, bool isToRGB = true);
     bool saveImageToJPG(const std::string& filePath);
     
-    void premultipliedAlpha();
+
     
 protected:
     /**
      @brief Determine how many mipmaps can we have.
-     Its same as define but it respects namespaces
+     It's same as define but it respects namespaces
      */
     static const int MIPMAP_MAX = 16;
+    /**
+     @brief Determine whether we premultiply alpha for png files.
+     */
+    static bool PNG_PREMULTIPLIED_ALPHA_ENABLED;
     unsigned char *_data;
     ssize_t _dataLen;
     int _width;
     int _height;
     bool _unpack;
     Format _fileType;
-    Texture2D::PixelFormat _renderFormat;
+    backend::PixelFormat _pixelFormat;
     MipmapInfo _mipmaps[MIPMAP_MAX];   // pointer to mipmap images
     int _numberOfMipmaps;
-    // false if we cann't auto detect the image is premultiplied or not.
+    // false if we can't auto detect the image is premultiplied or not.
     bool _hasPremultipliedAlpha;
     std::string _filePath;
 
 
 protected:
     // noncopyable
-    Image(const Image&    rImg);
-    Image & operator=(const Image&);
+    Image(const Image& rImg);
+    Image& operator=(const Image&);
     
     /*
      @brief The same result as with initWithImageFile, but thread safe. It is caused by
@@ -213,7 +215,6 @@ protected:
     Format detectFormat(const unsigned char * data, ssize_t dataLen);
     bool isPng(const unsigned char * data, ssize_t dataLen);
     bool isJpg(const unsigned char * data, ssize_t dataLen);
-    bool isTiff(const unsigned char * data, ssize_t dataLen);
     bool isWebp(const unsigned char * data, ssize_t dataLen);
     bool isPvr(const unsigned char * data, ssize_t dataLen);
     bool isEtc(const unsigned char * data, ssize_t dataLen);

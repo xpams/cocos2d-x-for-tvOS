@@ -1,5 +1,6 @@
 /****************************************************************************
  Copyright (c) 2014 cocos2d-x.org
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -22,12 +23,15 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-#include "GameMapReader.h"
+#include "editor-support/cocostudio/WidgetReader/GameMapReader/GameMapReader.h"
 
+#include "2d/CCLabel.h"
 #include "2d/CCTMXXMLParser.h"
+#include "2d/CCTMXTiledMap.h"
+#include "platform/CCFileUtils.h"
 
-#include "cocostudio/CSParseBinary_generated.h"
-#include "cocostudio/WidgetReader/NodeReader/NodeReader.h"
+#include "editor-support/cocostudio/CSParseBinary_generated.h"
+#include "editor-support/cocostudio/WidgetReader/NodeReader/NodeReader.h"
 
 #include "tinyxml2.h"
 #include "flatbuffers/flatbuffers.h"
@@ -55,7 +59,7 @@ namespace cocostudio
     {
         if (!_instanceTMXTiledMapReader)
         {
-            _instanceTMXTiledMapReader = new GameMapReader();
+            _instanceTMXTiledMapReader = new (std::nothrow) GameMapReader();
         }
         
         return _instanceTMXTiledMapReader;
@@ -225,7 +229,9 @@ namespace cocostudio
                 Node* node = Node::create();
                 setPropsWithFlatBuffers(node, (Table*)gameMapOptions);
                 auto label = Label::create();
-                label->setString(__String::createWithFormat("Some error of gid are in TMX Layer '%s'", layerName.c_str())->getCString());
+                //TODO couslonwang
+                cocos2d::log("TODO in %s %s %d", __FILE__, __FUNCTION__, __LINE__);
+//                label->setString(__String::createWithFormat("Some error of gid are in TMX Layer '%s'", layerName.c_str())->getCString());
                 node->setScale(1.0f);
                 node->addChild(label);
                 return node;

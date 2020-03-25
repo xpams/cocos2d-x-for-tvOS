@@ -4,7 +4,8 @@ Copyright (c) 2009      Jason Booth
 Copyright (c) 2009      Robert J Payne
 Copyright (c) 2010-2012 cocos2d-x.org
 Copyright (c) 2011      Zynga Inc.
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -30,11 +31,8 @@ THE SOFTWARE.
 #ifndef __SPRITE_CCSPRITE_FRAME_CACHE_H__
 #define __SPRITE_CCSPRITE_FRAME_CACHE_H__
 
-/*
- * To create sprite frames and texture atlas, use this tool:
- * http://zwoptex.zwopple.com/
- */
 #include <set>
+#include <unordered_map>
 #include <string>
 #include "2d/CCSpriteFrame.h"
 #include "base/CCRef.h"
@@ -45,6 +43,7 @@ NS_CC_BEGIN
 
 class Sprite;
 class Texture2D;
+class PolygonInfo;
 
 /**
  * @addtogroup _2d
@@ -53,12 +52,88 @@ class Texture2D;
 
 /** @class SpriteFrameCache
  * @brief Singleton that handles the loading of the sprite frames.
- It saves in a cache the sprite frames.
+
+ The SpriteFrameCache loads SpriteFrames from a .plist file.
+ A SpriteFrame contains information about how to use a sprite
+ located in a sprite sheet.
+ 
+ The .plist file contains the following elements:
+
+ - `frames`:
+   Dictionary of sprites. Key is the sprite's name, value a dict containing the sprite frame data.
+   A sprite frame consists of the following values:
+    - `spriteOffset`:     difference vector between the original sprite's center and the center of the trimmed sprite
+    - `spriteSize`:       size of the trimmed sprite
+    - `spriteSourceSize`: size of the original sprite
+    - `textureRect`:      the position of the sprite in the sprite sheet
+    - `textureRotated`:   true if the sprite is rotated clockwise
+    - `anchor`:           anchor point in normalized coordinates (optional)
+   Optional values when using polygon outlines
+    - `triangles`:        3 indices per triangle, pointing to vertices and verticesUV coordinates
+    - `vertices`:         vertices in sprite coordinates, each vertex consists of a pair of x and y coordinates
+    - `verticesUV`:       vertices in the sprite sheet, each vertex consists of a pair of x and y coordinates
+ 
+ - `metadata`:
+   Dictionary containing additional information about the sprite sheet:
+     - `format`:          plist file format, currently 3
+     - `size`:            size of the texture (optional)
+     - `textureFileName`: name of the texture's image file
+ 
+ Use one of the following tools to create the .plist file and sprite sheet:
+ - [TexturePacker](https://www.codeandweb.com/texturepacker/cocos2d)
+ - [Zwoptex](https://zwopple.com/zwoptex/)
+ 
  @since v0.9
  @js cc.spriteFrameCache
  */
 class CC_DLL SpriteFrameCache : public Ref
 {
+protected:
+    /**
+    * used to wrap plist & frame names & SpriteFrames
+    */
+    class PlistFramesCache {
+    public:
+        PlistFramesCache() { }
+        void init() {
+            _spriteFrames.reserve(20); clear();
+        }
+        /**  Record SpriteFrame with plist and frame name, add frame name 
+        *    and plist to index
+        */
+        void insertFrame(const std::string &plist, const std::string &frame, SpriteFrame *frameObj);
+        /** Delete frame from cache, rebuild index
+        */
+        bool eraseFrame(const std::string &frame);
+        /** Delete a list of frames from cache, rebuild index
+        */
+        bool eraseFrames(const std::vector<std::string> &frame);
+        /** Delete frame from index and SpriteFrame is kept.
+        */
+        bool erasePlistIndex(const std::string &frame);
+        /** Clear index and all SpriteFrames.
+        */
+        void clear();
+
+        inline bool hasFrame(const std::string &frame) const;
+        inline bool isPlistUsed(const std::string &plist) const;
+
+        inline SpriteFrame *at(const std::string &frame);
+        inline Map<std::string, SpriteFrame*>& getSpriteFrames();
+
+        void markPlistFull(const std::string &plist, bool full) { _isPlistFull[plist] = full; }
+        bool isPlistFull(const std::string &plist) const
+        {
+            auto it = _isPlistFull.find(plist);
+            return it == _isPlistFull.end() ? false : it->second;
+        }
+    private:
+        Map<std::string, SpriteFrame*> _spriteFrames;
+        std::unordered_map<std::string, std::set<std::string>> _indexPlist2Frames;
+        std::unordered_map<std::string, std::string> _indexFrame2plist;
+        std::unordered_map<std::string, bool> _isPlistFull;
+    };
+
 public:
     /** Returns the shared instance of the Sprite Frame cache.
      *
@@ -67,20 +142,10 @@ public:
      */
     static SpriteFrameCache* getInstance();
 
-    /** @deprecated Use getInstance() instead 
-     @js NA 
-	*/
-    CC_DEPRECATED_ATTRIBUTE static SpriteFrameCache* sharedSpriteFrameCache() { return SpriteFrameCache::getInstance(); }
-
     /** Destroys the cache. It releases all the Sprite Frames and the retained instance.
 	 * @js NA
      */
     static void destroyInstance();
-
-    /** @deprecated Use destroyInstance() instead 
-     * @js NA
-     */
-    CC_DEPRECATED_ATTRIBUTE static void purgeSharedSpriteFrameCache() { return SpriteFrameCache::destroyInstance(); }
 
     /** Destructor.
      * @js NA
@@ -207,8 +272,7 @@ public:
      */
     SpriteFrame* getSpriteFrameByName(const std::string& name);
 
-    /** @deprecated use getSpriteFrameByName() instead */
-    CC_DEPRECATED_ATTRIBUTE SpriteFrame* spriteFrameByName(const std::string&name) { return getSpriteFrameByName(name); }
+    bool reloadTexture(const std::string& plist);
 
 protected:
     // MARMALADE: Made this protected not private, as deriving from this class is pretty useful
@@ -216,17 +280,29 @@ protected:
 
     /*Adds multiple Sprite Frames with a dictionary. The texture will be associated with the created sprite frames.
      */
-    void addSpriteFramesWithDictionary(ValueMap& dictionary, Texture2D *texture);
-
+    void addSpriteFramesWithDictionary(ValueMap& dictionary, Texture2D *texture, const std::string &plist);
+    
+    /*Adds multiple Sprite Frames with a dictionary. The texture will be associated with the created sprite frames.
+     */
+    void addSpriteFramesWithDictionary(ValueMap& dictionary, const std::string &texturePath, const std::string &plist);
+    
     /** Removes multiple Sprite Frames from Dictionary.
     * @since v0.99.5
     */
     void removeSpriteFramesFromDictionary(ValueMap& dictionary);
 
+    /** Configures PolygonInfo class with the passed sizes + triangles */
+    void initializePolygonInfo(const Size &textureSize,
+                               const Size &spriteSize,
+                               const std::vector<int> &vertices,
+                               const std::vector<int> &verticesUV,
+                               const std::vector<int> &triangleIndices,
+                               PolygonInfo &polygonInfo);
 
-    Map<std::string, SpriteFrame*> _spriteFrames;
+    void reloadSpriteFramesWithDictionary(ValueMap& dictionary, Texture2D *texture, const std::string &plist);
+
     ValueMap _spriteFramesAliases;
-    std::set<std::string>*  _loadedFileNames;
+    PlistFramesCache _spriteFramesCache;
 };
 
 // end of _2d group

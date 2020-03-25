@@ -409,7 +409,11 @@ static bool _initWithString(const char * text, cocos2d::Device::TextAlign align,
         NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
         paragraphStyle.alignment = nsAlign;
         paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
-       [str drawInRect:rect withAttributes:@{ NSFontAttributeName: font, NSParagraphStyleAttributeName:paragraphStyle }];
+        [str drawInRect:rect withAttributes:@{ NSFontAttributeName: font, NSParagraphStyleAttributeName:paragraphStyle ,
+                                               NSForegroundColorAttributeName:[UIColor colorWithRed:info->tintColorR
+                                                                                              green:info->tintColorG
+                                                                                               blue:info->tintColorB
+                                                                                              alpha:info->tintColorA]}];
         [paragraphStyle release];
 
         CGContextEndTransparencyLayer(context);

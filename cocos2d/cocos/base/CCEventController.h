@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (c) 2014 cocos2d-x.org
- Copyright (c) 2014 Chukong Technologies Inc.
+ Copyright (c) 2014-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -43,7 +44,7 @@ class EventListenerController;
 /** @class EventController
  * @brief Controller event.
  */
-class EventController : public Event
+class CC_DLL EventController : public Event
 {
 public:
     /** ControllerEventType Controller event type.*/
@@ -54,7 +55,7 @@ public:
         AXIS_STATUS_CHANGED,
     };
     
-    /** Create a EventController with controller event type, contrlloer and key code.
+    /** Create a EventController with controller event type, controller and key code.
      *
      * @param type A given controller event type.
      * @param controller A given controller pointer.
@@ -62,7 +63,7 @@ public:
      * @return An autoreleased EventController object.
      */
 	EventController(ControllerEventType type, Controller* controller, int keyCode);
-    /** Create a EventController with controller event type, contrlloer and whether or not is connected.
+    /** Create a EventController with controller event type, controller and whether or not is connected.
      *
      * @param type A given controller event type.
      * @param controller A given controller pointer.

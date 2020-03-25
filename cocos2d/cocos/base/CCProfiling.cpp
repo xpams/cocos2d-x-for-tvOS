@@ -1,7 +1,8 @@
 /****************************************************************************
 Copyright (c) 2010      Stuart Carnie
 Copyright (c) 2010-2012 cocos2d-x.org
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -49,12 +50,6 @@ Profiler* Profiler::getInstance()
     return g_sSharedProfiler;
 }
 
-// FIXME:: deprecated
-Profiler* Profiler::sharedProfiler(void)
-{
-    return Profiler::getInstance();
-}
-
 ProfilingTimer* Profiler::createAndAddTimerWithName(const char* timerName)
 {
     ProfilingTimer *t = new (std::nothrow) ProfilingTimer();
@@ -80,15 +75,15 @@ bool Profiler::init()
     return true;
 }
 
-Profiler::~Profiler(void)
+Profiler::~Profiler()
 {
 }
 
 void Profiler::displayTimers()
 {
-    for (auto iter = _activeTimers.begin(); iter != _activeTimers.end(); ++iter)
+    for (auto& iter : _activeTimers)
     {
-        ProfilingTimer* timer = iter->second;
+        ProfilingTimer* timer = iter.second;
         log("%s", timer->getDescription().c_str());
     }
 }
@@ -111,17 +106,17 @@ bool ProfilingTimer::initWithName(const char* timerName)
     return true;
 }
 
-ProfilingTimer::~ProfilingTimer(void)
+ProfilingTimer::~ProfilingTimer()
 {
     
 }
 
 std::string ProfilingTimer::getDescription() const
 {
-    static char s_desciption[512] = {0};
+    static char s_description[512] = {0};
 
-    sprintf(s_desciption, "%s ::\tavg1: %ldµ,\tavg2: %ldµ,\tmin: %ldµ,\tmax: %ldµ,\ttotal: %.2fs,\tnr calls: %ld", _nameStr.c_str(), _averageTime1, _averageTime2, minTime, maxTime, totalTime/1000000., numberOfCalls);
-    return s_desciption;
+    sprintf(s_description, "%s ::\tavg1: %ldu,\tavg2: %ldu,\tmin: %ldu,\tmax: %ldu,\ttotal: %.2fs,\tnr calls: %ld", _nameStr.c_str(), _averageTime1, _averageTime2, minTime, maxTime, totalTime/1000000., numberOfCalls);
+    return s_description;
 }
 
 void ProfilingTimer::reset()

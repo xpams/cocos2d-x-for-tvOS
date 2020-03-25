@@ -1,6 +1,7 @@
 /****************************************************************************
 Copyright (c) 2010-2012 cocos2d-x.org
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -22,8 +23,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
-#ifndef __CCPLATFORMDEFINE_H__
-#define __CCPLATFORMDEFINE_H__
+#pragma once
 
 #include "platform/CCPlatformConfig.h"
 #if CC_TARGET_PLATFORM == CC_PLATFORM_WIN32
@@ -60,20 +60,5 @@ THE SOFTWARE.
 #endif
 #endif
 
-#if _MSC_VER > 1800
-#pragma comment(lib,"libpng-2015.lib")
-#pragma comment(lib,"libjpeg-2015.lib")
-#pragma comment(lib,"libtiff-2015.lib")
-#pragma comment(lib,"glfw3-2015.lib")
-#pragma comment(lib,"libchipmunk-2015.lib")
-#else
-#pragma comment(lib,"libpng.lib")
-#pragma comment(lib,"libjpeg.lib")
-#pragma comment(lib,"libtiff.lib")
-#pragma comment(lib,"glfw3.lib")
-#pragma comment(lib,"libchipmunk.lib")
-#endif
-
 #endif //s CC_TARGET_PLATFORM == CC_PLATFORM_WIN32
 
-#endif /* __CCPLATFORMDEFINE_H__*/

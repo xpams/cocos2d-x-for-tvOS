@@ -1,7 +1,8 @@
 /****************************************************************************
 Copyright (c) 2008-2010 Ricardo Quesada
 Copyright (c) 2010-2012 cocos2d-x.org
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -29,8 +30,8 @@ THE SOFTWARE.
 #include "base/CCTouch.h"
 #include "base/CCEventListenerTouch.h"
 #include "base/CCEventDispatcher.h"
+#include "base/ccUTF8.h"
 #include "platform/CCStdC.h"
-#include "deprecated/CCString.h"
 
 #include <vector>
 
@@ -58,21 +59,6 @@ Menu* Menu::create()
     return Menu::create(nullptr, nullptr);
 }
 
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT)
-Menu * Menu::variadicCreate(MenuItem* item, ...)
-{
-    va_list args;
-    va_start(args,item);
-    
-    Menu *ret = Menu::createWithItems(item, args);
-    
-    va_end(args);
-    
-    return ret;
-}
-#else
-
-
 Menu * Menu::create(MenuItem* item, ...)
 {
     va_list args;
@@ -84,8 +70,6 @@ Menu * Menu::create(MenuItem* item, ...)
     
     return ret;
 }
-#endif
-
 
 Menu* Menu::createWithArray(const Vector<MenuItem*>& arrayOfItems)
 {
@@ -137,7 +121,7 @@ bool Menu::initWithArray(const Vector<MenuItem*>& arrayOfItems)
         // menu in the center of the screen
         Size s = Director::getInstance()->getWinSize();
 
-        this->ignoreAnchorPointForPosition(true);
+        this->setIgnoreAnchorPointForPosition(true);
         setAnchorPoint(Vec2(0.5f, 0.5f));
         this->setContentSize(s);
 
@@ -238,10 +222,9 @@ void Menu::onExit()
 
 void Menu::removeChild(Node* child, bool cleanup)
 {
-    MenuItem *menuItem = dynamic_cast<MenuItem*>(child);
-    CCASSERT(menuItem != nullptr, "Menu only supports MenuItem objects as children");
+    CCASSERT(dynamic_cast<MenuItem*>(child) != nullptr, "Menu only supports MenuItem objects as children");
     
-    if (_selectedItem == menuItem)
+    if (_selectedItem == child)
     {
         _selectedItem = nullptr;
     }
@@ -251,7 +234,7 @@ void Menu::removeChild(Node* child, bool cleanup)
 
 //Menu - Events
 
-bool Menu::onTouchBegan(Touch* touch, Event* event)
+bool Menu::onTouchBegan(Touch* touch, Event* /*event*/)
 {
     auto camera = Camera::getVisitingCamera();
     if (_state != Menu::State::WAITING || ! _visible || !_enabled || !camera)
@@ -266,8 +249,8 @@ bool Menu::onTouchBegan(Touch* touch, Event* event)
             return false;
         }
     }
-    
     _selectedItem = this->getItemForTouch(touch, camera);
+
     if (_selectedItem)
     {
         _state = Menu::State::TRACKING_TOUCH;
@@ -280,7 +263,7 @@ bool Menu::onTouchBegan(Touch* touch, Event* event)
     return false;
 }
 
-void Menu::onTouchEnded(Touch* touch, Event* event)
+void Menu::onTouchEnded(Touch* /*touch*/, Event* /*event*/)
 {
     CCASSERT(_state == Menu::State::TRACKING_TOUCH, "[Menu ccTouchEnded] -- invalid state");
     this->retain();
@@ -294,7 +277,7 @@ void Menu::onTouchEnded(Touch* touch, Event* event)
     this->release();
 }
 
-void Menu::onTouchCancelled(Touch* touch, Event* event)
+void Menu::onTouchCancelled(Touch* /*touch*/, Event* /*event*/)
 {
     CCASSERT(_state == Menu::State::TRACKING_TOUCH, "[Menu ccTouchCancelled] -- invalid state");
     this->retain();
@@ -306,7 +289,7 @@ void Menu::onTouchCancelled(Touch* touch, Event* event)
     this->release();
 }
 
-void Menu::onTouchMoved(Touch* touch, Event* event)
+void Menu::onTouchMoved(Touch* touch, Event* /*event*/)
 {
     CCASSERT(_state == Menu::State::TRACKING_TOUCH, "[Menu ccTouchMoved] -- invalid state");
     MenuItem *currentItem = this->getItemForTouch(touch, _selectedWithCamera);
@@ -345,7 +328,7 @@ void Menu::alignItemsVerticallyWithPadding(float padding)
     }
 }
 
-void Menu::alignItemsHorizontally(void)
+void Menu::alignItemsHorizontally()
 {
     this->alignItemsHorizontallyWithPadding(kDefaultPadding);
 }
@@ -418,7 +401,7 @@ void Menu::alignItemsInColumnsWithArray(const ValueVector& rows)
     // check if too many rows/columns for available menu items
     CCASSERT(! columnsOccupied, "columnsOccupied should be 0.");
 
-    Size winSize = Director::getInstance()->getWinSize();
+    Size winSize = getContentSize();
 
     row = 0;
     rowHeight = 0;
@@ -520,7 +503,7 @@ void Menu::alignItemsInRowsWithArray(const ValueVector& columns)
     // check if too many rows/columns for available menu items.
     CCASSERT(! rowsOccupied, "rowsOccupied should be 0.");
 
-    Size winSize = Director::getInstance()->getWinSize();
+    Size winSize = getContentSize();
 
     column = 0;
     columnWidth = 0;
@@ -559,24 +542,29 @@ void Menu::alignItemsInRowsWithArray(const ValueVector& columns)
 MenuItem* Menu::getItemForTouch(Touch *touch, const Camera *camera)
 {
     Vec2 touchLocation = touch->getLocation();
-    if (!_children.empty())
+    for (const auto &item: _children)
     {
-        for (auto iter = _children.crbegin(); iter != _children.crend(); ++iter)
+        MenuItem* child = dynamic_cast<MenuItem*>(item);
+        if (nullptr == child || false == child->isVisible() || false == child->isEnabled())
         {
-            MenuItem* child = dynamic_cast<MenuItem*>(*iter);
-            if (nullptr == child || false == child->isVisible() || false == child->isEnabled())
-            {
-                continue;
-            }
-            Rect rect;
-            rect.size = child->getContentSize();
-            if (isScreenPointInRect(touchLocation, camera, child->getWorldToNodeTransform(), rect, nullptr))
-            {
-                return child;
-            }
+            continue;
+        }
+        Rect rect;
+        rect.size = child->getContentSize();
+        if (isScreenPointInRect(touchLocation, camera, child->getWorldToNodeTransform(), rect, nullptr))
+        {
+            return child;
         }
     }
     return nullptr;
+}
+
+void Menu::setOpacityModifyRGB(bool /*value*/)
+{}
+
+bool Menu::isOpacityModifyRGB() const
+{
+    return false;
 }
 
 std::string Menu::getDescription() const

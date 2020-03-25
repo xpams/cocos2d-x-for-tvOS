@@ -1,7 +1,8 @@
 /****************************************************************************
 Copyright (c) 2010      Ricardo Quesada
 Copyright (c) 2010-2012 cocos2d-x.org
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -60,12 +61,6 @@ public:
     /** Purge the shared instance of Configuration.
      */
     static void destroyInstance();
-
-    /** @deprecated Use getInstance() instead */
-    CC_DEPRECATED_ATTRIBUTE static Configuration *sharedConfiguration();
-
-    /** @deprecated Use destroyInstance() instead */
-    CC_DEPRECATED_ATTRIBUTE static void purgeConfiguration();
 
 public:
     /** Destructor
@@ -145,6 +140,31 @@ public:
      * @since v2.0.0
      */
 	bool supportsShareableVAO() const;
+
+    /** Whether or not OES_depth24 is supported.
+     *
+     * @return Is true if supports OES_depth24.
+     * @since v2.0.0
+     */
+    bool supportsOESDepth24() const;
+    
+    /** Whether or not OES_Packed_depth_stencil is supported.
+     *
+     * @return Is true if supports OES_Packed_depth_stencil.
+     * @since v2.0.0
+     */
+    bool supportsOESPackedDepthStencil() const;
+
+    /** Whether or not glMapBuffer() is supported.
+     *
+     * On Desktop it returns `true`.
+     * On Mobile it checks for the extension `GL_OES_mapbuffer`
+     *
+     * @return Whether or not `glMapBuffer()` is supported.
+     * @since v3.13
+     */
+    bool supportsMapBuffer() const;
+
     
     /** Max support directional light in shader, for Sprite3D.
      *
@@ -215,15 +235,16 @@ public:
 	void loadConfigFile(const std::string& filename);
     
     static const char* CONFIG_FILE_LOADED;
+    
+    int getMaxAttributes() const;
 
 private:
-    Configuration(void);
+    Configuration();
     static Configuration    *s_sharedConfiguration;
 	static std::string		s_configfile;
     
 protected:
-    GLint           _maxTextureSize;
-    GLint           _maxModelviewStackDepth;
+    int             _maxModelviewStackDepth;
     bool            _supportsPVRTC;
     bool            _supportsETC1;
     bool            _supportsS3TC;
@@ -232,9 +253,11 @@ protected:
     bool            _supportsBGRA8888;
     bool            _supportsDiscardFramebuffer;
     bool            _supportsShareableVAO;
-    GLint           _maxSamplesAllowed;
-    GLint           _maxTextureUnits;
-    char *          _glExtensions;
+    bool            _supportsOESMapBuffer;
+    bool            _supportsOESDepth24;
+    bool            _supportsOESPackedDepthStencil;
+    
+    std::string     _glExtensions;
     int             _maxDirLightInShader; //max support directional light in shader
     int             _maxPointLightInShader; // max support point light in shader
     int             _maxSpotLightInShader; // max support spot light in shader

@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2014 Chukong Technologies Inc.
+ Copyright (c) 2014-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos2d-x.org
 
@@ -25,9 +26,10 @@
 #ifndef __CCBUNDLE3D_H__
 #define __CCBUNDLE3D_H__
 
+#include "base/CCData.h"
 #include "3d/CCBundle3DData.h"
 #include "3d/CCBundleReader.h"
-#include "json/document.h"
+#include "json/document-wrapper.h"
 
 NS_CC_BEGIN
 
@@ -37,7 +39,6 @@ NS_CC_BEGIN
  */
 
 class Animation3D;
-class Data;
 
 /**
  * @brief Defines a bundle file that contains a collection of assets. Mesh, Material, MeshSkin, Animation
@@ -58,6 +59,18 @@ public:
     static void destroyBundle(Bundle3D* bundle);
     
 	virtual void clear();
+
+    /**
+    * get define data type
+    * @param str The type in string
+    */
+    static backend::VertexFormat parseGLDataType(const std::string& str, int size);
+
+    /**
+    * get define data type
+    * @param str The type in string
+    */
+    static backend::SamplerAddressMode parseSamplerAddressMode(const std::string& str);
 
     /**
      * load a file. You must load a file first, then call loadMeshData, loadSkinData, and so on
@@ -113,14 +126,14 @@ protected:
     bool loadMaterialsBinary(MaterialDatas& materialdatas);
     bool loadMaterialsBinary_0_1(MaterialDatas& materialdatas);
     bool loadMaterialsBinary_0_2(MaterialDatas& materialdatas);
-    bool loadMeshDataJson(MeshData* meshdata){return true;}
-    bool loadMeshDataJson_0_1(MeshData* meshdata){return true;}
-    bool loadMeshDataJson_0_2(MeshData* meshdata){return true;}
+    bool loadMeshDataJson(MeshData* meshdata);
+    bool loadMeshDataJson_0_1(MeshData* meshdata);
+    bool loadMeshDataJson_0_2(MeshData* meshdata);
     bool loadSkinDataJson(SkinData* skindata);
     bool loadSkinDataBinary(SkinData* skindata);
-    bool loadMaterialDataJson(MaterialData* materialdata){return true;}
-    bool loadMaterialDataJson_0_1(MaterialData* materialdata){return true;}
-    bool loadMaterialDataJson_0_2(MaterialData* materialdata){return true;}
+    bool loadMaterialDataJson(MaterialData* materialdata);
+    bool loadMaterialDataJson_0_1(MaterialData* materialdata);
+    bool loadMaterialDataJson_0_2(MaterialData* materialdata);
     bool loadAnimationDataJson(const std::string& id,Animation3DData* animationdata);
     bool loadAnimationDataBinary(const std::string& id,Animation3DData* animationdata);
 
@@ -136,12 +149,6 @@ protected:
     bool loadNodesBinary(NodeDatas& nodedatas);
     NodeData* parseNodesRecursivelyBinary(bool& skeleton, bool singleSprite);
 
-    /**
-     * get define data type
-     * @param str The type in string
-     */
-    GLenum parseGLType(const std::string& str);
-
      /**
      * get define data type
      * @param str The type in string
@@ -152,7 +159,7 @@ protected:
      * get vertex attribute type
      * @param str The type in string
      */
-    unsigned int parseGLProgramAttribute(const std::string& str);
+    shaderinfos::VertexKey parseGLProgramAttribute(const std::string& str);
 
     /*
      * get model path
@@ -177,11 +184,11 @@ protected:
     std::string _version;// the c3b or c3t version
     
     // for json reading
-    char* _jsonBuffer;
+    std::string _jsonBuffer;
     rapidjson::Document _jsonReader;
 
     // for binary reading
-    Data* _binaryBuffer;
+    Data _binaryBuffer;
     BundleReader _binaryReader;
     unsigned int _referenceCount;
     Reference* _references;

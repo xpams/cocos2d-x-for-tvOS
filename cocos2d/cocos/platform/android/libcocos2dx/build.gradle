@@ -1,14 +1,13 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion "22.0.1"
+    compileSdkVersion PROP_COMPILE_SDK_VERSION.toInteger()
 
     defaultConfig {
-        minSdkVersion 10
-        targetSdkVersion 22
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion PROP_MIN_SDK_VERSION
+        targetSdkVersion PROP_TARGET_SDK_VERSION
+        versionCode PROP_VERSION_CODE.toInteger()
+        versionName PROP_VERSION_NAME
     }
 
     sourceSets.main {
@@ -19,12 +18,17 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation "cz.msebera.android:httpclient:4.5.8"
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation fileTree(dir: '../java/libs', include: ['*.jar'])
+    //implementation fileTree(dir: 'libs', include: ['*.aar', '*.jar'], exclude: [])
+
 }

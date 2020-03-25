@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (c) 2010-2012 cocos2d-x.org
  Copyright (c) 2012 James Chen
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -26,9 +27,9 @@
 #ifndef __UIEditBoxIMPLIOS_H__
 #define __UIEditBoxIMPLIOS_H__
 
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_TVOS)
 
-#include "UIEditBoxImpl-common.h"
+#include "ui/UIEditBox/UIEditBoxImpl-common.h"
 
 
 
@@ -53,9 +54,6 @@ public:
      * @lua NA
      */
     virtual ~EditBoxImplIOS();
-    virtual void setPosition(const Vec2& pos) override;
-    virtual void setAnchorPoint(const Vec2& anchorPoint) override;
-    virtual void updatePosition(float dt) override;
     
     virtual bool isEditing() override;
     virtual void createNativeControl(const Rect& frame) override;
@@ -66,26 +64,23 @@ public:
     virtual void setNativeInputMode(EditBox::InputMode inputMode) override;
     virtual void setNativeInputFlag(EditBox::InputFlag inputFlag) override;
     virtual void setNativeReturnType(EditBox::KeyboardReturnType returnType)override;
+    virtual void setNativeTextHorizontalAlignment(cocos2d::TextHAlignment alignment) override;
     virtual void setNativeText(const char* pText) override;
     virtual void setNativePlaceHolder(const char* pText) override;
     virtual void setNativeVisible(bool visible) override;
     virtual void updateNativeFrame(const Rect& rect) override;
-    virtual void setNativeContentSize(const Size& size) override;
     virtual const char* getNativeDefaultFontName() override;
     virtual void nativeOpenKeyboard() override;
     virtual void nativeCloseKeyboard() override;
     
     //need to remove siri text
-    virtual const char* getText(void)override;
+    virtual const char* getText()override;
 
-    virtual void doAnimationWhenKeyboardMove(float duration, float distance);
+    virtual void doAnimationWhenKeyboardMove(float duration, float distance) override;
 private:
     UIFont*         constructFont(const char* fontName, int fontSize);
-    void			adjustTextFieldPosition();
     
     UIEditBoxImplIOS_objc* _systemControl;
-    Vec2         _position;
-    Vec2         _anchorPoint;
 };
 
 

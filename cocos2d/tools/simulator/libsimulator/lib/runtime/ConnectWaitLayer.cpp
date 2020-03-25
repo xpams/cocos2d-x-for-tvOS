@@ -1,5 +1,6 @@
 /****************************************************************************
 Copyright (c) 2013 cocos2d-x.org
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -150,9 +151,9 @@ ConnectWaitLayer::ConnectWaitLayer()
 
 ConnectWaitLayer::~ConnectWaitLayer()
 {
-	CC_SAFE_DELETE(_imagebg);
-	CC_SAFE_DELETE(_imageplay);
-	CC_SAFE_DELETE(_imageShine);
+	CC_SAFE_RELEASE(_imagebg);
+	CC_SAFE_RELEASE(_imageplay);
+	CC_SAFE_RELEASE(_imageShine);
 }
 
 // clean up: ignore stdin, stdout and stderr

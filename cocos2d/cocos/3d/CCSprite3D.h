@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2014 Chukong Technologies Inc.
+ Copyright (c) 2014-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos2d-x.org
 
@@ -32,7 +33,6 @@
 #include "base/CCProtocols.h"
 #include "2d/CCNode.h"
 #include "renderer/CCMeshCommand.h"
-#include "renderer/CCGLProgramState.h"
 #include "3d/CCSkeleton3D.h" // need to include for lua-binding
 #include "3d/CCAABB.h"
 #include "3d/CCBundle3DData.h"
@@ -51,7 +51,7 @@ class Texture2D;
 class MeshSkin;
 class AttachNode;
 struct NodeData;
-/** @brief Sprite3D: A sprite can be loaded from 3D model files, .obj, .c3t, .c3b, then can be drawed as sprite */
+/** @brief Sprite3D: A sprite can be loaded from 3D model files, .obj, .c3t, .c3b, then can be drawn as sprite */
 class CC_DLL Sprite3D : public Node, public BlendProtocol
 {
 public:
@@ -70,7 +70,7 @@ public:
     
     /** create 3d sprite asynchronously
      * If the 3d model was previously loaded, it will create a new 3d sprite and the callback will be called at once.
-     * Otherwise it will load the model file in a new thread, and when the 3d sprite is loaded, the callback will be called with the created Sprite3D and a userdefined parameter.
+     * Otherwise it will load the model file in a new thread, and when the 3d sprite is loaded, the callback will be called with the created Sprite3D and a user-defined parameter.
      * The callback will be called from the main thread, so it is safe to create any cocos2d object from the callback.
      * @param modelPath model to be loaded
      * @param callback callback after loading
@@ -80,7 +80,7 @@ public:
     
     static void createAsync(const std::string &modelPath, const std::string &texturePath, const std::function<void(Sprite3D*, void*)>& callback, void* callbackparam);
     
-    /**set texture, set the first if multiple textures exist*/
+    /**set diffuse texture, set the first if multiple textures exist*/
     void setTexture(const std::string& texFile);
     void setTexture(Texture2D* texture);
     
@@ -98,13 +98,10 @@ public:
     std::vector<Mesh*> getMeshArrayByName(const std::string& name) const;
 
     /**get mesh*/
-    Mesh* getMesh() const { return _meshes.at(0); }
+    Mesh* getMesh() const;
     
     /** get mesh count */
     ssize_t getMeshCount() const { return _meshes.size(); }
-    
-    /**get skin*/
-    CC_DEPRECATED_ATTRIBUTE MeshSkin* getSkin() const;
     
     Skeleton3D* getSkeleton() const { return _skeleton; }
     
@@ -122,14 +119,12 @@ public:
     virtual const BlendFunc &getBlendFunc() const override;
     
     // overrides
-    /** set GLProgramState, you should bind attributes by yourself */
-    virtual void setGLProgramState(GLProgramState *glProgramState) override;
-    /** just rember bind attributes */
-    virtual void setGLProgram(GLProgram *glprogram) override;
-    
+    /** set ProgramState, you should bind attributes by yourself */
+    virtual void setProgramState(backend::ProgramState *programState) override;
+
     /*
      * Get AABB
-     * If the sprite has animation, it can't be calculated accuratly,
+     * If the sprite has animation, it can't be calculated accurately,
      * because bone can drive the vertices, we just use the origin vertices
      * to calculate the AABB.
      */
@@ -161,12 +156,12 @@ public:
     
     /**
      * Returns 2d bounding-box
-     * Note: the bouding-box is just get from the AABB which as Z=0, so that is not very accurate.
+     * Note: the bounding-box is just get from the AABB which as Z=0, so that is not very accurate.
      */
     virtual Rect getBoundingBox() const override;
 
-    // set which face is going to cull, GL_BACK, GL_FRONT, GL_FRONT_AND_BACK, default GL_BACK
-    void setCullFace(GLenum cullFace);
+    // set which face is going to cull, CullFaceSide::BACK, CullFaceSide::FRONT and CullFaceSide::NONE.
+    void setCullFace(CullFaceSide side);
     // set cull face enable or not
     void setCullFaceEnabled(bool enable);
     
@@ -200,6 +195,11 @@ public:
     */
     void setForce2DQueue(bool force2D);
 
+    /**
+    * Get meshes used in sprite 3d
+    */
+    const Vector<Mesh*>& getMeshes() const { return _meshes; }
+
 CC_CONSTRUCTOR_ACCESS:
     
     Sprite3D();
@@ -223,12 +223,12 @@ CC_CONSTRUCTOR_ACCESS:
      */
     virtual void visit(Renderer *renderer, const Mat4& parentTransform, uint32_t parentFlags) override;
     
-    /**generate default GLProgramState*/
-    void genGLProgramState(bool useLight = false);
+    /**generate default material*/
+    void genMaterial(bool useLight = false);
 
-    void createNode(NodeData* nodedata, Node* root, const MaterialDatas& matrialdatas, bool singleSprite);
-    void createAttachSprite3DNode(NodeData* nodedata,const MaterialDatas& matrialdatas);
-    Sprite3D* createSprite3DNode(NodeData* nodedata,ModelData* modeldata,const MaterialDatas& matrialdatas);
+    void createNode(NodeData* nodedata, Node* root, const MaterialDatas& materialdatas, bool singleSprite);
+    void createAttachSprite3DNode(NodeData* nodedata, const MaterialDatas& materialdatas);
+    Sprite3D* createSprite3DNode(NodeData* nodedata, ModelData* modeldata, const MaterialDatas& materialdatas);
 
     /**get MeshIndexData by Id*/
     MeshIndexData* getMeshIndexData(const std::string& indexId) const;
@@ -266,7 +266,7 @@ protected:
         std::function<void(Sprite3D*, void*)> afterLoadCallback; // callback after load
         void*                           callbackParam;
         bool                            result; // sprite load result
-        std::string                     modlePath;
+        std::string                     modelPath;
         std::string                     texPath; //
         MeshDatas* meshdatas;
         MaterialDatas* materialdatas;
@@ -286,7 +286,7 @@ public:
     struct Sprite3DData
     {
         Vector<MeshVertexData*>   meshVertexDatas;
-        Vector<GLProgramState*>   glProgramStates;
+        Vector<backend::ProgramState*>   programStates;
         NodeDatas*      nodedatas;
         MaterialDatas*  materialdatas;
         ~Sprite3DData()
@@ -296,7 +296,7 @@ public:
             if (materialdatas)
                 delete materialdatas;
             meshVertexDatas.clear();
-            glProgramStates.clear();
+            programStates.clear();
         }
     };
     
@@ -332,7 +332,7 @@ protected:
     
     
     static Sprite3DCache*                        _cacheInstance;
-    std::unordered_map<std::string, Sprite3DData*> _spriteDatas; //cached sprite datas
+    std::unordered_map<std::string, Sprite3DData*> _spriteDatas; //cached sprite data
 };
 
 // end of 3d group

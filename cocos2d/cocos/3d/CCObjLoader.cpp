@@ -1,28 +1,26 @@
-//
-// Copyright 2012-2015, Syoyo Fujita.
-//
-// Licensed under 2-clause BSD liecense.
-//
-
-//
-// version 0.9.13: Report "Material file not found message" in `err`(#46)
-// version 0.9.12: Fix groups being ignored if they have 'usemtl' just before 'g' (#44)
-// version 0.9.11: Invert `Tr` parameter(#43)
-// version 0.9.10: Fix seg fault on windows.
-// version 0.9.9 : Replace atof() with custom parser.
-// version 0.9.8 : Fix multi-materials(per-face material ID).
-// version 0.9.7 : Support multi-materials(per-face material ID) per
-// object/group.
-// version 0.9.6 : Support Ni(index of refraction) mtl parameter.
-//                 Parse transmittance material parameter correctly.
-// version 0.9.5 : Parse multiple group name.
-//                 Add support of specifying the base path to load material file.
-// version 0.9.4 : Initial suupport of group tag(g)
-// version 0.9.3 : Fix parsing triple 'x/y/z'
-// version 0.9.2 : Add more .mtl load support
-// version 0.9.1 : Add initial .mtl load support
-// version 0.9.0 : Initial
-//
+/****************************************************************************
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
+ 
+ http://www.cocos2d-x.org
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ 
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ ****************************************************************************/
 
 #include <cstdlib>
 #include <cstring>
@@ -38,7 +36,7 @@
 #include "platform/CCFileUtils.h"
 #include "base/ccUtils.h"
 
-#include "CCObjLoader.h"
+#include "3d/CCObjLoader.h"
 
 namespace tinyobj {
     
@@ -372,7 +370,7 @@ namespace tinyobj {
         }
         
         // Flatten vertices and indices
-        for (size_t i = 0; i < faceGroup.size(); i++) {
+        for (size_t i = 0, size = faceGroup.size(); i < size; ++i) {
             const std::vector<vertex_index> &face = faceGroup[i];
             
             vertex_index i0 = face[0];
@@ -414,7 +412,7 @@ namespace tinyobj {
     
     static std::string& replacePathSeperator(std::string& path)
     {
-        for (std::string::size_type i = 0; i < path.size(); i++) {
+        for (std::string::size_type i = 0, size = path.size(); i < size; ++i) {
             if (path[i] == '\\')
                 path[i] = '/';
         }
@@ -572,7 +570,7 @@ namespace tinyobj {
             if (token[0] == 'T' && token[1] == 'r' && isSpace(token[2])) {
                 token += 2;
                 // Invert value of Tr(assume Tr is in range [0, 1])
-                material.dissolve = 1.0 - parseFloat(token);
+                material.dissolve = 1.0f - parseFloat(token);
                 continue;
             }
             
@@ -640,13 +638,16 @@ namespace tinyobj {
             filepath = matId;
         }
         
+        std::string err = "";
+        
         std::istringstream matIStream(cocos2d::FileUtils::getInstance()->getStringFromFile(filepath));
-        std::string err = LoadMtl(matMap, materials, matIStream);
         if (!matIStream) {
             std::stringstream ss;
             ss << "WARN: Material file [ " << filepath << " ] not found. Created a default material.";
             err += ss.str();
         }
+        err += LoadMtl(matMap, materials, matIStream);
+
         return err;
     }
     
@@ -762,9 +763,12 @@ namespace tinyobj {
                 token += strspn(token, " \t");
                 
                 std::vector<vertex_index> face;
+                auto first = static_cast<int>(v.size() / 3);
+                auto second = static_cast<int>(vn.size() / 3);
+                auto third = static_cast<int>(vt.size() / 2);
                 while (!isNewLine(token[0])) {
                     vertex_index vi =
-                    parseTriple(token, static_cast<int>(v.size() / 3), static_cast<int>(vn.size() / 3), static_cast<int>(vt.size() / 2));
+                    parseTriple(token, first, second, third);
                     face.push_back(vi);
                     size_t n = strspn(token, " \t\r");
                     token += n;

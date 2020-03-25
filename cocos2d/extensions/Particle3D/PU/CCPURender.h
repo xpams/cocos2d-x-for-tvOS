@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (C) 2013 Henry van Merode. All rights reserved.
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -44,9 +45,9 @@ public:
 
     virtual void prepare(){};
     virtual void unPrepare(){};
-    virtual void updateRender(PUParticle3D *particle, float deltaTime, bool firstParticle){};
+    virtual void updateRender(PUParticle3D* particle, float deltaTime, bool firstParticle);
 
-    const std::string& getRenderType(void) const {return _renderType;};
+    const std::string& getRenderType() const {return _renderType;};
     void setRenderType(const std::string& observerType) {_renderType = observerType;};
 
     virtual PURender* clone() = 0;
@@ -65,7 +66,7 @@ class CC_DLL PUParticle3DEntityRender : public PURender
 {
 public:
     void copyAttributesTo(PUParticle3DEntityRender *render);
-
+    virtual void reset()override;
 CC_CONSTRUCTOR_ACCESS:
     PUParticle3DEntityRender();
     virtual ~PUParticle3DEntityRender();
@@ -73,7 +74,6 @@ CC_CONSTRUCTOR_ACCESS:
 protected:
 
     bool initRender(const std::string &texFile);
-
 protected:
 
     struct VertexInfo
@@ -188,6 +188,7 @@ public:
     virtual PUParticle3DModelRender* clone() override;
     void copyAttributesTo(PUParticle3DModelRender *render);
 
+    virtual void reset()override;
 CC_CONSTRUCTOR_ACCESS:
     PUParticle3DModelRender();
     virtual ~PUParticle3DModelRender();

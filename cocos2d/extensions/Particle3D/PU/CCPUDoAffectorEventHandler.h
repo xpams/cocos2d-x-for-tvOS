@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (C) 2013 Henry van Merode. All rights reserved.
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -48,7 +49,7 @@ public:
 
     /** Get the indication whether pre- and postprocessing must be done.
     */
-    const bool getPrePost(void) const {return _prePost;};
+    bool getPrePost() const {return _prePost;};
 
     /** Set the indication whether pre- and postprocessing must be done.
     */
@@ -56,7 +57,7 @@ public:
 
     /** Get the name of the affector that must be enabled or disabled.
     */
-    const std::string& getAffectorName(void) const {return _affectorName;};
+    const std::string& getAffectorName() const {return _affectorName;};
 
     /** Set the name of the affector.
     */
@@ -73,8 +74,8 @@ public:
     virtual void copyAttributesTo (PUEventHandler* eventHandler) override;
 
 CC_CONSTRUCTOR_ACCESS:
-    PUDoAffectorEventHandler(void);
-    virtual ~PUDoAffectorEventHandler(void) {};
+    PUDoAffectorEventHandler();
+    virtual ~PUDoAffectorEventHandler() {};
 
 protected:
     // Identifies the name of affector

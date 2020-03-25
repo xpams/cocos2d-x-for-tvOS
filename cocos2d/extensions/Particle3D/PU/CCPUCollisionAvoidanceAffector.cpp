@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (C) 2013 Henry van Merode. All rights reserved.
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -31,7 +32,7 @@ NS_CC_BEGIN
 const float PUCollisionAvoidanceAffector::DEFAULT_RADIUS = 100.0f;
 
 //-----------------------------------------------------------------------
-PUCollisionAvoidanceAffector::PUCollisionAvoidanceAffector(void) : 
+PUCollisionAvoidanceAffector::PUCollisionAvoidanceAffector() : 
     PUAffector(),
     _radius(DEFAULT_RADIUS)
 {
@@ -41,7 +42,7 @@ PUCollisionAvoidanceAffector::~PUCollisionAvoidanceAffector()
 
 }
 //-----------------------------------------------------------------------
-float PUCollisionAvoidanceAffector::getRadius(void) const
+float PUCollisionAvoidanceAffector::getRadius() const
 {
     return _radius;
 }
@@ -51,7 +52,7 @@ void PUCollisionAvoidanceAffector::setRadius(float radius)
     _radius = radius;
 }
 //-----------------------------------------------------------------------
-void PUCollisionAvoidanceAffector::updatePUAffector( PUParticle3D *particle, float deltaTime )
+void PUCollisionAvoidanceAffector::updatePUAffector( PUParticle3D* /*particle*/, float /*deltaTime*/ )
 {
     CCASSERT(0, "nonsupport yet");
     //for (auto iter : _particleSystem->getParticles())

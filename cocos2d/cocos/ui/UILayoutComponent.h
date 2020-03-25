@@ -1,5 +1,6 @@
 /****************************************************************************
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -95,7 +96,7 @@ namespace ui {
 
         /**
          * Percent content size is used to adapt node's content size based on parent's content size.
-         * If set to true then node's content size will be changed based on the value setted by @see setPercentContentSize
+         * If set to true then node's content size will be changed based on the value set by @see setPercentContentSize
          *@param isUsed True to enable percent content size, false otherwise.
          */
         void setUsingPercentContentSize(bool isUsed);
@@ -116,7 +117,7 @@ namespace ui {
 
         /**
          * Query the percent content size value.
-         *@return Percet (x,y) in Vec2.
+         *@return Percent (x,y) in Vec2.
          */
         Vec2 getPercentContentSize()const;
 
@@ -146,7 +147,7 @@ namespace ui {
 
         /**
          * Whether position percentX is enabled or not. 
-         *@return True if position percertX is enable, false otherwise.
+         *@return True if position percentX is enable, false otherwise.
          */
         bool isPositionPercentXEnabled()const;
         
@@ -314,7 +315,7 @@ namespace ui {
         void setPercentWidth(float percentWidth);
 
         /**
-         * Query whehter percent height is enabled or not.
+         * Query whether percent height is enabled or not.
          *@return True if percent height is enabled, false otherwise.
          */
         bool isPercentHeightEnabled()const;
@@ -338,7 +339,7 @@ namespace ui {
         void setSizeHeight(float height);
 
         /**
-         * Query percent hieght of owner.         
+         * Query percent height of owner.         
          *@return Percent height in float.
          */
         float getPercentHeight()const;

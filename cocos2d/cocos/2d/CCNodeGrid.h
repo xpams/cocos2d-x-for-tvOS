@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2013-2014 Chukong Technologies Inc.
+ Copyright (c) 2013-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos2d-x.org
 
@@ -21,9 +22,7 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
-
-#ifndef __MISCNODE_CCGRID_NODE_H__
-#define __MISCNODE_CCGRID_NODE_H__
+#pragma once
 
 #include "2d/CCNode.h"
 #include "renderer/CCGroupCommand.h"
@@ -79,12 +78,12 @@ public:
      * @brief Set the effect grid rect.
      * @param gridRect The effect grid rect.
      */
-    inline void setGridRect(const Rect& gridRect){_gridRect = gridRect;}
+    void setGridRect(const Rect& gridRect) { _gridRect = gridRect; }
     /**
      * @brief Get the effect grid rect.
      * @return Return the effect grid rect.
      */
-    inline const Rect& getGridRect() const { return _gridRect;}
+    const Rect& getGridRect() const { return _gridRect; }
 
     // overrides
     virtual void visit(Renderer *renderer, const Mat4 &parentTransform, uint32_t parentFlags) override;
@@ -97,18 +96,16 @@ protected:
     void onGridBeginDraw();
     void onGridEndDraw();
 
-    Node* _gridTarget;
-    GridBase* _nodeGrid;
+    Node* _gridTarget = nullptr;
+    GridBase* _nodeGrid = nullptr;
     GroupCommand _groupCommand;
     CustomCommand _gridBeginCommand;
     CustomCommand _gridEndCommand;
     
-    Rect _gridRect;
+    Rect _gridRect = Rect::ZERO;
 
 private:
     CC_DISALLOW_COPY_AND_ASSIGN(NodeGrid);
 };
 /** @} */
 NS_CC_END
-
-#endif

@@ -1,5 +1,6 @@
 /****************************************************************************
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -22,10 +23,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
 
-#include "TriggerMng.h"
-#include "json/filestream.h"
+#include "editor-support/cocostudio/TriggerMng.h"
 #include "json/prettywriter.h"
 #include "json/stringbuffer.h"
+#include "base/CCDirector.h"
+#include "base/CCEventDispatcher.h"
+#include "base/ccUtils.h"
+#include "base/CCEventCustom.h"
 
 using namespace cocos2d;
 
@@ -33,14 +37,14 @@ namespace cocostudio {
     
 TriggerMng* TriggerMng::_sharedTriggerMng = nullptr;
 
-TriggerMng::TriggerMng(void)
+TriggerMng::TriggerMng()
 : _movementDispatches(new std::unordered_map<Armature*, ArmatureMovementDispatcher*>)
 {
     _eventDispatcher = Director::getInstance()->getEventDispatcher();
     _eventDispatcher->retain();
 }
 
-TriggerMng::~TriggerMng(void)
+TriggerMng::~TriggerMng()
 {
     removeAll();
 	_triggerObjs.clear();
@@ -153,7 +157,7 @@ TriggerObj* TriggerMng::getTriggerObj(unsigned int id) const
     return iter->second;
 }
 
-void TriggerMng::removeAll(void)
+void TriggerMng::removeAll()
 {
     auto etIter = _triggerObjs.begin();
     for (;etIter != _triggerObjs.end(); ++etIter)
@@ -185,7 +189,7 @@ bool TriggerMng::removeTriggerObj(unsigned int id)
 	return true;
 }
 
-bool TriggerMng::isEmpty(void) const
+bool TriggerMng::isEmpty() const
 {
     return _triggerObjs.empty();
 }
@@ -414,7 +418,7 @@ void TriggerMng::addArmatureMovementCallBack(Armature *pAr, Ref *pTarget, SEL_Mo
 		amd = new (std::nothrow) ArmatureMovementDispatcher();
         pAr->getAnimation()->setMovementEventCallFunc(CC_CALLBACK_0(ArmatureMovementDispatcher::animationEvent, amd, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         amd->addAnimationEventCallBack(pTarget, mecf);
-		_movementDispatches->insert(std::make_pair(pAr, amd));
+		_movementDispatches->emplace(pAr, amd);
 
 	}
 	else
@@ -488,13 +492,13 @@ void TriggerMng::addEventListenerWithFixedPriority(cocos2d::EventListener* liste
     _eventDispatcher->addEventListenerWithFixedPriority(listener, fixedPriority);
 }
 
-ArmatureMovementDispatcher::ArmatureMovementDispatcher(void)
+ArmatureMovementDispatcher::ArmatureMovementDispatcher()
 : _mapEventAnimation(nullptr)
 {
-	_mapEventAnimation = new std::unordered_map<Ref*, SEL_MovementEventCallFunc> ;
+	_mapEventAnimation = new (std::nothrow) std::unordered_map<Ref*, SEL_MovementEventCallFunc> ;
 }
 
-ArmatureMovementDispatcher::~ArmatureMovementDispatcher(void)
+ArmatureMovementDispatcher::~ArmatureMovementDispatcher()
 {
 	_mapEventAnimation->clear();
 	CC_SAFE_DELETE(_mapEventAnimation);
@@ -510,10 +514,10 @@ ArmatureMovementDispatcher::~ArmatureMovementDispatcher(void)
 
   void ArmatureMovementDispatcher::addAnimationEventCallBack(Ref *pTarget, SEL_MovementEventCallFunc mecf)
   {
-	  _mapEventAnimation->insert(std::make_pair(pTarget, mecf));
+	  _mapEventAnimation->emplace(pTarget, mecf);
   }
 
-  void ArmatureMovementDispatcher::removeAnnimationEventCallBack(Ref *pTarget, SEL_MovementEventCallFunc mecf)
+  void ArmatureMovementDispatcher::removeAnnimationEventCallBack(Ref *pTarget, SEL_MovementEventCallFunc /*mecf*/)
   {
 	  _mapEventAnimation->erase(pTarget);
   }

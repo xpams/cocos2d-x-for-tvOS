@@ -1,7 +1,8 @@
 /*
  * Copyright (c) 2012      Pierre-David Bélanger
  * Copyright (c) 2012      cocos2d-x.org
- * Copyright (c) 2013-2014 Chukong Technologies Inc.
+ * Copyright (c) 2013-2016 Chukong Technologies Inc.
+ * Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  *
  * http://www.cocos2d-x.org
  *
@@ -24,22 +25,22 @@
  * THE SOFTWARE.
  *
  */
-
-#ifndef __MISCNODE_CCCLIPPING_NODE_H__
-#define __MISCNODE_CCCLIPPING_NODE_H__
+#pragma once
 
 #include "2d/CCNode.h"
-#include "platform/CCGL.h"
 #include "renderer/CCGroupCommand.h"
 #include "renderer/CCCustomCommand.h"
-
+#include "renderer/CCCallbackCommand.h"
+#include <unordered_map>
 NS_CC_BEGIN
+
+class StencilStateManager;
 /**
  *  @addtogroup _2d
  *  @{
  */
 /** ClippingNode is a subclass of Node.
- * It draws its content (childs) clipped using a stencil.
+ * It draws its content (children) clipped using a stencil.
  * The stencil is an other Node that will not be drawn.
  * The clipping is done using the alpha part of the stencil (adjusted with an alphaThreshold).
  */
@@ -72,7 +73,7 @@ public:
      */
     void setStencil(Node *stencil);
 
-    /** If stencil has no childre it will not be drawn.
+    /** If stencil has no children it will not be drawn.
      * If you have custom stencil-based node with stencil drawing mechanics other then children-based,
      * then this method should return true every time you wish stencil to be visited.
      * By default returns true if has any children attached.
@@ -91,13 +92,13 @@ public:
      *
      * @return The alpha threshold value,Should be a float between 0 and 1.
      */
-    GLfloat getAlphaThreshold() const;
+    float getAlphaThreshold() const;
     
     /** Set the alpha threshold. 
      * 
      * @param alphaThreshold The alpha threshold.
      */
-    void setAlphaThreshold(GLfloat alphaThreshold);
+    void setAlphaThreshold(float alphaThreshold);
     
     /** Inverted. If this is set to true,
      * the stencil is inverted, so the content is drawn where the stencil is NOT drawn.
@@ -153,44 +154,20 @@ CC_CONSTRUCTOR_ACCESS:
     virtual bool init(Node *stencil);
 
 protected:
-    /**draw fullscreen quad to clear stencil bits
-    */
-    void drawFullScreenQuadClearStencil();
+    void setProgramStateRecursively(Node* node, backend::ProgramState* programState);
+    void restoreAllProgramStates();
 
-    Node* _stencil;
-    GLfloat _alphaThreshold;
-    bool    _inverted;
-
-    //renderData and callback
-    void onBeforeVisit();
-    void onAfterDrawStencil();
-    void onAfterVisit();
-
-    GLboolean _currentStencilEnabled;
-    GLuint _currentStencilWriteMask;
-    GLenum _currentStencilFunc;
-    GLint _currentStencilRef;
-    GLuint _currentStencilValueMask;
-    GLenum _currentStencilFail;
-    GLenum _currentStencilPassDepthFail;
-    GLenum _currentStencilPassDepthPass;
-    GLboolean _currentDepthWriteMask;
-
-    GLboolean _currentAlphaTestEnabled;
-    GLenum _currentAlphaTestFunc;
-    GLclampf _currentAlphaTestRef;
-
-    GLint _mask_layer_le;
+    Node* _stencil                              = nullptr;
+    StencilStateManager* _stencilStateManager   = nullptr;
     
-    GroupCommand _groupCommand;
-    CustomCommand _beforeVisitCmd;
-    CustomCommand _afterDrawStencilCmd;
-    CustomCommand _afterVisitCmd;
+    GroupCommand _groupCommandStencil;
+    GroupCommand _groupCommandChildren;
+    CallbackCommand _afterDrawStencilCmd;
+    CallbackCommand _afterVisitCmd;
+    std::unordered_map<Node*, backend::ProgramState*> _originalStencilProgramState;
 
 private:
     CC_DISALLOW_COPY_AND_ASSIGN(ClippingNode);
 };
 /** @} */
 NS_CC_END
-
-#endif // __MISCNODE_CCCLIPPING_NODE_H__

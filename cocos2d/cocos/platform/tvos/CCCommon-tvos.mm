@@ -38,20 +38,10 @@
 
 NS_CC_BEGIN
 
-// tvos no MessageBox, use log instead
 void MessageBox(const char * msg, const char * title)
 {
     NSString * tmpTitle = (title) ? [NSString stringWithUTF8String : title] : nil;
     NSString * tmpMsg = (msg) ? [NSString stringWithUTF8String : msg] : nil;
-    /*
-    UIAlertView * messageBox = [[UIAlertView alloc] initWithTitle: tmpTitle
-                                                          message: tmpMsg
-                                                         delegate: nil
-                                                cancelButtonTitle: @"OK"
-                                                otherButtonTitles: nil];
-    [messageBox autorelease];
-    [messageBox show];
-    */
     
     UIAlertController* alert = [UIAlertController alertControllerWithTitle:tmpTitle
                                                                    message:tmpMsg

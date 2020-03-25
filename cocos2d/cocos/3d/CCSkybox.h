@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -29,6 +30,7 @@
 #include "platform/CCPlatformMacros.h"
 #include "renderer/CCCustomCommand.h"
 #include "2d/CCNode.h"
+#include "renderer/backend/ProgramState.h"
 
 NS_CC_BEGIN
 
@@ -40,7 +42,7 @@ NS_CC_BEGIN
 class TextureCube;
 
 /**
-* Sky box technology usually used to simulate infinity sky, mountains and other phenomena.
+* Sky box technology is usually used to simulate infinity sky, mountains and other phenomena.
 */
 class CC_DLL Skybox : public Node
 {
@@ -49,7 +51,7 @@ public:
     
     /** create skybox from 6 textures.
      @param positive_x texture for the right side of the texture cube face.
-     @param negative_x texture for the up side of the texture cube face.
+     @param negative_x texture for the left side of the texture cube face.
      @param positive_y texture for the top side of the texture cube face
      @param negative_y texture for the bottom side of the texture cube face
      @param positive_z texture for the forward side of the texture cube face.
@@ -98,18 +100,23 @@ protected:
     * init internal buffers for Skybox.
     */
     void initBuffers();
-
-    void onDraw(const Mat4& transform, uint32_t flags);
-
-    GLuint      _vao;
-    GLuint      _vertexBuffer;
-    GLuint      _indexBuffer;
-
+    
+    backend::ProgramState *_programState = nullptr;
     CustomCommand _customCommand;
-
     TextureCube*  _texture;
 private:
     CC_DISALLOW_COPY_AND_ASSIGN(Skybox);
+
+    backend::UniformLocation _uniformColorLoc;
+    backend::UniformLocation _uniformCameraRotLoc;
+    backend::UniformLocation _uniformEnvLoc;
+
+    void onBeforeDraw();
+    void onAfterDraw();
+
+    bool _rendererDepthTestEnabled;
+    backend::CompareFunction _rendererDepthCmpFunc;
+    backend::CullMode _rendererCullMode;
 };
 
 // end of 3d group

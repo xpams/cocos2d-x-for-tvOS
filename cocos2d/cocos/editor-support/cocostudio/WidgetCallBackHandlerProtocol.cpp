@@ -1,5 +1,6 @@
 /****************************************************************************
  Copyright (c) 2014 cocos2d-x.org
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -22,4 +23,23 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-#include "WidgetCallBackHandlerProtocol.h"
+#include "editor-support/cocostudio/WidgetCallBackHandlerProtocol.h"
+
+USING_NS_CC;
+using namespace cocos2d::ui;
+using namespace cocostudio;
+
+Widget::ccWidgetTouchCallback WidgetCallBackHandlerProtocol::onLocateTouchCallback(const std::string& /*callBackName*/)
+{
+    return nullptr;
+}
+
+Widget::ccWidgetClickCallback WidgetCallBackHandlerProtocol::onLocateClickCallback(const std::string& /*callBackName*/)
+{
+    return nullptr;
+}
+
+Widget::ccWidgetEventCallback WidgetCallBackHandlerProtocol::onLocateEventCallback(const std::string& /*callBackName*/)
+{
+    return nullptr;
+}

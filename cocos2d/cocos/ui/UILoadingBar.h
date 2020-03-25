@@ -1,5 +1,6 @@
 /****************************************************************************
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -33,6 +34,8 @@ NS_CC_BEGIN
  * @addtogroup ui
  * @{
  */
+
+struct CC_DLL ResourceData;
 
 namespace ui {
     class Scale9Sprite;
@@ -171,6 +174,9 @@ public:
     virtual Size getVirtualRendererSize() const override;
     virtual Node* getVirtualRenderer() override;
     virtual std::string getDescription() const override;
+
+    ResourceData getRenderFile(); 
+
 protected:
     virtual void initRenderer() override;
     virtual void onSizeChanged() override;
@@ -180,6 +186,7 @@ protected:
     void barRendererScaleChangedWithSize();
 
     void setupTexture();
+    void handleSpriteFlipX();
     void loadTexture(SpriteFrame* spriteframe);
     
     virtual void adaptRenderers() override;
@@ -193,10 +200,12 @@ protected:
     Scale9Sprite* _barRenderer;
     TextureResType _renderBarTexType;
     Size _barRendererTextureSize;
+    Rect _originalRect;
     bool _scale9Enabled;
     bool _prevIgnoreSize;
     Rect _capInsets;
     bool _barRendererAdaptDirty;
+    std::string _textureFile;
 };
 
 }

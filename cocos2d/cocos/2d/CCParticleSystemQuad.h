@@ -3,7 +3,8 @@ Copyright (c) 2008-2010 Ricardo Quesada
 Copyright (c) 2009      Leonardo Kasperavičius
 Copyright (c) 2010-2012 cocos2d-x.org
 Copyright (c) 2011      Zynga Inc.
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
 http://www.cocos2d-x.org
 
@@ -25,8 +26,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
-#ifndef __CC_PARTICLE_SYSTEM_QUAD_H__
-#define __CC_PARTICLE_SYSTEM_QUAD_H__
+#pragma once
 
 #include "2d/CCParticleSystem.h"
 #include "renderer/CCQuadCommand.h"
@@ -118,13 +118,8 @@ public:
     /**
      * @js NA
      * @lua NA
-     */
-    virtual void updateQuadWithParticle(tParticle* particle, const Vec2& newPosition) override;
-    /**
-     * @js NA
-     * @lua NA
-     */
-    virtual void postStep() override;
+     */    
+    virtual void updateParticleQuads() override;
     /**
      * @js NA
      * @lua NA
@@ -172,17 +167,17 @@ protected:
     /** Updates texture coords */
     void updateTexCoords();
 
-    void setupVBOandVAO();
-    void setupVBO();
     bool allocMemory();
 
-    V3F_C4B_T2F_Quad    *_quads;        // quads to be rendered
-    GLushort            *_indices;      // indices
-    GLuint              _VAOname;
-    GLuint              _buffersVBO[2]; //0: vertex  1: indices
+    V3F_C4B_T2F_Quad    *_quads = nullptr;        // quads to be rendered
+    unsigned short      *_indices = nullptr;      // indices
 
     QuadCommand _quadCommand;           // quad command
-
+    
+    backend::UniformLocation _mvpMatrixLocaiton;
+    backend::UniformLocation _textureLocation;
+    backend::ProgramState* _programState = nullptr;
+    
 private:
     CC_DISALLOW_COPY_AND_ASSIGN(ParticleSystemQuad);
 };
@@ -191,6 +186,3 @@ private:
 /// @}
 
 NS_CC_END
-
-#endif //__CC_PARTICLE_SYSTEM_QUAD_H__
-

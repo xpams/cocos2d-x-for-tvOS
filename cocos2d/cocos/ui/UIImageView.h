@@ -1,5 +1,6 @@
 /****************************************************************************
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -34,12 +35,14 @@ THE SOFTWARE.
  */
 NS_CC_BEGIN
 
+struct CC_DLL ResourceData;
+
 namespace ui {
     class Scale9Sprite;
 /**
  * @brief A widget to display images.
  */
-class CC_GUI_DLL ImageView : public Widget
+class CC_GUI_DLL ImageView : public Widget , public cocos2d::BlendProtocol
 {
     
     DECLARE_CLASS_GUI_INFO
@@ -115,13 +118,33 @@ public:
      * @see `setCapInsets(const Rect&)`
      */
     const Rect& getCapInsets()const;
+    
+    /**
+     * Sets the source blending function.
+     *
+     * @param blendFunc A structure with source and destination factor to specify pixel arithmetic. e.g. {BlendFactor::ONE, BlendFactor::ONE}, {BlendFactor::SRC_ALPHA, BlendFactor::ONE_MINUS_SRC_ALPHA}.
+     * @js NA
+     * @lua NA
+     */
+    virtual void setBlendFunc(const BlendFunc &blendFunc) override;
+    
+    /**
+     * Returns the blending function that is currently being used.
+     *
+     * @return A BlendFunc structure with source and destination factor which specified pixel arithmetic.
+     * @js NA
+     * @lua NA
+     */
+    virtual const BlendFunc &getBlendFunc() const override;
 
     //override methods.
     virtual void ignoreContentAdaptWithSize(bool ignore) override;
     virtual std::string getDescription() const override;
     virtual Size getVirtualRendererSize() const override;
     virtual Node* getVirtualRenderer() override;
-    
+
+    ResourceData getRenderFile();
+
 CC_CONSTRUCTOR_ACCESS:
     //initializes state of widget.
     virtual bool init() override;
@@ -146,6 +169,7 @@ protected:
     TextureResType _imageTexType;
     Size _imageTextureSize;
     bool _imageRendererAdaptDirty;
+    std::string _textureFile;
 };
 
 }

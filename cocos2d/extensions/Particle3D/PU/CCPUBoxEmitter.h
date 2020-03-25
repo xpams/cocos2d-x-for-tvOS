@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (C) 2013 Henry van Merode. All rights reserved.
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -43,25 +44,25 @@ public:
 
     /** 
     */
-    const float getHeight(void) const;
+    float getHeight() const;
     void setHeight(const float height);
 
     /** 
     */
-    const float getWidth(void) const;
+    float getWidth() const;
     void setWidth(const float width);
 
     /** 
     */
-    const float getDepth(void) const;
+    float getDepth() const;
     void setDepth(const float depth);
 
     virtual CCPUBoxEmitter* clone() override;
     virtual void copyAttributesTo (PUEmitter* emitter) override;
 
 CC_CONSTRUCTOR_ACCESS:
-    CCPUBoxEmitter(void);
-    virtual ~CCPUBoxEmitter(void) {};
+    CCPUBoxEmitter();
+    virtual ~CCPUBoxEmitter() {};
 
 protected:
 

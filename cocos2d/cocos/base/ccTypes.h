@@ -2,7 +2,8 @@
 Copyright (c) 2008-2010 Ricardo Quesada
 Copyright (c) 2010-2012 cocos2d-x.org
 Copyright (c) 2011      Zynga Inc.
-Copyright (c) 2013-2015 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -21,12 +22,10 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR T*HE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
-
-#ifndef __BASE_CCTYPES_H__
-#define __BASE_CCTYPES_H__
+#pragma once
 
 #include <string>
 
@@ -34,6 +33,8 @@ THE SOFTWARE.
 #include "math/CCMath.h"
 #include "base/CCRef.h"
 #include "platform/CCGL.h"
+#include "base/CCEnumClass.h"
+#include "renderer/backend/Types.h"
 
 /**
  * @addtogroup base
@@ -52,7 +53,7 @@ struct Color4F;
 struct CC_DLL Color3B
 {
     Color3B();
-    Color3B(GLubyte _r, GLubyte _g, GLubyte _b);
+    Color3B(uint8_t _r, uint8_t _g, uint8_t _b);
     explicit Color3B(const Color4B& color);
     explicit Color3B(const Color4F& color);
 
@@ -63,14 +64,14 @@ struct CC_DLL Color3B
     bool operator!=(const Color4B& right) const;
     bool operator!=(const Color4F& right) const;
 
-    bool equals(const Color3B& other)
+    bool equals(const Color3B& other) const
     {
         return (*this == other);
     }
 
-    GLubyte r;
-    GLubyte g;
-    GLubyte b;
+    uint8_t r = 0;
+    uint8_t g = 0;
+    uint8_t b = 0;
 
     static const Color3B WHITE;
     static const Color3B YELLOW;
@@ -90,9 +91,17 @@ struct CC_DLL Color3B
 struct CC_DLL Color4B
 {
     Color4B();
-    Color4B(GLubyte _r, GLubyte _g, GLubyte _b, GLubyte _a);
-    explicit Color4B(const Color3B& color);
+    Color4B(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t _a);
+    explicit Color4B(const Color3B& color, uint8_t _a = 255);
     explicit Color4B(const Color4F& color);
+    
+    inline void set(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t _a)
+    {
+        r = _r;
+        g = _g;
+        b = _b;
+        a = _a;
+    }
 
     bool operator==(const Color4B& right) const;
     bool operator==(const Color3B& right) const;
@@ -101,10 +110,10 @@ struct CC_DLL Color4B
     bool operator!=(const Color3B& right) const;
     bool operator!=(const Color4F& right) const;
 
-    GLubyte r;
-    GLubyte g;
-    GLubyte b;
-    GLubyte a;
+    uint8_t r = 0;
+    uint8_t g = 0;
+    uint8_t b = 0;
+    uint8_t a = 0;
 
     static const Color4B WHITE;
     static const Color4B YELLOW;
@@ -126,7 +135,7 @@ struct CC_DLL Color4F
 {
     Color4F();
     Color4F(float _r, float _g, float _b, float _a);
-    explicit Color4F(const Color3B& color);
+    explicit Color4F(const Color3B& color, float _a = 1.0f);
     explicit Color4F(const Color4B& color);
 
     bool operator==(const Color4F& right) const;
@@ -136,15 +145,15 @@ struct CC_DLL Color4F
     bool operator!=(const Color3B& right) const;
     bool operator!=(const Color4B& right) const;
 
-    bool equals(const Color4F &other)
+    bool equals(const Color4F &other) const
     {
         return (*this == other);
     }
 
-    GLfloat r;
-    GLfloat g;
-    GLfloat b;
-    GLfloat a;
+    float r = 0.f;
+    float g = 0.f;
+    float b = 0.f;
+    float a = 0.f;
 
     static const Color4F WHITE;
     static const Color4F YELLOW;
@@ -156,6 +165,23 @@ struct CC_DLL Color4F
     static const Color4F ORANGE;
     static const Color4F GRAY;
 };
+
+Color4F& operator+=(Color4F& lhs, const Color4F& rhs);
+Color4F operator+(Color4F lhs, const Color4F& rhs);
+
+Color4F& operator-=(Color4F& lhs, const Color4F& rhs);
+Color4F operator-(Color4F lhs, const Color4F& rhs);
+
+Color4F& operator*=(Color4F& lhs, const Color4F& rhs);
+Color4F operator*(Color4F lhs, const Color4F& rhs);
+Color4F& operator*=(Color4F& lhs, float rhs);
+Color4F operator*(Color4F lhs, float rhs);
+
+Color4F& operator/=(Color4F& lhs, const Color4F& rhs);
+Color4F operator/(Color4F lhs, const Color4F& rhs);
+Color4F& operator/=(Color4F& lhs, float rhs);
+Color4F operator/(Color4F lhs, float rhs);
+
 
 /** A vertex composed of 2 floats: x, y
  @since v3.0
@@ -196,10 +222,10 @@ struct CC_DLL Color4F
 struct CC_DLL Tex2F {
     Tex2F(float _u, float _v): u(_u), v(_v) {}
 
-    Tex2F(): u(0.f), v(0.f) {}
+    Tex2F() {}
 
-    GLfloat u;
-    GLfloat v;
+    float u = 0.f;
+    float v = 0.f;
 };
 
 /** @struct PointSprite
@@ -207,9 +233,9 @@ struct CC_DLL Tex2F {
  */
 struct CC_DLL PointSprite
 {
-    Vec2   pos;        // 8 bytes
+    Vec2       pos;        // 8 bytes
     Color4B    color;      // 4 bytes
-    GLfloat    size;       // 4 bytes
+    float      size = 0.f;       // 4 bytes
 };
 
 /** @struct Quad2
@@ -256,7 +282,7 @@ struct V2F_C4B_PF
     /// colors (4B)
     Color4B        colors;
     /// pointsize
-    float      pointSize;
+    float      pointSize = 0.f;
 };
 
 /** @struct V2F_C4F_T2F
@@ -298,14 +324,25 @@ struct CC_DLL V3F_T2F
     Tex2F          texCoords;
 };
 
+/** @struct V3F_C4F
+* A Vec3 with a vertex point, a color.
+*/
+struct CC_DLL V3F_C4F 
+{
+    /// vertices (3F)
+    Vec3 vertices;
+    /// vertices (4F)
+    Color4F colors;
+};
+
 /** @struct V2F_C4B_T2F_Triangle
  * A Triangle of V2F_C4B_T2F.
  */
 struct CC_DLL V2F_C4B_T2F_Triangle
 {
-	V2F_C4B_T2F a;
-	V2F_C4B_T2F b;
-	V2F_C4B_T2F c;
+    V2F_C4B_T2F a;
+    V2F_C4B_T2F b;
+    V2F_C4B_T2F c;
 };
 
 /** @struct V2F_C4B_T2F_Quad
@@ -368,23 +405,28 @@ struct CC_DLL V3F_T2F_Quad
     V3F_T2F    tr;
 };
 
+
+namespace backend {
+    enum class BlendFactor: uint32_t;
+}
+
 /** @struct BlendFunc
  * Blend Function used for textures.
  */
 struct CC_DLL BlendFunc
 {
     /** source blend function */
-    GLenum src;
+    backend::BlendFactor src;
     /** destination blend function */
-    GLenum dst;
+    backend::BlendFactor dst;
 
-    /** Blending disabled. Uses {GL_ONE, GL_ZERO} */
+    /** Blending disabled. Uses {BlendFactor::ONE, BlendFactor::ZERO} */
     static const BlendFunc DISABLE;
-    /** Blending enabled for textures with Alpha premultiplied. Uses {GL_ONE, GL_ONE_MINUS_SRC_ALPHA} */
+    /** Blending enabled for textures with Alpha premultiplied. Uses {BlendFactor::ONE, BlendFactor::ONE_MINUS_SRC_ALPHA} */
     static const BlendFunc ALPHA_PREMULTIPLIED;
-    /** Blending enabled for textures with Alpha NON premultiplied. Uses {GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA} */
+    /** Blending enabled for textures with Alpha NON premultiplied. Uses {BlendFactor::SRC_ALPHA, BlendFactor::ONE_MINUS_SRC_ALPHA} */
     static const BlendFunc ALPHA_NON_PREMULTIPLIED;
-    /** Enables Additive blending. Uses {GL_SRC_ALPHA, GL_ONE} */
+    /** Enables Additive blending. Uses {BlendFactor::SRC_ALPHA, BlendFactor::ONE} */
     static const BlendFunc ADDITIVE;
 
     bool operator==(const BlendFunc &a) const
@@ -403,7 +445,7 @@ struct CC_DLL BlendFunc
     }
 };
 
-/** @struct TextVAlignment
+/** @enum TextVAlignment
  * Vertical text alignment type.
  *
  * @note If any of these enums are edited and/or reordered, update Texture2D.m.
@@ -415,7 +457,7 @@ enum class CC_DLL TextVAlignment
     BOTTOM
 };
 
-/** @struct TextHAlignment
+/** @enum TextHAlignment
  * Horizontal text alignment type.
  *
  * @note If any of these enums are edited and/or reordered, update Texture2D.m.
@@ -463,8 +505,8 @@ struct CC_DLL T2F_Quad
 struct CC_DLL AnimationFrameData
 {
     T2F_Quad texCoords;
-    float delay;
     Size size;
+    float delay = 0.f;
 };
 
 /**
@@ -476,23 +518,14 @@ struct CC_DLL AnimationFrameData
  */
 struct CC_DLL FontShadow
 {
-public:
-
-    // shadow is not enabled by default
-    FontShadow()
-        : _shadowEnabled(false)
-        , _shadowBlur(0)
-        , _shadowOpacity(0)
-    {}
-
-    /// true if shadow enabled
-    bool   _shadowEnabled;
     /// shadow x and y offset
-	Size   _shadowOffset;
-    /// shadow blurrines
-	float  _shadowBlur;
+    Size   _shadowOffset;
+    /// shadow blurriness
+    float  _shadowBlur = 0.f;
     /// shadow opacity
-	float  _shadowOpacity;
+    float  _shadowOpacity = 0.f;
+    /// true if shadow enabled
+    bool   _shadowEnabled = false;
 };
 
 /** @struct FontStroke
@@ -500,24 +533,15 @@ public:
  */
 struct CC_DLL FontStroke
 {
-public:
-
-    // stroke is disabled by default
-    FontStroke()
-	    : _strokeEnabled(false)
-        , _strokeColor(Color3B::BLACK)
-        , _strokeAlpha(255)
-        , _strokeSize(0)
-    {}
-
-    /// true if stroke enabled
-    bool      _strokeEnabled;
     /// stroke color
-	Color3B   _strokeColor;
-    /// stroke alpha
-    GLubyte   _strokeAlpha;
+    Color3B   _strokeColor = Color3B::BLACK;
     /// stroke size
-    float     _strokeSize;
+    float     _strokeSize = 0.f;
+    /// true if stroke enabled
+    bool      _strokeEnabled = false;
+    /// stroke alpha
+    uint8_t   _strokeAlpha = 255;
+
 
 };
 
@@ -526,73 +550,112 @@ public:
  */
 struct CC_DLL FontDefinition
 {
-public:
-    /**
-     * @js NA
-     * @lua NA
-     */
-    FontDefinition()
-        : _fontSize(0)
-        , _alignment(TextHAlignment::CENTER)
-        , _vertAlignment(TextVAlignment::TOP)
-    	, _dimensions(Size::ZERO)
-        , _fontFillColor(Color3B::WHITE)
-        , _fontAlpha(255)
-    {}
-
     /// font name
     std::string           _fontName;
     /// font size
-    int                   _fontSize;
+    int                   _fontSize = 0;
     /// horizontal alignment
-    TextHAlignment        _alignment;
+    TextHAlignment        _alignment = TextHAlignment::CENTER;
     /// vertical alignment
-    TextVAlignment _vertAlignment;
-    /// renering box
-    Size                  _dimensions;
+    TextVAlignment _vertAlignment = TextVAlignment::TOP;
+    /// rendering box
+    Size                  _dimensions = Size::ZERO;
     /// font color
-    Color3B               _fontFillColor;
+    Color3B               _fontFillColor = Color3B::WHITE;
     /// font alpha
-    GLubyte               _fontAlpha;
+    uint8_t               _fontAlpha = 255;
     /// font shadow
     FontShadow            _shadow;
     /// font stroke
     FontStroke            _stroke;
-
+    /// enable text wrap
+    bool                  _enableWrap = true;
+    /** There are 4 overflows: none, clamp, shrink and resize_height.
+     *  The corresponding integer values are 0, 1, 2, 3 respectively
+     * For more information, please refer to Label::Overflow enum class.
+     */
+    int                  _overflow = 0;
 };
 
 /**
- * @brief Possible LabelEffect used by Label.
+ * @brief Effects used by `Label`
  *
  */
 enum class LabelEffect {
+    // FIXME: Covert them to bitwise. More than one effect should be supported
     NORMAL,
     OUTLINE,
     SHADOW,
     GLOW,
+    ITALICS,
+    BOLD,
+    UNDERLINE,
+    STRIKETHROUGH,
     ALL
 };
 
 /** @struct Acceleration
  * The device accelerometer reports values for each axis in units of g-force.
  */
-class CC_DLL Acceleration
-    : public Ref
+class CC_DLL Acceleration: public Ref
 {
 public:
-    double x;
-    double y;
-    double z;
+    double x = 0;
+    double y = 0;
+    double z = 0;
 
-    double timestamp;
-
-    Acceleration(): x(0), y(0), z(0), timestamp(0) {}
+    double timestamp = 0;
 };
 
 extern const std::string CC_DLL STD_STRING_EMPTY;
 extern const ssize_t CC_DLL CC_INVALID_INDEX;
 
+enum class SetIntervalReason : char
+{
+    BY_GAME = 0,
+    BY_ENGINE,
+    BY_SYSTEM,
+    BY_SCENE_CHANGE,
+    BY_DIRECTOR_PAUSE
+};
+
+struct CC_DLL Viewport
+{
+    int x = 0;
+    int y = 0;
+    unsigned int w = 0;
+    unsigned int h = 0;
+};
+    
+struct CC_DLL ScissorRect
+{
+    float x = 0;
+    float y = 0;
+    float width = 0;
+    float height = 0;
+};
+
+enum class ClearFlag : uint8_t
+{
+    NONE = 0,
+    COLOR = 1,
+    DEPTH = 1 << 1,
+    STENCIL = 1 << 2,
+    ALL = COLOR | DEPTH | STENCIL
+};
+ENABLE_BITMASK_OPERATORS(ClearFlag)
+
+enum class RenderTargetFlag : uint8_t
+{
+    COLOR = 1,
+    DEPTH = 1 << 1,
+    STENCIL = 1 << 2,
+    ALL = COLOR | DEPTH | STENCIL
+};
+ENABLE_BITMASK_OPERATORS(RenderTargetFlag)
+using TextureUsage = backend::TextureUsage;
+using PixelFormat = backend::PixelFormat;
+
 NS_CC_END
 // end group
 /// @}
-#endif //__BASE_CCTYPES_H__

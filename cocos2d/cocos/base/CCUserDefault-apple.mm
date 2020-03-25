@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (c) 2010-2012 cocos2d-x.org
- Copyright (c) 2013-2014 Chukong Technologies Inc.
+ Copyright (c) 2013-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos2d-x.org
 
@@ -24,17 +25,17 @@
  ****************************************************************************/
 
 #include "platform/CCPlatformConfig.h"
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_TVOS)
 
 #import <Foundation/Foundation.h>
 
 #include <string>
 
-#import "CCUserDefault.h"
+#import "base/CCUserDefault.h"
 #import "tinyxml2.h"
 #import "platform/CCPlatformConfig.h"
 #import "platform/CCPlatformMacros.h"
-#import "base64.h"
+#import "base/base64.h"
 #import "platform/CCFileUtils.h"
 
 #define XML_FILE_NAME "UserDefault.xml"
@@ -75,7 +76,7 @@ static tinyxml2::XMLElement* getXMLNodeForKey(const char* pKey, tinyxml2::XMLDoc
 
     do
     {
- 		tinyxml2::XMLDocument* xmlDoc = new tinyxml2::XMLDocument();
+ 		tinyxml2::XMLDocument* xmlDoc = new (std::nothrow) tinyxml2::XMLDocument();
 		*doc = xmlDoc;
 
         std::string xmlBuffer = FileUtils::getInstance()->getStringFromFile(UserDefault::getInstance()->getXMLFilePath());
@@ -490,18 +491,6 @@ UserDefault* UserDefault::getInstance()
 void UserDefault::destroyInstance()
 {
     CC_SAFE_DELETE(_userDefault);
-}
-
-// FIXME:: deprecated
-UserDefault* UserDefault::sharedUserDefault()
-{
-    return UserDefault::getInstance();
-}
-
-// FIXME:: deprecated
-void UserDefault::purgeSharedUserDefault()
-{
-    UserDefault::destroyInstance();
 }
 
 bool UserDefault::isXMLFileExist()

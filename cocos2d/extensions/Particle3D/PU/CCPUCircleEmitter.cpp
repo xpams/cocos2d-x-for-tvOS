@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (C) 2013 Henry van Merode. All rights reserved.
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -38,7 +39,7 @@ const bool PUCircleEmitter::DEFAULT_RANDOM = true;
 const Vec3 PUCircleEmitter::DEFAULT_NORMAL(0, 0, 0);
 
 //-----------------------------------------------------------------------
-PUCircleEmitter::PUCircleEmitter(void) : 
+PUCircleEmitter::PUCircleEmitter() : 
     PUEmitter(),
     _radius(DEFAULT_RADIUS),
     _circleAngle(DEFAULT_ANGLE),
@@ -52,7 +53,7 @@ PUCircleEmitter::PUCircleEmitter(void) :
 {
 }
 //-----------------------------------------------------------------------
-const float PUCircleEmitter::getRadius(void) const
+float PUCircleEmitter::getRadius() const
 {
     return _radius;
 }
@@ -62,7 +63,7 @@ void PUCircleEmitter::setRadius(const float radius)
     _radius = radius;
 }
 //-----------------------------------------------------------------------
-const float PUCircleEmitter::getCircleAngle(void) const
+float PUCircleEmitter::getCircleAngle() const
 {
     return _originalCircleAngle;
 }
@@ -73,7 +74,7 @@ void PUCircleEmitter::setCircleAngle(const float circleAngle)
     _circleAngle = circleAngle;
 }
 //-----------------------------------------------------------------------
-const float PUCircleEmitter::getStep(void) const
+float PUCircleEmitter::getStep() const
 {
     return _step;
 }
@@ -83,7 +84,7 @@ void PUCircleEmitter::setStep(const float step)
     _step = step;
 }
 //-----------------------------------------------------------------------
-const bool PUCircleEmitter::isRandom(void) const
+bool PUCircleEmitter::isRandom() const
 {
     return _random;
 }
@@ -93,12 +94,12 @@ void PUCircleEmitter::setRandom(const bool random)
     _random = random;
 }
 //-----------------------------------------------------------------------
-const Quaternion& PUCircleEmitter::getOrientation(void) const
+const Quaternion& PUCircleEmitter::getOrientation() const
 {
     return _orientation;
 }
 //----------------------------------------------------------------------- 
-const Vec3& PUCircleEmitter::getNormal(void) const
+const Vec3& PUCircleEmitter::getNormal() const
 { 
     return _normal;
 } 
@@ -110,7 +111,7 @@ void PUCircleEmitter::setNormal(const Vec3& normal)
     _normal = normal;
 }
 //-----------------------------------------------------------------------
-void PUCircleEmitter::notifyStart (void)
+void PUCircleEmitter::notifyStart ()
 {
     // Reset the attributes to allow a restart.
     _circleAngle = _originalCircleAngle;

@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -43,6 +44,7 @@ Particle3DQuadRender::Particle3DQuadRender()
 , _glProgramState(nullptr)
 , _indexBuffer(nullptr)
 , _vertexBuffer(nullptr)
+, _texFile("")
 {
 }
 
@@ -60,6 +62,7 @@ Particle3DQuadRender* Particle3DQuadRender::create(const std::string& texFile)
     auto ret = new (std::nothrow)Particle3DQuadRender();
     if (ret && ret->initQuadRender(texFile))
     {
+        ret->_texFile = texFile;
         ret->autorelease();
     }
     else
@@ -187,6 +190,8 @@ bool Particle3DQuadRender::initQuadRender( const std::string& texFile )
             _texture = tex;
             glProgram = GLProgramCache::getInstance()->getGLProgram(GLProgram::SHADER_3D_PARTICLE_TEXTURE);
         }
+        else
+            _texture = nullptr;
     }
     auto glProgramState = GLProgramState::create(glProgram);
     glProgramState->retain();
@@ -211,6 +216,11 @@ bool Particle3DQuadRender::initQuadRender( const std::string& texFile )
     _stateBlock->setCullFace(true);
     _stateBlock->setCullFaceSide(RenderState::CULL_FACE_SIDE_BACK);
     return true;
+}
+
+void Particle3DQuadRender::reset()
+{
+    this->initQuadRender(_texFile);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -284,6 +294,14 @@ void Particle3DModelRender::render(Renderer* renderer, const Mat4 &transform, Pa
     }
 }
 
+void Particle3DModelRender::reset()
+{
+    for (auto iter : _spriteList){
+        iter->release();
+    }
+    _spriteList.clear();
+}
+
 // MARK: Particle3DRender
 
 Particle3DRender::Particle3DRender()
@@ -301,7 +319,7 @@ Particle3DRender::Particle3DRender()
     _stateBlock->setDepthTest(false);
     _stateBlock->setDepthWrite(false);
     _stateBlock->setBlend(true);
-};
+}
 
 Particle3DRender::~Particle3DRender()
 {

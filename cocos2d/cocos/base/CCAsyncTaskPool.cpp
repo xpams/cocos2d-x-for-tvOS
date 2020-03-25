@@ -1,6 +1,7 @@
 /****************************************************************************
 Copyright (c) 2010      cocos2d-x.org
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -38,7 +39,7 @@ AsyncTaskPool* AsyncTaskPool::getInstance()
     return s_asyncTaskPool;
 }
 
-void AsyncTaskPool::destoryInstance()
+void AsyncTaskPool::destroyInstance()
 {
     delete s_asyncTaskPool;
     s_asyncTaskPool = nullptr;

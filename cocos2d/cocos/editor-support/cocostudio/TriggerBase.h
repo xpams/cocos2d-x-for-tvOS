@@ -1,5 +1,6 @@
 ﻿/****************************************************************************
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -25,22 +26,22 @@ THE SOFTWARE.
 #ifndef __TRIGGEREVENT_H__
 #define __TRIGGEREVENT_H__
 
-#include "cocostudio/CocoStudio.h"
+#include "editor-support/cocostudio/CocoStudio.h"
 #include "base/ObjectFactory.h"
-#include "TriggerObj.h"
-#include "TriggerMng.h"
-#include "cocostudio/CocosStudioExport.h"
+#include "editor-support/cocostudio/TriggerObj.h"
+#include "editor-support/cocostudio/TriggerMng.h"
+#include "editor-support/cocostudio/CocosStudioExport.h"
 
 
 #define DECLARE_CLASS_INFO \
     public: \
         static cocos2d::ObjectFactory::TInfo Type; \
-        static cocos2d::Ref* createInstance(void); \
+        static cocos2d::Ref* createInstance(); \
         
 #define IMPLEMENT_CLASS_INFO(className) \
-        cocos2d::Ref* className::createInstance(void) \
+        cocos2d::Ref* className::createInstance() \
         { \
-            auto ret = new className; \
+            auto ret = new (std::nothrow) className; \
             ret->autorelease(); \
             return ret; \
         } \

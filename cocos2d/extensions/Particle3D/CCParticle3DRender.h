@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -73,6 +74,8 @@ public:
 
     void copyAttributesTo (Particle3DRender *render);
 
+    virtual void reset(){}
+
 CC_CONSTRUCTOR_ACCESS:
     Particle3DRender();
     virtual ~Particle3DRender();
@@ -94,6 +97,7 @@ public:
     
     virtual void render(Renderer* renderer, const Mat4 &transform, ParticleSystem3D* particleSystem) override;
 
+    virtual void reset()override;
 CC_CONSTRUCTOR_ACCESS:
     Particle3DQuadRender();
     virtual ~Particle3DQuadRender();
@@ -118,6 +122,7 @@ protected:
 
     std::vector<posuvcolor> _posuvcolors;   //vertex data
     std::vector<unsigned short> _indexData; //index data
+    std::string _texFile;
 };
 
 // particle render for Sprite3D
@@ -128,6 +133,7 @@ public:
 
     virtual void render(Renderer* renderer, const Mat4 &transform, ParticleSystem3D* particleSystem) override;
     
+    virtual void reset()override;
 CC_CONSTRUCTOR_ACCESS:
     Particle3DModelRender();
     virtual ~Particle3DModelRender();

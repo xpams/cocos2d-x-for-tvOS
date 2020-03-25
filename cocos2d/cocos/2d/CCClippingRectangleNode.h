@@ -4,6 +4,7 @@
  *
  * Copyright (c) 2012 Pierre-David Bélanger
  * Copyright (c) 2012 cocos2d-x.org
+ * Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +25,10 @@
  * THE SOFTWARE.
  *
  */
-
-#ifndef __MISCNODE_CCCLIPPING_RECTANGLE_NODE_H__
-#define __MISCNODE_CCCLIPPING_RECTANGLE_NODE_H__
+#pragma once
 
 #include "2d/CCNode.h"
-#include "renderer/CCCustomCommand.h"
-#include "platform/CCGL.h"
+#include "renderer/CCCallbackCommand.h"
 
 NS_CC_BEGIN
 
@@ -42,6 +40,7 @@ NS_CC_BEGIN
 /**
 @brief Clipping Rectangle Node.
 @details A node that clipped with specified rectangle.
+ The region of ClippingRectangleNode doesn't support any transform except scale.
 @js NA
 */
 class CC_DLL ClippingRectangleNode : public Node
@@ -67,7 +66,7 @@ public:
         return _clippingRegion;
     }
     /**
-    @brief Set the clipping rectangle. The rectangle is base on screen coordinate, so ClippingRectangleNode's region doesn't support any transforms, such as setScale, setRotate and so on.
+    @brief Set the clipping rectangle.
     @param clippingRegion Specify the clipping rectangle.
     */
     void setClippingRegion(const Rect& clippingRegion);
@@ -76,7 +75,7 @@ public:
     @brief Get whether the clipping is enabled or not.
     @return Whether the clipping is enabled or not. Default is true.
     */
-    const bool isClippingEnabled() const {
+    bool isClippingEnabled() const {
         return _clippingEnabled;
     }
 
@@ -92,25 +91,21 @@ public:
     virtual void visit(Renderer *renderer, const Mat4 &parentTransform, uint32_t parentFlags) override;
 
 protected:
-    ClippingRectangleNode()
-    : _clippingEnabled(true)
-    {
-    }
+    ClippingRectangleNode() = default;
     
     void onBeforeVisitScissor();
     void onAfterVisitScissor();
     
     Rect _clippingRegion;
-    bool _clippingEnabled;
+    bool _clippingEnabled = true;
+
+    bool _oldScissorTest = false;
     
-    CustomCommand _beforeVisitCmdScissor;
-    CustomCommand _afterVisitCmdScissor;
+    CallbackCommand _beforeVisitCmdScissor;
+    CallbackCommand _afterVisitCmdScissor;
 };
 
 // end of _2d group
 /// @}
 
 NS_CC_END
-
-#endif
-

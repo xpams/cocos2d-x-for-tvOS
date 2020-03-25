@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2013-2014 Chukong Technologies Inc.
+ Copyright (c) 2013-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos2d-x.org
 
@@ -21,21 +22,14 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  ****************************************************************************/
-
-
 #include "renderer/CCRenderCommand.h"
 #include "2d/CCCamera.h"
 #include "2d/CCNode.h"
 
+
 NS_CC_BEGIN
 
 RenderCommand::RenderCommand()
-: _type(RenderCommand::Type::UNKNOWN_COMMAND)
-, _globalOrder(0)
-, _isTransparent(true)
-, _skipBatching(false)
-, _is3D(false)
-, _depth(0)
 {
 }
 
@@ -43,7 +37,7 @@ RenderCommand::~RenderCommand()
 {
 }
 
-void RenderCommand::init(float globalZOrder, const cocos2d::Mat4 &transform, uint32_t flags)
+void RenderCommand::init(float globalZOrder, const cocos2d::Mat4 &transform, unsigned int flags)
 {
     _globalOrder = globalZOrder;
     if (flags & Node::FLAGS_RENDER_AS_3D)
@@ -58,24 +52,6 @@ void RenderCommand::init(float globalZOrder, const cocos2d::Mat4 &transform, uin
         set3D(false);
         _depth = 0;
     }
-}
-
-void printBits(ssize_t const size, void const * const ptr)
-{
-    unsigned char *b = (unsigned char*) ptr;
-    unsigned char byte;
-    ssize_t i, j;
-
-    for (i=size-1;i>=0;i--)
-    {
-        for (j=7;j>=0;j--)
-        {
-            byte = b[i] & (1<<j);
-            byte >>= j;
-            printf("%u", byte);
-        }
-    }
-    puts("");
 }
 
 void RenderCommand::printID()

@@ -29,7 +29,7 @@
 #endif
 
 
-#include <ft2build.h>
+#include "ft2build.h"
 #include FT_CONFIG_CONFIG_H
 #include FT_TYPES_H
 #include FT_ERRORS_H
@@ -389,7 +389,7 @@ FT_BEGIN_HEADER
   /* <Description>                                                         */
   /*    A handle to a FreeType library instance.  Each `library' is        */
   /*    completely independent from the others; it is the `root' of a set  */
-  /*    of objects like fonts, faces, sizes, etc.                          */
+  /*    of objects like font, faces, sizes, etc.                          */
   /*                                                                       */
   /*    It also embeds a memory manager (see @FT_Memory), as well as a     */
   /*    scan-line converter object (see @FT_Raster).                       */
@@ -622,7 +622,7 @@ FT_BEGIN_HEADER
   /*    FT_ENCODING_UNICODE ::                                             */
   /*      Corresponds to the Unicode character set.  This value covers     */
   /*      all versions of the Unicode repertoire, including ASCII and      */
-  /*      Latin-1.  Most fonts include a Unicode charmap, but not all      */
+  /*      Latin-1.  Most font include a Unicode charmap, but not all      */
   /*      of them.                                                         */
   /*                                                                       */
   /*      For example, if you want to access Unicode value U+1F028 (and    */
@@ -664,21 +664,21 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*    FT_ENCODING_ADOBE_STANDARD ::                                      */
   /*      Corresponds to the Adobe Standard encoding, as found in Type~1,  */
-  /*      CFF, and OpenType/CFF fonts.  It is limited to 256 character     */
+  /*      CFF, and OpenType/CFF font.  It is limited to 256 character     */
   /*      codes.                                                           */
   /*                                                                       */
   /*    FT_ENCODING_ADOBE_EXPERT ::                                        */
   /*      Corresponds to the Adobe Expert encoding, as found in Type~1,    */
-  /*      CFF, and OpenType/CFF fonts.  It is limited to 256 character     */
+  /*      CFF, and OpenType/CFF font.  It is limited to 256 character     */
   /*      codes.                                                           */
   /*                                                                       */
   /*    FT_ENCODING_ADOBE_CUSTOM ::                                        */
   /*      Corresponds to a custom encoding, as found in Type~1, CFF, and   */
-  /*      OpenType/CFF fonts.  It is limited to 256 character codes.       */
+  /*      OpenType/CFF font.  It is limited to 256 character codes.       */
   /*                                                                       */
   /*    FT_ENCODING_APPLE_ROMAN ::                                         */
   /*      Corresponds to the 8-bit Apple roman encoding.  Many TrueType    */
-  /*      and OpenType fonts contain a charmap for this encoding, since    */
+  /*      and OpenType font contain a charmap for this encoding, since    */
   /*      older versions of Mac OS are able to use it.                     */
   /*                                                                       */
   /*    FT_ENCODING_OLD_LATIN_2 ::                                         */
@@ -702,7 +702,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Note>                                                                */
   /*    By default, FreeType automatically synthesizes a Unicode charmap   */
-  /*    for PostScript fonts, using their glyph names dictionaries.        */
+  /*    for PostScript font, using their glyph names dictionaries.        */
   /*    However, it also reports the encodings defined explicitly in the   */
   /*    font file, for the cases when they are needed, with the Adobe      */
   /*    values as well.                                                    */
@@ -878,7 +878,7 @@ FT_BEGIN_HEADER
   /*                           `num_fixed_sizes'), it is set to the number */
   /*                           of outline glyphs.                          */
   /*                                                                       */
-  /*                           For CID-keyed fonts, this value gives the   */
+  /*                           For CID-keyed font, this value gives the   */
   /*                           highest CID used in the font.               */
   /*                                                                       */
   /*    family_name         :: The face's family name.  This is an ASCII   */
@@ -886,11 +886,11 @@ FT_BEGIN_HEADER
   /*                           the typeface's family (like `Times New      */
   /*                           Roman', `Bodoni', `Garamond', etc).  This   */
   /*                           is a least common denominator used to list  */
-  /*                           fonts.  Some formats (TrueType & OpenType)  */
+  /*                           font.  Some formats (TrueType & OpenType)  */
   /*                           provide localized and Unicode versions of   */
   /*                           this string.  Applications should use the   */
   /*                           format specific interface to access them.   */
-  /*                           Can be NULL (e.g., in fonts embedded in a   */
+  /*                           Can be NULL (e.g., in font embedded in a   */
   /*                           PDF file).                                  */
   /*                                                                       */
   /*    style_name          :: The face's style name.  This is an ASCII    */
@@ -930,12 +930,12 @@ FT_BEGIN_HEADER
   /*                           formats.                                    */
   /*                                                                       */
   /*                           Note that the bounding box might be off by  */
-  /*                           (at least) one pixel for hinted fonts.  See */
+  /*                           (at least) one pixel for hinted font.  See */
   /*                           @FT_Size_Metrics for further discussion.    */
   /*                                                                       */
   /*    units_per_EM        :: The number of font units per EM square for  */
   /*                           this face.  This is typically 2048 for      */
-  /*                           TrueType fonts, and 1000 for Type~1 fonts.  */
+  /*                           TrueType font, and 1000 for Type~1 font.  */
   /*                           Only relevant for scalable formats.         */
   /*                                                                       */
   /*    ascender            :: The typographic ascender of the face,       */
@@ -969,7 +969,7 @@ FT_BEGIN_HEADER
   /*    max_advance_height  :: The maximum advance height, in font units,  */
   /*                           for all glyphs in this face.  This is only  */
   /*                           relevant for vertical layouts, and is set   */
-  /*                           to `height' for fonts that do not provide   */
+  /*                           to `height' for font that do not provide   */
   /*                           vertical metrics.  Only relevant for        */
   /*                           scalable formats.                           */
   /*                                                                       */
@@ -1015,7 +1015,7 @@ FT_BEGIN_HEADER
 
     /*# The following member variables (down to `underline_thickness') */
     /*# are only relevant to scalable outlines; cf. @FT_Bitmap_Size    */
-    /*# for bitmap fonts.                                              */
+    /*# for bitmap font.                                              */
     FT_BBox           bbox;
 
     FT_UShort         units_per_EM;
@@ -1092,7 +1092,7 @@ FT_BEGIN_HEADER
   /*      the kerning distance can be retrieved through the function       */
   /*      @FT_Get_Kerning.  Otherwise the function always return the       */
   /*      vector (0,0).  Note that FreeType doesn't handle kerning data    */
-  /*      from the `GPOS' table (as present in some OpenType fonts).       */
+  /*      from the `GPOS' table (as present in some OpenType font).       */
   /*                                                                       */
   /*    FT_FACE_FLAG_FAST_GLYPHS ::                                        */
   /*      THIS FLAG IS DEPRECATED.  DO NOT USE OR TEST IT.                 */
@@ -1105,7 +1105,7 @@ FT_BEGIN_HEADER
   /*    FT_FACE_FLAG_GLYPH_NAMES ::                                        */
   /*      Indicates that the font contains glyph names that can be         */
   /*      retrieved through @FT_Get_Glyph_Name.  Note that some TrueType   */
-  /*      fonts contain broken glyph name tables.  Use the function        */
+  /*      font contain broken glyph name tables.  Use the function        */
   /*      @FT_Has_PS_Glyph_Names when needed.                              */
   /*                                                                       */
   /*    FT_FACE_FLAG_EXTERNAL_STREAM ::                                    */
@@ -1115,20 +1115,20 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*    FT_FACE_FLAG_HINTER ::                                             */
   /*      Set if the font driver has a hinting machine of its own.  For    */
-  /*      example, with TrueType fonts, it makes sense to use data from    */
+  /*      example, with TrueType font, it makes sense to use data from    */
   /*      the SFNT `gasp' table only if the native TrueType hinting engine */
   /*      (with the bytecode interpreter) is available and active.         */
   /*                                                                       */
   /*    FT_FACE_FLAG_CID_KEYED ::                                          */
   /*      Set if the font is CID-keyed.  In that case, the font is not     */
   /*      accessed by glyph indices but by CID values.  For subsetted      */
-  /*      CID-keyed fonts this has the consequence that not all index      */
+  /*      CID-keyed font this has the consequence that not all index      */
   /*      values are a valid argument to FT_Load_Glyph.  Only the CID      */
   /*      values for which corresponding glyphs in the subsetted font      */
   /*      exist make FT_Load_Glyph return successfully; in all other cases */
   /*      you get an `FT_Err_Invalid_Argument' error.                      */
   /*                                                                       */
-  /*      Note that CID-keyed fonts that are in an SFNT wrapper don't      */
+  /*      Note that CID-keyed font that are in an SFNT wrapper don't      */
   /*      have this flag set since the glyphs are accessed in the normal   */
   /*      way (using contiguous indices); the `CID-ness' isn't visible to  */
   /*      the application.                                                 */
@@ -1140,14 +1140,14 @@ FT_BEGIN_HEADER
   /*      TrueType bytecode instructions to move and scale all of its      */
   /*      subglyphs.                                                       */
   /*                                                                       */
-  /*      It is not possible to autohint such fonts using                  */
+  /*      It is not possible to autohint such font using                  */
   /*      @FT_LOAD_FORCE_AUTOHINT; it will also ignore                     */
   /*      @FT_LOAD_NO_HINTING.  You have to set both @FT_LOAD_NO_HINTING   */
   /*      and @FT_LOAD_NO_AUTOHINT to really disable hinting; however, you */
   /*      probably never want this except for demonstration purposes.      */
   /*                                                                       */
-  /*      Currently, there are about a dozen TrueType fonts in the list of */
-  /*      tricky fonts; they are hard-coded in file `ttobjs.c'.            */
+  /*      Currently, there are about a dozen TrueType font in the list of */
+  /*      tricky font; they are hard-coded in file `ttobjs.c'.            */
   /*                                                                       */
   /*    FT_FACE_FLAG_COLOR ::                                              */
   /*      Set if the font has color glyph tables.  To access color glyphs  */
@@ -1386,7 +1386,7 @@ FT_BEGIN_HEADER
   /*    The style information as provided by FreeType is very basic.  More */
   /*    details are beyond the scope and should be done on a higher level  */
   /*    (for example, by analyzing various fields of the `OS/2' table in   */
-  /*    SFNT based fonts).                                                 */
+  /*    SFNT based font).                                                 */
   /*                                                                       */
 #define FT_STYLE_FLAG_ITALIC  ( 1 << 0 )
 #define FT_STYLE_FLAG_BOLD    ( 1 << 1 )
@@ -1450,14 +1450,14 @@ FT_BEGIN_HEADER
   /*    values of the corresponding fields in @FT_FaceRec.                 */
   /*                                                                       */
   /*    Note that due to glyph hinting, these values might not be exact    */
-  /*    for certain fonts.  Thus they must be treated as unreliable        */
+  /*    for certain font.  Thus they must be treated as unreliable        */
   /*    with an error margin of at least one pixel!                        */
   /*                                                                       */
   /*    Indeed, the only way to get the exact metrics is to render _all_   */
   /*    glyphs.  As this would be a definite performance hit, it is up to  */
   /*    client applications to perform such computations.                  */
   /*                                                                       */
-  /*    The FT_Size_Metrics structure is valid for bitmap fonts also.      */
+  /*    The FT_Size_Metrics structure is valid for bitmap font also.      */
   /*                                                                       */
   typedef struct  FT_Size_Metrics_
   {
@@ -2433,7 +2433,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Input>                                                               */
   /*    glyph_index :: The index of the glyph in the font file.  For       */
-  /*                   CID-keyed fonts (either in PS or in CFF format)     */
+  /*                   CID-keyed font (either in PS or in CFF format)     */
   /*                   this argument specifies the CID value.              */
   /*                                                                       */
   /*    load_flags  :: A flag indicating what to load for this glyph.  The */
@@ -2449,7 +2449,7 @@ FT_BEGIN_HEADER
   /*    The loaded glyph may be transformed.  See @FT_Set_Transform for    */
   /*    the details.                                                       */
   /*                                                                       */
-  /*    For subsetted CID-keyed fonts, `FT_Err_Invalid_Argument' is        */
+  /*    For subsetted CID-keyed font, `FT_Err_Invalid_Argument' is        */
   /*    returned for invalid CID values (this is, for CID values that      */
   /*    don't have a corresponding glyph in the font).  See the discussion */
   /*    of the @FT_FACE_FLAG_CID_KEYED flag for more details.              */
@@ -2802,7 +2802,7 @@ FT_BEGIN_HEADER
   /*    FreeType~2.  Each mode corresponds to a specific type of scanline  */
   /*    conversion performed on the outline.                               */
   /*                                                                       */
-  /*    For bitmap fonts and embedded bitmaps the `bitmap->pixel_mode'     */
+  /*    For bitmap font and embedded bitmaps the `bitmap->pixel_mode'     */
   /*    field in the @FT_GlyphSlotRec structure gives the format of the    */
   /*    returned bitmap.                                                   */
   /*                                                                       */
@@ -3066,7 +3066,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Description>                                                         */
   /*    Retrieve the ASCII PostScript name of a given face, if available.  */
-  /*    This only works with PostScript and TrueType fonts.                */
+  /*    This only works with PostScript and TrueType font.                */
   /*                                                                       */
   /* <Input>                                                               */
   /*    face :: A handle to the source face object.                        */
@@ -3104,7 +3104,7 @@ FT_BEGIN_HEADER
   /*    This function returns an error if no charmap in the face           */
   /*    corresponds to the encoding queried here.                          */
   /*                                                                       */
-  /*    Because many fonts contain more than a single cmap for Unicode     */
+  /*    Because many font contain more than a single cmap for Unicode     */
   /*    encoding, this function has some special code to select the one    */
   /*    that covers Unicode best (`best' in the sense that a UCS-4 cmap is */
   /*    preferred to a UCS-2 cmap).  It is thus preferable to              */
@@ -3188,12 +3188,12 @@ FT_BEGIN_HEADER
   /*    doesn't always correspond to the internal indices used within the  */
   /*    file.  This is done to ensure that value~0 always corresponds to   */
   /*    the `missing glyph'.  If the first glyph is not named `.notdef',   */
-  /*    then for Type~1 and Type~42 fonts, `.notdef' will be moved into    */
+  /*    then for Type~1 and Type~42 font, `.notdef' will be moved into    */
   /*    the glyph ID~0 position, and whatever was there will be moved to   */
-  /*    the position `.notdef' had.  For Type~1 fonts, if there is no      */
+  /*    the position `.notdef' had.  For Type~1 font, if there is no      */
   /*    `.notdef' glyph at all, then one will be created at index~0 and    */
   /*    whatever was there will be moved to the last index -- Type~42      */
-  /*    fonts are considered invalid under this condition.                 */
+  /*    font are considered invalid under this condition.                 */
   /*                                                                       */
   FT_EXPORT( FT_UInt )
   FT_Get_Char_Index( FT_Face   face,
@@ -3414,13 +3414,13 @@ FT_BEGIN_HEADER
   /*    FT_FSTYPE_PREVIEW_AND_PRINT_EMBEDDING ::                           */
   /*      If this bit is set, the font may be embedded and temporarily     */
   /*      loaded on the remote system.  Documents containing Preview &     */
-  /*      Print fonts must be opened `read-only'; no edits can be applied  */
+  /*      Print font must be opened `read-only'; no edits can be applied  */
   /*      to the document.                                                 */
   /*                                                                       */
   /*    FT_FSTYPE_EDITABLE_EMBEDDING ::                                    */
   /*      If this bit is set, the font may be embedded but must only be    */
   /*      installed temporarily on other systems.  In contrast to Preview  */
-  /*      & Print fonts, documents containing editable fonts may be opened */
+  /*      & Print font, documents containing editable font may be opened */
   /*      for reading, editing is permitted, and changes may be saved.     */
   /*                                                                       */
   /*    FT_FSTYPE_NO_SUBSETTING ::                                         */
@@ -3462,7 +3462,7 @@ FT_BEGIN_HEADER
   /* <Note>                                                                */
   /*    Use this function rather than directly reading the `fs_type' field */
   /*    in the @PS_FontInfoRec structure, which is only guaranteed to      */
-  /*    return the correct results for Type~1 fonts.                       */
+  /*    return the correct results for Type~1 font.                       */
   /*                                                                       */
   /* <Since>                                                               */
   /*    2.3.8                                                              */
@@ -3985,7 +3985,7 @@ FT_BEGIN_HEADER
   /*    Parse all bytecode instructions of a TrueType font file to check   */
   /*    whether any of the patented opcodes are used.  This is only useful */
   /*    if you want to be able to use the unpatented hinter with           */
-  /*    fonts that do *not* use these opcodes.                             */
+  /*    font that do *not* use these opcodes.                             */
   /*                                                                       */
   /*    Note that this function parses *all* glyph instructions in the     */
   /*    font file, which may be slow.                                      */

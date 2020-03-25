@@ -3,7 +3,8 @@ Copyright (c) 2009-2010 Ricardo Quesada
 Copyright (c) 2009      Matt Oswald
 Copyright (c) 2010-2012 cocos2d-x.org
 Copyright (c) 2011      Zynga Inc.
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -25,16 +26,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
-
-#ifndef __CC_SPRITE_BATCH_NODE_H__
-#define __CC_SPRITE_BATCH_NODE_H__
+#pragma once
 
 #include <vector>
 
 #include "2d/CCNode.h"
 #include "base/CCProtocols.h"
 #include "renderer/CCTextureAtlas.h"
-#include "renderer/CCBatchCommand.h"
+#include "renderer/CCQuadCommand.h"
 
 NS_CC_BEGIN
 
@@ -90,13 +89,13 @@ public:
      *
      * @return The TextureAtlas object.
      */
-    inline TextureAtlas* getTextureAtlas() { return _textureAtlas; }
+    TextureAtlas* getTextureAtlas() { return _textureAtlas; }
 
     /** Sets the TextureAtlas object. 
      *
      * @param textureAtlas The TextureAtlas object.
      */
-    inline void setTextureAtlas(TextureAtlas* textureAtlas)
+    void setTextureAtlas(TextureAtlas* textureAtlas)
     { 
         if (textureAtlas != _textureAtlas)
         {
@@ -111,7 +110,7 @@ public:
      * 
      * @return An array with the descendants (children, gran children, etc.).
      */
-    inline const std::vector<Sprite*>& getDescendants() const { return _descendants; }
+    const std::vector<Sprite*>& getDescendants() const { return _descendants; }
 
     /** Increase the Atlas Capacity. */
     void increaseAtlasCapacity();
@@ -213,7 +212,7 @@ public:
     virtual std::string getDescription() const override;
 
     /** Inserts a quad at a certain index into the texture atlas. The Sprite won't be added into the children array.
-     * This method should be called only when you are dealing with very big AtlasSrite and when most of the Sprite won't be updated.
+     * This method should be called only when you are dealing with very big AtlasSprite and when most of the Sprite won't be updated.
      * For example: a tile map (TMXMap) or a label with lots of characters (LabelBMFont).
      */
     void insertQuadFromSprite(Sprite *sprite, ssize_t index);
@@ -221,7 +220,11 @@ public:
      * It add the sprite to the children and descendants array, but it doesn't update add it to the texture atlas
      */
     SpriteBatchNode * addSpriteWithoutQuad(Sprite *child, int z, int aTag);
-    
+
+    /** reserves capacity for the batch node.
+     If the current capacity is bigger, nothing happens.
+     otherwise, a new capacity is allocated */
+    void reserveCapacity(ssize_t newCapacity);
 CC_CONSTRUCTOR_ACCESS:
     /**
      * @js ctor
@@ -248,7 +251,7 @@ CC_CONSTRUCTOR_ACCESS:
     
 protected:
     /** Updates a quad at a certain index into the texture atlas. The Sprite won't be added into the children array.
-     This method should be called only when you are dealing with very big AtlasSrite and when most of the Sprite won't be updated.
+     This method should be called only when you are dealing with very big AtlasSprite and when most of the Sprite won't be updated.
      For example: a tile map (TMXMap) or a label with lots of characters (LabelBMFont)
      */
     void updateQuadFromSprite(Sprite *sprite, ssize_t index);   
@@ -256,10 +259,16 @@ protected:
     void updateAtlasIndex(Sprite* sprite, ssize_t* curIndex);
     void swap(ssize_t oldIndex, ssize_t newIndex);
     void updateBlendFunc();
+    
+    virtual void updateShaders(const std::string& vertexShader, const std::string& fragmentShader);
 
-    TextureAtlas *_textureAtlas;
+    TextureAtlas *_textureAtlas = nullptr;
     BlendFunc _blendFunc;
-    BatchCommand _batchCommand;     // render command
+    QuadCommand _quadCommand;
+    
+    backend::UniformLocation _mvpMatrixLocaiton;
+    backend::UniformLocation _textureLocation;
+    backend::ProgramState* _programState = nullptr;
 
     // all descendants: children, grand children, etc...
     // There is not need to retain/release these objects, since they are already retained by _children
@@ -271,5 +280,3 @@ protected:
 /** @} */
 
 NS_CC_END
-
-#endif // __CC_SPRITE_BATCH_NODE_H__

@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2013 Chukong Technologies Inc.
+ Copyright (c) 2013-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -24,14 +25,91 @@
 
 #include "physics/CCPhysicsJoint.h"
 #if CC_USE_PHYSICS
-#include "chipmunk.h"
+#include "chipmunk/chipmunk.h"
 
-#include "CCPhysicsBody.h"
-#include "CCPhysicsWorld.h"
-#include "CCPhysicsHelper.h"
+#include "physics/CCPhysicsBody.h"
+#include "physics/CCPhysicsWorld.h"
+#include "physics/CCPhysicsHelper.h"
 #include "2d/CCNode.h"
 
 NS_CC_BEGIN
+
+template<typename T>
+class Optional {
+
+public:
+    Optional() {}
+    Optional(T d) :_isSet(true), _data(d) {}
+    Optional(const Optional &t) : _isSet(t._isSet), _data(t._data) {}
+
+    //bool isNull()       const { return !_isSet; }
+    //bool isDefineded()  const { return _isSet; }
+    //bool isEmpty()      const { return !_isSet; }
+
+    T    get()          const { CCASSERT(_isSet, "data should be set!"); return _data; }
+    void set(T d)             { _isSet = true; _data = d; }
+
+private:
+    bool _isSet = false;
+    T _data;
+};
+
+class WriteCache {
+public:
+    Optional<Vec2>  _grooveA;
+    Optional<Vec2>  _grooveB;
+    Optional<Vec2>  _anchr1;
+    Optional<Vec2>  _anchr2;
+    Optional<float> _min;
+    Optional<float> _max;
+    Optional<float> _distance;
+    Optional<float> _restLength;
+    Optional<float> _restAngle;
+    Optional<float> _stiffness;
+    Optional<float> _damping;
+    Optional<float> _angle;
+    Optional<float> _phase;
+    Optional<float> _ratchet;
+    Optional<float> _ratio;
+    Optional<float> _rate;
+};
+
+#if (defined(__GNUC__) && __GNUC__ >= 4) || defined(__clang__)
+#define LIKELY(x)   (__builtin_expect((x), 1))
+#define UNLIKELY(x) (__builtin_expect((x), 0))
+#else
+#define LIKELY(x)   (x)
+#define UNLIKELY(x) (x)
+#endif
+
+
+#define CC_PJOINT_CACHE_READ(field)         \
+    do {                                    \
+    if(UNLIKELY(_initDirty))                \
+    {                                       \
+        return _writeCache->field.get();    \
+    }                                       \
+    }while(0)
+
+
+
+#define CC_PJOINT_CACHE_WRITE2(field, method, arg, convertedArg)    \
+    do {                                                            \
+    if(UNLIKELY(_initDirty))                                        \
+    {                                                               \
+        _writeCache->field.set(arg);                                \
+        delay([this, arg]() {                                       \
+            method(_cpConstraints.front(), convertedArg);           \
+        });                                                         \
+    }                                                               \
+    else                                                            \
+    {                                                               \
+        method(_cpConstraints.front(), convertedArg);               \
+    }                                                               \
+    }while(0)
+
+#define CC_PJOINT_CACHE_WRITE(field, method, arg)   \
+    CC_PJOINT_CACHE_WRITE2(field, method, arg, arg)
 
 PhysicsJoint::PhysicsJoint()
 : _bodyA(nullptr)
@@ -39,12 +117,12 @@ PhysicsJoint::PhysicsJoint()
 , _world(nullptr)
 , _enable(false)
 , _collisionEnable(true)
-, _destoryMark(false)
+, _destroyMark(false)
 , _tag(0)
 , _maxForce(PHYSICS_INFINITY)
 , _initDirty(true)
 {
-
+    _writeCache = new WriteCache();
 }
 
 PhysicsJoint::~PhysicsJoint()
@@ -57,6 +135,8 @@ PhysicsJoint::~PhysicsJoint()
         cpConstraintFree(joint);
     }
     _cpConstraints.clear();
+
+    delete _writeCache;
 }
 
 bool PhysicsJoint::init(cocos2d::PhysicsBody *a, cocos2d::PhysicsBody *b)
@@ -87,8 +167,8 @@ bool PhysicsJoint::initJoint()
 
         for (auto subjoint : _cpConstraints)
         {
-            subjoint->maxForce = _maxForce;
-            subjoint->errorBias = cpfpow(1.0f - 0.15f, 60.0f);
+            cpConstraintSetMaxForce(subjoint, _maxForce);
+            cpConstraintSetErrorBias(subjoint, cpfpow(1.0f - 0.15f, 60.0f));
             cpSpaceAddConstraint(_world->_cpSpace, subjoint);
         }
         _initDirty = false;
@@ -96,6 +176,15 @@ bool PhysicsJoint::initJoint()
     }
 
     return ret;
+}
+
+void PhysicsJoint::flushDelayTasks()
+{
+    for (const auto& tsk : _delayTasks)
+    {
+        tsk();
+    }
+    _delayTasks.clear();
 }
 
 void PhysicsJoint::setEnable(bool enable)
@@ -136,10 +225,23 @@ void PhysicsJoint::removeFormWorld()
 
 void PhysicsJoint::setMaxForce(float force)
 {
-    _maxForce = force;
-    for (auto joint : _cpConstraints)
+    if(_initDirty)
     {
-        joint->maxForce = PhysicsHelper::float2cpfloat(force);
+        delay([this, force]() {
+            _maxForce = force;
+            for (auto joint : _cpConstraints)
+            {
+                cpConstraintSetMaxForce(joint, force);
+            }
+        });
+    }
+    else
+    {
+        _maxForce = force;
+        for (auto joint : _cpConstraints)
+        {
+            cpConstraintSetMaxForce(joint, force);
+        }
     }
 }
 
@@ -270,8 +372,8 @@ bool PhysicsJointLimit::createConstraints()
         auto joint = cpSlideJointNew(_bodyA->getCPBody(), _bodyB->getCPBody(),
             PhysicsHelper::point2cpv(_anchr1),
             PhysicsHelper::point2cpv(_anchr2),
-            PhysicsHelper::float2cpfloat(_min),
-            PhysicsHelper::float2cpfloat(_max));
+            _min,
+            _max);
 
         CC_BREAK_IF(joint == nullptr);
         _cpConstraints.push_back(joint);
@@ -284,42 +386,46 @@ bool PhysicsJointLimit::createConstraints()
 
 float PhysicsJointLimit::getMin() const
 {
+    CC_PJOINT_CACHE_READ(_min);
     return PhysicsHelper::cpfloat2float(cpSlideJointGetMin(_cpConstraints.front()));
 }
 
 void PhysicsJointLimit::setMin(float min)
 {
-    cpSlideJointSetMin(_cpConstraints.front(), PhysicsHelper::float2cpfloat(min));
+    CC_PJOINT_CACHE_WRITE(_min, cpSlideJointSetMin, min);
 }
 
 float PhysicsJointLimit::getMax() const
 {
+    CC_PJOINT_CACHE_READ(_max);
     return PhysicsHelper::cpfloat2float(cpSlideJointGetMax(_cpConstraints.front()));
 }
 
 void PhysicsJointLimit::setMax(float max)
 {
-    cpSlideJointSetMax(_cpConstraints.front(), PhysicsHelper::float2cpfloat(max));
+    CC_PJOINT_CACHE_WRITE(_max, cpSlideJointSetMax, max);
 }
 
 Vec2 PhysicsJointLimit::getAnchr1() const
 {
-    return PhysicsHelper::cpv2point(cpSlideJointGetAnchr1(_cpConstraints.front()));
+    CC_PJOINT_CACHE_READ(_anchr1);
+    return PhysicsHelper::cpv2point(cpSlideJointGetAnchorA(_cpConstraints.front()));
 }
 
 void PhysicsJointLimit::setAnchr1(const Vec2& anchr)
 {
-    cpSlideJointSetAnchr1(_cpConstraints.front(), PhysicsHelper::point2cpv(anchr));
+    CC_PJOINT_CACHE_WRITE2(_anchr1, cpSlideJointSetAnchorA, anchr, PhysicsHelper::point2cpv(anchr));
 }
 
 Vec2 PhysicsJointLimit::getAnchr2() const
 {
-    return PhysicsHelper::cpv2point(cpSlideJointGetAnchr2(_cpConstraints.front()));
+    CC_PJOINT_CACHE_READ(_anchr2);
+    return PhysicsHelper::cpv2point(cpSlideJointGetAnchorB(_cpConstraints.front()));
 }
 
 void PhysicsJointLimit::setAnchr2(const Vec2& anchr)
 {
-    cpSlideJointSetAnchr1(_cpConstraints.front(), PhysicsHelper::point2cpv(anchr));
+    CC_PJOINT_CACHE_WRITE2(_anchr2, cpSlideJointSetAnchorB, anchr, PhysicsHelper::point2cpv(anchr));
 }
 
 PhysicsJointDistance* PhysicsJointDistance::construct(PhysicsBody* a, PhysicsBody* b, const Vec2& anchr1, const Vec2& anchr2)
@@ -357,12 +463,13 @@ bool PhysicsJointDistance::createConstraints()
 
 float PhysicsJointDistance::getDistance() const
 {
+    CC_PJOINT_CACHE_READ(_distance);
     return PhysicsHelper::cpfloat2float(cpPinJointGetDist(_cpConstraints.front()));
 }
 
 void PhysicsJointDistance::setDistance(float distance)
 {
-    cpPinJointSetDist(_cpConstraints.front(), PhysicsHelper::float2cpfloat(distance));
+    CC_PJOINT_CACHE_WRITE(_distance, cpPinJointSetDist, distance);
 }
 
 PhysicsJointSpring* PhysicsJointSpring::construct(PhysicsBody* a, PhysicsBody* b, const Vec2& anchr1, const Vec2& anchr2, float stiffness, float damping)
@@ -390,9 +497,9 @@ bool PhysicsJointSpring::createConstraints()
             _bodyB->getCPBody(),
             PhysicsHelper::point2cpv(_anchr1),
             PhysicsHelper::point2cpv(_anchr2),
-            PhysicsHelper::float2cpfloat(_bodyB->local2World(_anchr1).getDistance(_bodyA->local2World(_anchr2))),
-            PhysicsHelper::float2cpfloat(_stiffness),
-            PhysicsHelper::float2cpfloat(_damping));
+            _bodyB->local2World(_anchr1).getDistance(_bodyA->local2World(_anchr2)),
+            _stiffness,
+            _damping);
 
         CC_BREAK_IF(joint == nullptr);
         _cpConstraints.push_back(joint);
@@ -405,52 +512,57 @@ bool PhysicsJointSpring::createConstraints()
 
 Vec2 PhysicsJointSpring::getAnchr1() const
 {
-    return PhysicsHelper::cpv2point(cpDampedSpringGetAnchr1(_cpConstraints.front()));
+    CC_PJOINT_CACHE_READ(_anchr1);
+    return PhysicsHelper::cpv2point(cpDampedSpringGetAnchorA(_cpConstraints.front()));
 }
 
 void PhysicsJointSpring::setAnchr1(const Vec2& anchr)
 {
-    cpDampedSpringSetAnchr1(_cpConstraints.front(), PhysicsHelper::point2cpv(anchr));
+    CC_PJOINT_CACHE_WRITE2(_anchr1, cpDampedSpringSetAnchorA, anchr, PhysicsHelper::point2cpv(anchr));
 }
 
 Vec2 PhysicsJointSpring::getAnchr2() const
 {
-    return PhysicsHelper::cpv2point(cpDampedSpringGetAnchr2(_cpConstraints.front()));
+    CC_PJOINT_CACHE_READ(_anchr2);
+    return PhysicsHelper::cpv2point(cpDampedSpringGetAnchorB(_cpConstraints.front()));
 }
 
 void PhysicsJointSpring::setAnchr2(const Vec2& anchr)
 {
-    cpDampedSpringSetAnchr1(_cpConstraints.front(), PhysicsHelper::point2cpv(anchr));
+    CC_PJOINT_CACHE_WRITE2(_anchr2, cpDampedSpringSetAnchorB, anchr, PhysicsHelper::point2cpv(anchr));
 }
 
 float PhysicsJointSpring::getRestLength() const
 {
+    CC_PJOINT_CACHE_READ(_restLength);
     return PhysicsHelper::cpfloat2float(cpDampedSpringGetRestLength(_cpConstraints.front()));
 }
 
 void PhysicsJointSpring::setRestLength(float restLength)
 {
-    cpDampedSpringSetRestLength(_cpConstraints.front(), PhysicsHelper::float2cpfloat(restLength));
+    CC_PJOINT_CACHE_WRITE(_restLength, cpDampedSpringSetRestLength, restLength);
 }
 
 float PhysicsJointSpring::getStiffness() const
 {
+    CC_PJOINT_CACHE_READ(_stiffness);
     return PhysicsHelper::cpfloat2float(cpDampedSpringGetStiffness(_cpConstraints.front()));
 }
 
 void PhysicsJointSpring::setStiffness(float stiffness)
 {
-    cpDampedSpringSetStiffness(_cpConstraints.front(), PhysicsHelper::float2cpfloat(stiffness));
+    CC_PJOINT_CACHE_WRITE(_stiffness, cpDampedSpringSetStiffness, stiffness);
 }
 
 float PhysicsJointSpring::getDamping() const
 {
+    CC_PJOINT_CACHE_READ(_damping);
     return PhysicsHelper::cpfloat2float(cpDampedSpringGetDamping(_cpConstraints.front()));
 }
 
 void PhysicsJointSpring::setDamping(float damping)
 {
-    cpDampedSpringSetDamping(_cpConstraints.front(), PhysicsHelper::float2cpfloat(damping));
+    CC_PJOINT_CACHE_WRITE(_damping, cpDampedSpringSetDamping, damping);
 }
 
 PhysicsJointGroove* PhysicsJointGroove::construct(PhysicsBody* a, PhysicsBody* b, const Vec2& grooveA, const Vec2& grooveB, const Vec2& anchr2)
@@ -490,32 +602,35 @@ bool PhysicsJointGroove::createConstraints()
 
 Vec2 PhysicsJointGroove::getGrooveA() const
 {
+    CC_PJOINT_CACHE_READ(_grooveA);
     return PhysicsHelper::cpv2point(cpGrooveJointGetGrooveA(_cpConstraints.front()));
 }
 
 void PhysicsJointGroove::setGrooveA(const Vec2& grooveA)
 {
-    cpGrooveJointSetGrooveA(_cpConstraints.front(), PhysicsHelper::point2cpv(grooveA));
+    CC_PJOINT_CACHE_WRITE2(_grooveA, cpGrooveJointSetGrooveA, grooveA, PhysicsHelper::point2cpv(grooveA));
 }
 
 Vec2 PhysicsJointGroove::getGrooveB() const
 {
+    CC_PJOINT_CACHE_READ(_grooveB);
     return PhysicsHelper::cpv2point(cpGrooveJointGetGrooveB(_cpConstraints.front()));
 }
 
 void PhysicsJointGroove::setGrooveB(const Vec2& grooveB)
 {
-    cpGrooveJointSetGrooveB(_cpConstraints.front(), PhysicsHelper::point2cpv(grooveB));
+    CC_PJOINT_CACHE_WRITE2(_grooveB, cpGrooveJointSetGrooveB, grooveB, PhysicsHelper::point2cpv(grooveB));
 }
 
 Vec2 PhysicsJointGroove::getAnchr2() const
 {
-    return PhysicsHelper::cpv2point(cpGrooveJointGetAnchr2(_cpConstraints.front()));
+    CC_PJOINT_CACHE_READ(_anchr2);
+    return PhysicsHelper::cpv2point(cpGrooveJointGetAnchorB(_cpConstraints.front()));
 }
 
 void PhysicsJointGroove::setAnchr2(const Vec2& anchr2)
 {
-    cpGrooveJointSetAnchr2(_cpConstraints.front(), PhysicsHelper::point2cpv(anchr2));
+    CC_PJOINT_CACHE_WRITE2(_anchr2, cpGrooveJointSetAnchorB, anchr2, PhysicsHelper::point2cpv(anchr2));
 }
 
 PhysicsJointRotarySpring* PhysicsJointRotarySpring::construct(PhysicsBody* a, PhysicsBody* b, float stiffness, float damping)
@@ -539,9 +654,9 @@ bool PhysicsJointRotarySpring::createConstraints()
     do {
         auto joint = cpDampedRotarySpringNew(_bodyA->getCPBody(),
             _bodyB->getCPBody(),
-            PhysicsHelper::float2cpfloat(_bodyB->getRotation() - _bodyA->getRotation()),
-            PhysicsHelper::float2cpfloat(_stiffness),
-            PhysicsHelper::float2cpfloat(_damping));
+            _bodyB->getRotation() - _bodyA->getRotation(),
+            _stiffness,
+            _damping);
 
         CC_BREAK_IF(joint == nullptr);
         _cpConstraints.push_back(joint);
@@ -554,32 +669,35 @@ bool PhysicsJointRotarySpring::createConstraints()
 
 float PhysicsJointRotarySpring::getRestAngle() const
 {
+    CC_PJOINT_CACHE_READ(_restAngle);
     return PhysicsHelper::cpfloat2float(cpDampedRotarySpringGetRestAngle(_cpConstraints.front()));
 }
 
 void PhysicsJointRotarySpring::setRestAngle(float restAngle)
 {
-    cpDampedRotarySpringSetRestAngle(_cpConstraints.front(), PhysicsHelper::float2cpfloat(restAngle));
+    CC_PJOINT_CACHE_WRITE(_restAngle, cpDampedRotarySpringSetRestAngle, restAngle);
 }
 
 float PhysicsJointRotarySpring::getStiffness() const
 {
+    CC_PJOINT_CACHE_READ(_stiffness);
     return PhysicsHelper::cpfloat2float(cpDampedRotarySpringGetStiffness(_cpConstraints.front()));
 }
 
 void PhysicsJointRotarySpring::setStiffness(float stiffness)
 {
-    cpDampedRotarySpringSetStiffness(_cpConstraints.front(), PhysicsHelper::float2cpfloat(stiffness));
+    CC_PJOINT_CACHE_WRITE(_stiffness, cpDampedRotarySpringSetStiffness, stiffness);
 }
 
 float PhysicsJointRotarySpring::getDamping() const
 {
+    CC_PJOINT_CACHE_READ(_damping);
     return PhysicsHelper::cpfloat2float(cpDampedRotarySpringGetDamping(_cpConstraints.front()));
 }
 
 void PhysicsJointRotarySpring::setDamping(float damping)
 {
-    cpDampedRotarySpringSetDamping(_cpConstraints.front(), PhysicsHelper::float2cpfloat(damping));
+    CC_PJOINT_CACHE_WRITE(_damping, cpDampedRotarySpringSetDamping, damping);
 }
 
 PhysicsJointRotaryLimit* PhysicsJointRotaryLimit::construct(PhysicsBody* a, PhysicsBody* b, float min, float max)
@@ -609,8 +727,8 @@ bool PhysicsJointRotaryLimit::createConstraints()
     {
         auto joint = cpRotaryLimitJointNew(_bodyA->getCPBody(),
             _bodyB->getCPBody(),
-            PhysicsHelper::float2cpfloat(_min),
-            PhysicsHelper::float2cpfloat(_max));
+            _min,
+            _max);
 
         CC_BREAK_IF(joint == nullptr);
         _cpConstraints.push_back(joint);
@@ -623,22 +741,24 @@ bool PhysicsJointRotaryLimit::createConstraints()
 
 float PhysicsJointRotaryLimit::getMin() const
 {
+    CC_PJOINT_CACHE_READ(_min);
     return PhysicsHelper::cpfloat2float(cpRotaryLimitJointGetMin(_cpConstraints.front()));
 }
 
 void PhysicsJointRotaryLimit::setMin(float min)
 {
-    cpRotaryLimitJointSetMin(_cpConstraints.front(), PhysicsHelper::float2cpfloat(min));
+    CC_PJOINT_CACHE_WRITE(_min, cpRotaryLimitJointSetMin, min);
 }
 
 float PhysicsJointRotaryLimit::getMax() const
 {
+    CC_PJOINT_CACHE_READ(_max);
     return PhysicsHelper::cpfloat2float(cpRotaryLimitJointGetMax(_cpConstraints.front()));
 }
 
 void PhysicsJointRotaryLimit::setMax(float max)
 {
-    cpRotaryLimitJointSetMax(_cpConstraints.front(), PhysicsHelper::float2cpfloat(max));
+    CC_PJOINT_CACHE_WRITE(_max, cpRotaryLimitJointSetMax, max);
 }
 
 PhysicsJointRatchet* PhysicsJointRatchet::construct(PhysicsBody* a, PhysicsBody* b, float phase, float ratchet)
@@ -663,7 +783,7 @@ bool PhysicsJointRatchet::createConstraints()
     {
         auto joint = cpRatchetJointNew(_bodyA->getCPBody(),
             _bodyB->getCPBody(),
-            PhysicsHelper::float2cpfloat(_phase),
+            _phase,
             PhysicsHelper::cpfloat2float(_ratchet));
 
         CC_BREAK_IF(joint == nullptr);
@@ -677,32 +797,35 @@ bool PhysicsJointRatchet::createConstraints()
 
 float PhysicsJointRatchet::getAngle() const
 {
+    CC_PJOINT_CACHE_READ(_angle);
     return PhysicsHelper::cpfloat2float(cpRatchetJointGetAngle(_cpConstraints.front()));
 }
 
 void PhysicsJointRatchet::setAngle(float angle)
 {
-    cpRatchetJointSetAngle(_cpConstraints.front(), PhysicsHelper::float2cpfloat(angle));
+    CC_PJOINT_CACHE_WRITE(_angle, cpRatchetJointSetAngle, angle);
 }
 
 float PhysicsJointRatchet::getPhase() const
 {
+    CC_PJOINT_CACHE_READ(_phase);
     return PhysicsHelper::cpfloat2float(cpRatchetJointGetPhase(_cpConstraints.front()));
 }
 
 void PhysicsJointRatchet::setPhase(float phase)
 {
-    cpRatchetJointSetPhase(_cpConstraints.front(), PhysicsHelper::float2cpfloat(phase));
+    CC_PJOINT_CACHE_WRITE(_phase, cpRatchetJointSetPhase, phase);
 }
 
 float PhysicsJointRatchet::getRatchet() const
 {
+    CC_PJOINT_CACHE_READ(_ratchet);
     return PhysicsHelper::cpfloat2float(cpRatchetJointGetRatchet(_cpConstraints.front()));
 }
 
 void PhysicsJointRatchet::setRatchet(float ratchet)
 {
-    cpRatchetJointSetRatchet(_cpConstraints.front(), PhysicsHelper::float2cpfloat(ratchet));
+    CC_PJOINT_CACHE_WRITE(_ratchet, cpRatchetJointSetRatchet, ratchet);
 }
 
 PhysicsJointGear* PhysicsJointGear::construct(PhysicsBody* a, PhysicsBody* b, float phase, float ratio)
@@ -727,8 +850,8 @@ bool PhysicsJointGear::createConstraints()
     {
         auto joint = cpGearJointNew(_bodyA->getCPBody(),
             _bodyB->getCPBody(),
-            PhysicsHelper::float2cpfloat(_phase),
-            PhysicsHelper::float2cpfloat(_ratio));
+            _phase,
+            _ratio);
 
         CC_BREAK_IF(joint == nullptr);
         _cpConstraints.push_back(joint);
@@ -741,22 +864,24 @@ bool PhysicsJointGear::createConstraints()
 
 float PhysicsJointGear::getPhase() const
 {
+    CC_PJOINT_CACHE_READ(_phase);
     return PhysicsHelper::cpfloat2float(cpGearJointGetPhase(_cpConstraints.front()));
 }
 
 void PhysicsJointGear::setPhase(float phase)
 {
-    cpGearJointSetPhase(_cpConstraints.front(), PhysicsHelper::float2cpfloat(phase));
+    CC_PJOINT_CACHE_WRITE(_phase, cpGearJointSetPhase, phase);
 }
 
 float PhysicsJointGear::getRatio() const
 {
+    CC_PJOINT_CACHE_READ(_ratio);
     return PhysicsHelper::cpfloat2float(cpGearJointGetRatio(_cpConstraints.front()));
 }
 
 void PhysicsJointGear::setRatio(float ratio)
 {
-    cpGearJointSetRatio(_cpConstraints.front(), PhysicsHelper::float2cpfloat(ratio));
+    CC_PJOINT_CACHE_WRITE(_ratio, cpGearJointSetRatio, ratio);
 }
 
 PhysicsJointMotor* PhysicsJointMotor::construct(PhysicsBody* a, PhysicsBody* b, float rate)
@@ -780,7 +905,7 @@ bool PhysicsJointMotor::createConstraints()
     {
         auto joint = cpSimpleMotorNew(_bodyA->getCPBody(),
             _bodyB->getCPBody(),
-            PhysicsHelper::float2cpfloat(_rate));
+            _rate);
 
         CC_BREAK_IF(joint == nullptr);
         _cpConstraints.push_back(joint);
@@ -793,12 +918,13 @@ bool PhysicsJointMotor::createConstraints()
 
 float PhysicsJointMotor::getRate() const
 {
+    CC_PJOINT_CACHE_READ(_rate);
     return PhysicsHelper::cpfloat2float(cpSimpleMotorGetRate(_cpConstraints.front()));
 }
 
 void PhysicsJointMotor::setRate(float rate)
 {
-    cpSimpleMotorSetRate(_cpConstraints.front(), PhysicsHelper::float2cpfloat(rate));
+    CC_PJOINT_CACHE_WRITE(_rate, cpSimpleMotorSetRate, rate);
 }
 
 NS_CC_END

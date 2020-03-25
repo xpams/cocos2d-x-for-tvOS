@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (c) 2010-2012 cocos2d-x.org
- Copyright (c) 2013-2014 Chukong Technologies Inc.
+ Copyright (c) 2013-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos2d-x.org
 
@@ -24,7 +25,7 @@
  ****************************************************************************/
 
 #include "platform/CCPlatformConfig.h"
-#if CC_TARGET_PLATFORM == CC_PLATFORM_IOS
+#if CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_TVOS
 
 #include "platform/CCCommon.h"
 
@@ -40,6 +41,9 @@ NS_CC_BEGIN
 // ios no MessageBox, use log instead
 void MessageBox(const char * msg, const char * title)
 {
+    // only enable it on iOS.
+    // FIXME: Implement it for tvOS
+#if !defined(CC_TARGET_OS_TVOS)
     NSString * tmpTitle = (title) ? [NSString stringWithUTF8String : title] : nil;
     NSString * tmpMsg = (msg) ? [NSString stringWithUTF8String : msg] : nil;
     UIAlertView * messageBox = [[UIAlertView alloc] initWithTitle: tmpTitle
@@ -49,6 +53,8 @@ void MessageBox(const char * msg, const char * title)
                                                 otherButtonTitles: nil];
     [messageBox autorelease];
     [messageBox show];
+#endif
+
 }
 
 void LuaLog(const char * format)

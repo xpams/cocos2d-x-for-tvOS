@@ -205,7 +205,7 @@ FT_BEGIN_HEADER
     FT_CharMapRec   charmaprecs[2];
     FT_CharMap      charmaps[2];
 
-    /* support for Multiple Masters fonts */
+    /* support for Multiple Masters font */
     PS_Blend        blend;
 
     /* undocumented, optional: indices of subroutines that express      */
@@ -215,7 +215,7 @@ FT_BEGIN_HEADER
     FT_Int           cdv_idx;
 
     /* undocumented, optional: has the same meaning as len_buildchar */
-    /* for Type 2 fonts; manipulated by othersubrs 19, 24, and 25    */
+    /* for Type 2 font; manipulated by othersubrs 19, 24, and 25    */
     FT_UInt          len_buildchar;
     FT_Long*         buildchar;
 

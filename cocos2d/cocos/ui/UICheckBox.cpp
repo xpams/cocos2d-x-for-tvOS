@@ -1,5 +1,6 @@
 /****************************************************************************
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -30,15 +31,13 @@ namespace ui {
     
 IMPLEMENT_CLASS_GUI_INFO(CheckBox)
 
-CheckBox::CheckBox():
-_checkBoxEventListener(nullptr),
-_checkBoxEventSelector(nullptr)
+CheckBox::CheckBox()
+: _checkBoxEventListener(nullptr)
 {
 }
 
 CheckBox::~CheckBox()
 {
-    _checkBoxEventSelector = nullptr;
 }
 
 CheckBox* CheckBox::create()
@@ -54,7 +53,7 @@ CheckBox* CheckBox::create()
 }
     
 CheckBox* CheckBox::create(const std::string& backGround,
-                           const std::string& backGroundSeleted,
+                           const std::string& backGroundSelected,
                            const std::string& cross,
                            const std::string& backGroundDisabled,
                            const std::string& frontCrossDisabled,
@@ -62,7 +61,7 @@ CheckBox* CheckBox::create(const std::string& backGround,
 {
     CheckBox *pWidget = new (std::nothrow) CheckBox;
     if (pWidget && pWidget->init(backGround,
-                                 backGroundSeleted,
+                                 backGroundSelected,
                                  cross,
                                  backGroundDisabled,
                                  frontCrossDisabled,
@@ -96,17 +95,22 @@ CheckBox* CheckBox::create(const std::string& backGround,
     
 void CheckBox::onTouchEnded(Touch *touch, Event *unusedEvent)
 {
-    if (_isSelected)
+    bool highlight = _highlight;
+
+    AbstractCheckButton::onTouchEnded(touch, unusedEvent);
+
+    if (highlight)
     {
-        setSelected(false);
-        AbstractCheckButton::onTouchEnded(touch, unusedEvent);
-        dispatchSelectChangedEvent(false);
-    }
-    else
-    {
-        setSelected(true);
-        AbstractCheckButton::onTouchEnded(touch, unusedEvent);
-        dispatchSelectChangedEvent(true);
+        if (_isSelected)
+        {
+            setSelected(false);
+            dispatchSelectChangedEvent(false);
+        }
+        else
+        {
+            setSelected(true);
+            dispatchSelectChangedEvent(true);
+        }
     }
 }
     
@@ -114,7 +118,6 @@ void CheckBox::onTouchEnded(Touch *touch, Event *unusedEvent)
 void CheckBox::dispatchSelectChangedEvent(bool selected)
 {
     EventType eventType = (selected ? EventType::SELECTED : EventType::UNSELECTED);
-    CheckBoxEventType checkBoxEventType = (selected ? CHECKBOX_STATE_EVENT_SELECTED : CHECKBOX_STATE_EVENT_UNSELECTED);
     
     this->retain();
     if (_checkBoxEventCallback)
@@ -126,18 +129,8 @@ void CheckBox::dispatchSelectChangedEvent(bool selected)
         _ccEventCallback(this, static_cast<int>(eventType));
     }
     
-    if (_checkBoxEventListener && _checkBoxEventSelector)
-    {
-        (_checkBoxEventListener->*_checkBoxEventSelector)(this, checkBoxEventType);
-    }
     this->release();
     
-}
-
-void CheckBox::addEventListenerCheckBox(Ref *target, SEL_SelectedStateEvent selector)
-{
-    _checkBoxEventListener = target;
-    _checkBoxEventSelector = selector;
 }
 
 void CheckBox::addEventListener(const ccCheckBoxCallback& callback)
@@ -162,7 +155,6 @@ void CheckBox::copySpecialProperties(Widget *widget)
     {
         AbstractCheckButton::copySpecialProperties(widget);
         _checkBoxEventListener = checkBox->_checkBoxEventListener;
-        _checkBoxEventSelector = checkBox->_checkBoxEventSelector;
         _checkBoxEventCallback = checkBox->_checkBoxEventCallback;
         _ccEventCallback = checkBox->_ccEventCallback;
     }

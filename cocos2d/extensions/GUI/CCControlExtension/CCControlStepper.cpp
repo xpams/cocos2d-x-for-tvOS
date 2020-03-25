@@ -5,6 +5,8 @@
  * Copyright 2012 Yannick Loriot. All rights reserved.
  * http://yannickloriot.com
  * 
+ * Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -82,7 +84,7 @@ bool ControlStepper::initWithMinusSpriteAndPlusSprite(Sprite *minusSprite, Sprit
         _value                              = 0;
         _stepValue                          = 1;
         _wraps                              = false;
-        this->ignoreAnchorPointForPosition( false );
+        this->setIgnoreAnchorPointForPosition( false );
     
         // Add the minus components
         this->setMinusSprite(minusSprite);
@@ -230,7 +232,7 @@ void ControlStepper::stopAutorepeat()
     this->unschedule(CC_SCHEDULE_SELECTOR(ControlStepper::update));
 }
 
-void ControlStepper::update(float dt)
+void ControlStepper::update(float /*dt*/)
 {
     _autorepeatCount++;
     
@@ -274,7 +276,7 @@ void ControlStepper::updateLayoutUsingTouchLocation(Vec2 location)
 }
 
 
-bool ControlStepper::onTouchBegan(Touch *pTouch, Event *pEvent)
+bool ControlStepper::onTouchBegan(Touch *pTouch, Event* /*pEvent*/)
 {
     if (!isTouchInside(pTouch) || !isEnabled() || !isVisible())
     {
@@ -294,7 +296,7 @@ bool ControlStepper::onTouchBegan(Touch *pTouch, Event *pEvent)
     return true;
 }
 
-void ControlStepper::onTouchMoved(Touch *pTouch, Event *pEvent)
+void ControlStepper::onTouchMoved(Touch *pTouch, Event* /*pEvent*/)
 {
     if (this->isTouchInside(pTouch))
     {
@@ -327,7 +329,7 @@ void ControlStepper::onTouchMoved(Touch *pTouch, Event *pEvent)
     }
 }
 
-void ControlStepper::onTouchEnded(Touch *pTouch, Event *pEvent)
+void ControlStepper::onTouchEnded(Touch *pTouch, Event* /*pEvent*/)
 {
     _minusSprite->setColor(Color3B::WHITE);
     _plusSprite->setColor(Color3B::WHITE);

@@ -1,5 +1,6 @@
 /**
  Copyright 2013 BlackBerry Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -44,11 +45,6 @@ Vec3::Vec3(const Vec3& p1, const Vec3& p2)
     set(p1, p2);
 }
 
-Vec3::Vec3(const Vec3& copy)
-{
-    set(copy);
-}
-
 Vec3 Vec3::fromColor(unsigned int color)
 {
     float components[3];
@@ -64,17 +60,13 @@ Vec3 Vec3::fromColor(unsigned int color)
     return value;
 }
 
-Vec3::~Vec3()
-{
-}
-
 float Vec3::angle(const Vec3& v1, const Vec3& v2)
 {
     float dx = v1.y * v2.z - v1.z * v2.y;
     float dy = v1.z * v2.x - v1.x * v2.z;
     float dz = v1.x * v2.y - v1.y * v2.x;
 
-    return atan2f(sqrt(dx * dx + dy * dy + dz * dz) + MATH_FLOAT_SMALL, dot(v1, v2));
+    return std::atan2(std::sqrt(dx * dx + dy * dy + dz * dz) + MATH_FLOAT_SMALL, dot(v1, v2));
 }
 
 void Vec3::add(const Vec3& v1, const Vec3& v2, Vec3* dst)
@@ -157,7 +149,7 @@ float Vec3::distance(const Vec3& v) const
     float dy = v.y - y;
     float dz = v.z - z;
 
-    return sqrt(dx * dx + dy * dy + dz * dz);
+    return std::sqrt(dx * dx + dy * dy + dz * dz);
 }
 
 float Vec3::distanceSquared(const Vec3& v) const
@@ -186,7 +178,7 @@ void Vec3::normalize()
     if (n == 1.0f)
         return;
     
-    n = sqrt(n);
+    n = std::sqrt(n);
     // Too close to zero.
     if (n < MATH_TOLERANCE)
         return;

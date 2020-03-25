@@ -2,7 +2,8 @@
 Copyright (c) 2009-2010 Ricardo Quesada
 Copyright (c) 2010-2012 cocos2d-x.org
 Copyright (c) 2011      Zynga Inc.
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -57,6 +58,26 @@ enum
     
     /** Isometric staggered orientation. */
     TMXOrientationStaggered,
+};
+
+/** Possible stagger axis of the TMX map. */
+enum
+{
+    /** Stagger Axis x. */
+    TMXStaggerAxis_X,
+    
+    /** Stagger Axis y. */
+    TMXStaggerAxis_Y,
+};
+
+/** Possible stagger index of the TMX map. */
+enum
+{
+    /** Stagger Index: Odd */
+    TMXStaggerIndex_Odd,
+
+    /** Stagger Index: Even */
+    TMXStaggerIndex_Even,
 };
 
 /** @brief TMXTiledMap knows how to parse and render a TMX map.
@@ -135,11 +156,6 @@ public:
      * @return The TMXLayer for the specific layer.
      */
     TMXLayer* getLayer(const std::string& layerName) const;
-    /**
-     * @js NA
-     * @lua NA
-     */
-    CC_DEPRECATED_ATTRIBUTE TMXLayer* layerNamed(const std::string& layerName) const { return getLayer(layerName); };
 
     /** Return the TMXObjectGroup for the specific group. 
      *
@@ -147,11 +163,6 @@ public:
      * @return A Type of TMXObjectGroup.
      */
     TMXObjectGroup* getObjectGroup(const std::string& groupName) const;
-    /**
-     * @js NA
-     * @lua NA
-     */
-    CC_DEPRECATED_ATTRIBUTE TMXObjectGroup* objectGroupNamed(const std::string& groupName) const { return getObjectGroup(groupName); };
 
     /** Return the value for the specific property name. 
      *
@@ -159,11 +170,6 @@ public:
      * @return Return the value for the specific property name.
      */
     Value getProperty(const std::string& propertyName) const;
-    /**
-     * @js NA
-     * @lua NA
-     */
-    CC_DEPRECATED_ATTRIBUTE Value propertyNamed(const char *propertyName) const { return getProperty(propertyName); };
 
     /** Return properties dictionary for tile GID. 
      *
@@ -171,14 +177,13 @@ public:
      * @return Return properties dictionary for tile GID.
      */
     Value getPropertiesForGID(int GID) const;
-    CC_DEPRECATED_ATTRIBUTE Value propertiesForGID(int GID) const { return getPropertiesForGID(GID); };
 
-    /** Assings properties to argument value, returns true if it did found properties 
-     * for that GID and did assinged a value, else it returns false.
+    /** Assigns properties to argument value, returns true if it did found properties 
+     * for that GID and did assigned a value, else it returns false.
      *
      * @param GID The tile GID.
      * @param value Argument value.
-     * @return Return true if it did found properties for that GID and did assinged a value, else it returns false.
+     * @return Return true if it did found properties for that GID and did assigned a value, else it returns false.
      */
     bool getPropertiesForGID(int GID, Value** value);
 
@@ -186,72 +191,75 @@ public:
      *
      * @return The map's size property measured in tiles.
      */
-    inline const Size& getMapSize() const { return _mapSize; };
+    const Size& getMapSize() const { return _mapSize; }
     
     /** Set the map's size property measured in tiles. 
      *
      * @param mapSize The map's size property measured in tiles.
      */
-    inline void setMapSize(const Size& mapSize) { _mapSize = mapSize; };
+    void setMapSize(const Size& mapSize) { _mapSize = mapSize; }
 
     /** The tiles's size property measured in pixels. 
      *
      * @return The tiles's size property measured in pixels.
      */
-    inline const Size& getTileSize() const { return _tileSize; };
+    const Size& getTileSize() const { return _tileSize; }
     
     /** Set the tiles's size property measured in pixels. 
      *
      * @param tileSize The tiles's size property measured in pixels.
      */
-    inline void setTileSize(const Size& tileSize) { _tileSize = tileSize; };
+    void setTileSize(const Size& tileSize) { _tileSize = tileSize; }
 
     /** Map orientation. 
      *
      * @return Map orientation.
      */
-    inline int getMapOrientation() const { return _mapOrientation; };
+    int getMapOrientation() const { return _mapOrientation; }
     
     /** Set map orientation. 
      *
      * @param mapOrientation The map orientation.
      */
-    inline void setMapOrientation(int mapOrientation) { _mapOrientation = mapOrientation; };
+    void setMapOrientation(int mapOrientation) { _mapOrientation = mapOrientation; }
 
     /** Get the Object groups. 
      *
      * @return The object groups.
      */
-    inline const Vector<TMXObjectGroup*>& getObjectGroups() const { return _objectGroups; };
-    inline Vector<TMXObjectGroup*>& getObjectGroups() { return _objectGroups; };
+    const Vector<TMXObjectGroup*>& getObjectGroups() const { return _objectGroups; }
+    Vector<TMXObjectGroup*>& getObjectGroups() { return _objectGroups; }
     
     /** Set the object groups. 
      *
      * @param groups The object groups.
      */
-    inline void setObjectGroups(const Vector<TMXObjectGroup*>& groups) {
+    void setObjectGroups(const Vector<TMXObjectGroup*>& groups) {
         _objectGroups = groups;
-    };
+    }
     
     /** Properties. 
      *
      * @return Properties.
      */
-    inline ValueMap& getProperties() { return _properties; };
+    ValueMap& getProperties() { return _properties; }
     
     /** Set the properties.
      *
      * @param properties A  Type of ValueMap to set the properties.
      */
-    inline void setProperties(const ValueMap& properties) {
+    void setProperties(const ValueMap& properties) {
         _properties = properties;
-    };
+    }
     
     /** Get the description.
      * @js NA
      */
     virtual std::string getDescription() const override;
-    
+
+    int  getLayerNum();
+    const std::string& getResourceFile() const { return _tmxFile; }
+
 CC_CONSTRUCTOR_ACCESS:
     /**
      * @js ctor
@@ -287,6 +295,11 @@ protected:
     
     //! tile properties
     ValueMapIntKey _tileProperties;
+
+    std::string _tmxFile;
+    int _tmxLayerNum;
+
+    static const int TMXLayerTag = 32768;
 
 private:
     CC_DISALLOW_COPY_AND_ASSIGN(TMXTiledMap);

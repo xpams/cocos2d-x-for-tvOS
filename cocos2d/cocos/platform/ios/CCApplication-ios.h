@@ -1,6 +1,7 @@
 /****************************************************************************
 Copyright (c) 2010-2012 cocos2d-x.org
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -27,7 +28,7 @@ THE SOFTWARE.
 #define __CC_APPLICATION_IOS_H__
 
 #include "platform/CCPlatformConfig.h"
-#if CC_TARGET_PLATFORM == CC_PLATFORM_IOS
+#if CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_TVOS
 
 #include "platform/CCCommon.h"
 #include "platform/CCApplicationProtocol.h"
@@ -60,38 +61,40 @@ public:
     */
     static Application* getInstance();
     
-    /** @deprecated Use getInstance() instead */
-    CC_DEPRECATED_ATTRIBUTE static Application* sharedApplication();
-    
     /**
      @brief    Callback by Director for limit FPS.
      @param interval    The time, expressed in seconds, between current frame and next.
      */
-    virtual void setAnimationInterval(float interval);
+    virtual void setAnimationInterval(float interval) override;
 
     /**
     @brief Get current language config
     @return Current language config
     */
-    virtual LanguageType getCurrentLanguage();
+    virtual LanguageType getCurrentLanguage() override;
     
     /**
      @brief Get current language iso 639-1 code
      @return Current language iso 639-1 code
      */
-    virtual const char * getCurrentLanguageCode();
+    virtual const char * getCurrentLanguageCode() override;
     
     /**
      @brief Get target platform
      */
-    virtual Platform getTargetPlatform();
+    virtual Platform getTargetPlatform() override;
+    
+    /**
+     @brief Get application version.
+     */
+    virtual std::string getVersion() override;
     
     /**
      @brief Open url in default browser
      @param String with url to open.
      @return true if the resource located by the URL was successfully opened; otherwise false.
      */
-    virtual bool openURL(const std::string &url);
+    virtual bool openURL(const std::string &url) override;
 
     /**
     @brief  This function will be called when the application screen size is changed.

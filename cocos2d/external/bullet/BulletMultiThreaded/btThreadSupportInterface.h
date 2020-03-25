@@ -17,7 +17,7 @@ subject to the following restrictions:
 #define BT_THREAD_SUPPORT_INTERFACE_H
 
 
-#include <bullet/LinearMath/btScalar.h> //for ATTRIBUTE_ALIGNED16
+#include "bullet/LinearMath/btScalar.h" //for ATTRIBUTE_ALIGNED16
 #include "PlatformDefinitions.h"
 #include "PpuAddressSpace.h"
 

@@ -20,7 +20,7 @@
 #define __FTOPTION_H__
 
 
-#include <ft2build.h>
+#include "ft2build.h"
 
 
 FT_BEGIN_HEADER
@@ -233,7 +233,7 @@ FT_BEGIN_HEADER
   /* HarfBuzz support.                                                     */
   /*                                                                       */
   /*   FreeType uses the HarfBuzz library to improve auto-hinting of       */
-  /*   OpenType fonts.  If available, many glyphs not directly addressable */
+  /*   OpenType font.  If available, many glyphs not directly addressable */
   /*   by a font's character map will be hinted also.                      */
   /*                                                                       */
   /*   Define this macro if you want to enable this `feature'.             */
@@ -300,7 +300,7 @@ FT_BEGIN_HEADER
   /*     `post' table.                                                     */
   /*                                                                       */
   /*   - The Type 1 driver will not be able to synthesize a Unicode        */
-  /*     charmap out of the glyphs found in the fonts.                     */
+  /*     charmap out of the glyphs found in the font.                     */
   /*                                                                       */
   /*   You would normally undefine this configuration macro when building  */
   /*   a version of FreeType that doesn't contain a Type 1 or CFF driver.  */
@@ -321,16 +321,16 @@ FT_BEGIN_HEADER
   /*   Undefine this macro if you do not want the Adobe Glyph List         */
   /*   compiled in your `PSNames' module.  The Type 1 driver will not be   */
   /*   able to synthesize a Unicode charmap out of the glyphs found in the */
-  /*   fonts.                                                              */
+  /*   font.                                                              */
   /*                                                                       */
 #define FT_CONFIG_OPTION_ADOBE_GLYPH_LIST
 
 
   /*************************************************************************/
   /*                                                                       */
-  /* Support for Mac fonts                                                 */
+  /* Support for Mac font                                                 */
   /*                                                                       */
-  /*   Define this macro if you want support for outline fonts in Mac      */
+  /*   Define this macro if you want support for outline font in Mac      */
   /*   format (mac dfont, mac resource, macbinary containing a mac         */
   /*   resource) on non-Mac platforms.                                     */
   /*                                                                       */
@@ -343,10 +343,10 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* Guessing methods to access embedded resource forks                    */
   /*                                                                       */
-  /*   Enable extra Mac fonts support on non-Mac platforms (e.g.           */
+  /*   Enable extra Mac font support on non-Mac platforms (e.g.           */
   /*   GNU/Linux).                                                         */
   /*                                                                       */
-  /*   Resource forks which include fonts data are stored sometimes in     */
+  /*   Resource forks which include font data are stored sometimes in     */
   /*   locations which users or developers don't expected.  In some cases, */
   /*   resource forks start with some offset from the head of a file.  In  */
   /*   other cases, the actual resource fork is stored in file different   */
@@ -622,16 +622,16 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* This macro is only useful for a small number of font files (mostly    */
   /* for Asian scripts) that require bytecode interpretation to properly   */
-  /* load glyphs.  For all other fonts, this produces unpleasant results,  */
+  /* load glyphs.  For all other font, this produces unpleasant results,  */
   /* thus the unpatented interpreter is never used to load glyphs from     */
-  /* TrueType fonts unless one of the following two options is used.       */
+  /* TrueType font unless one of the following two options is used.       */
   /*                                                                       */
   /*   - The unpatented interpreter is explicitly activated by the user    */
   /*     through the FT_PARAM_TAG_UNPATENTED_HINTING parameter tag         */
   /*     when opening the FT_Face.                                         */
   /*                                                                       */
   /*   - FreeType detects that the FT_Face corresponds to one of the       */
-  /*     `trick' fonts (e.g., `Mingliu') it knows about.  The font engine  */
+  /*     `trick' font (e.g., `Mingliu') it knows about.  The font engine  */
   /*     contains a hard-coded list of font names and other matching       */
   /*     parameters (see function `tt_face_init' in file                   */
   /*     `src/truetype/ttobjs.c').                                         */
@@ -681,7 +681,7 @@ FT_BEGIN_HEADER
   /* factors in the transformation matrix (roughly, it's more complex)     */
   /* while MS says they should not.  OpenType defines two bits in the      */
   /* composite flags array which can be used to disambiguate, but old      */
-  /* fonts will not have them.                                             */
+  /* font will not have them.                                             */
   /*                                                                       */
   /*   http://www.microsoft.com/typography/otspec/glyf.htm                 */
   /*   http://fonts.apple.com/TTRefMan/RM06/Chap6glyf.html                 */

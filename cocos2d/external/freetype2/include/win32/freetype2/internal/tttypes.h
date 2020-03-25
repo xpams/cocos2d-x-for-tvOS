@@ -486,10 +486,10 @@ FT_BEGIN_HEADER
   /*    max_width               :: The maximum glyph width in pixels.      */
   /*                                                                       */
   /*    caret_slope_enumerator  :: Rise of the caret slope, typically set  */
-  /*                               to 1 for non-italic fonts.              */
+  /*                               to 1 for non-italic font.              */
   /*                                                                       */
   /*    caret_slope_denominator :: Rise of the caret slope, typically set  */
-  /*                               to 0 for non-italic fonts.              */
+  /*                               to 0 for non-italic font.              */
   /*                                                                       */
   /*    caret_offset            :: Offset in pixels to move the caret for  */
   /*                               proper positioning.                     */
@@ -846,7 +846,7 @@ FT_BEGIN_HEADER
   /*
    * These types are used to support a `BDF ' table that isn't part of the
    * official TrueType specification.  It is mainly used in SFNT-based
-   * bitmap fonts that were generated from a set of BDF fonts.
+   * bitmap font that were generated from a set of BDF font.
    *
    * The format of the table is as follows.
    *
@@ -1165,11 +1165,11 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*    hdmx                 :: The face's horizontal device metrics       */
   /*                            (`hdmx' table).  This table is optional in */
-  /*                            TrueType/OpenType fonts.                   */
+  /*                            TrueType/OpenType font.                   */
   /*                                                                       */
   /*    gasp                 :: The grid-fitting and scaling properties    */
   /*                            table (`gasp').  This table is optional in */
-  /*                            TrueType/OpenType fonts.                   */
+  /*                            TrueType/OpenType font.                   */
   /*                                                                       */
   /*    pclt                 :: The `pclt' SFNT table.                     */
   /*                                                                       */
@@ -1187,7 +1187,7 @@ FT_BEGIN_HEADER
   /*    num_locations        :: The number of glyph locations in this      */
   /*                            TrueType file.  This should be             */
   /*                            identical to the number of glyphs.         */
-  /*                            Ignored for Type 2 fonts.                  */
+  /*                            Ignored for Type 2 font.                  */
   /*                                                                       */
   /*    glyph_locations      :: An array of longs.  These are offsets to   */
   /*                            glyph data within the `glyf' table.        */
@@ -1198,38 +1198,38 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*    font_program_size    :: Size in bytecodes of the face's font       */
   /*                            program.  0 if none defined.  Ignored for  */
-  /*                            Type 2 fonts.                              */
+  /*                            Type 2 font.                              */
   /*                                                                       */
   /*    font_program         :: The face's font program (bytecode stream)  */
   /*                            executed at load time, also used during    */
   /*                            glyph rendering.  Comes from the `fpgm'    */
-  /*                            table.  Ignored for Type 2 font fonts.     */
+  /*                            table.  Ignored for Type 2 font font.     */
   /*                                                                       */
   /*    cvt_program_size     :: The size in bytecodes of the face's cvt    */
-  /*                            program.  Ignored for Type 2 fonts.        */
+  /*                            program.  Ignored for Type 2 font.        */
   /*                                                                       */
   /*    cvt_program          :: The face's cvt program (bytecode stream)   */
   /*                            executed each time an instance/size is     */
   /*                            changed/reset.  Comes from the `prep'      */
-  /*                            table.  Ignored for Type 2 fonts.          */
+  /*                            table.  Ignored for Type 2 font.          */
   /*                                                                       */
   /*    cvt_size             :: Size of the control value table (in        */
-  /*                            entries).   Ignored for Type 2 fonts.      */
+  /*                            entries).   Ignored for Type 2 font.      */
   /*                                                                       */
   /*    cvt                  :: The face's original control value table.   */
   /*                            Coordinates are expressed in unscaled font */
   /*                            units.  Comes from the `cvt ' table.       */
-  /*                            Ignored for Type 2 fonts.                  */
+  /*                            Ignored for Type 2 font.                  */
   /*                                                                       */
   /*    num_kern_pairs       :: The number of kerning pairs present in the */
   /*                            font file.  The engine only loads the      */
   /*                            first horizontal format 0 kern table it    */
   /*                            finds in the font file.  Ignored for       */
-  /*                            Type 2 fonts.                              */
+  /*                            Type 2 font.                              */
   /*                                                                       */
   /*    kern_table_index     :: The index of the kerning table in the font */
   /*                            kerning directory.  Ignored for Type 2     */
-  /*                            fonts.                                     */
+  /*                            font.                                     */
   /*                                                                       */
   /*    interpreter          :: A pointer to the TrueType bytecode         */
   /*                            interpreters field is also used to hook    */

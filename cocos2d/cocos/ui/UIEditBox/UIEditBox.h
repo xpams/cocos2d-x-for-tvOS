@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (c) 2010-2012 cocos2d-x.org
  Copyright (c) 2012 James Chen
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -28,7 +29,7 @@
 
 #include "base/CCIMEDelegate.h"
 #include "ui/GUIDefine.h"
-#include "ui/UIButton.h"
+#include "ui/UIWidget.h"
 #include "ui/UIScale9Sprite.h"
 
 NS_CC_BEGIN
@@ -38,13 +39,13 @@ NS_CC_BEGIN
  * @{
  */
 namespace ui {
-        
+
     class EditBox;
     class EditBoxImpl;
-        
+
     /**
-     *@brief Editbox delgate class.
-     * It's useful when you want to do some customization duing Editbox input event
+     *@brief Editbox delegate class.
+     * It's useful when you want to do some customization during Editbox input event
      *
      * @js NA
      * @lua NA
@@ -52,43 +53,52 @@ namespace ui {
     class CC_GUI_DLL EditBoxDelegate
     {
     public:
-        virtual ~EditBoxDelegate() {};
-            
+
+        /**
+         * Reason for ending edit (for platforms where it is known)
+         */
+        enum class EditBoxEndAction {
+            UNKNOWN,
+            TAB_TO_NEXT,
+            TAB_TO_PREVIOUS,
+            RETURN
+        };
+
+        virtual ~EditBoxDelegate() {}
+
         /**
          * This method is called when an edit box gains focus after keyboard is shown.
          * @param editBox The edit box object that generated the event.
          */
-        virtual void editBoxEditingDidBegin(EditBox* editBox) {};
-            
-            
-        /**
-         * This method is called when an edit box loses focus after keyboard is hidden.
-         * @param editBox The edit box object that generated the event.
-         */
-        virtual void editBoxEditingDidEnd(EditBox* editBox) {};
-            
+        virtual void editBoxEditingDidBegin(EditBox* /*editBox*/) {}
+
         /**
          * This method is called when the edit box text was changed.
          * @param editBox The edit box object that generated the event.
          * @param text The new text.
          */
-        virtual void editBoxTextChanged(EditBox* editBox, const std::string& text) {};
-            
+        virtual void editBoxTextChanged(EditBox* /*editBox*/, const std::string& /*text*/) {}
+
         /**
          * This method is called when the return button was pressed or the outside area of keyboard was touched.
          * @param editBox The edit box object that generated the event.
          */
         virtual void editBoxReturn(EditBox* editBox) = 0;
-            
+
+        /**
+         * This method is called when an edit box loses focus after keyboard is hidden.
+         * @param editBox The edit box object that generated the event.
+         * @param type The reason why editing ended.
+         */
+        virtual void editBoxEditingDidEndWithAction(EditBox* /*editBox*/, EditBoxEndAction /*action*/) {}
     };
-        
+
     /**
      * @brief Class for edit box.
      *
      * You can use this widget to gather small amounts of text from the user.
      *
      */
-        
     class CC_GUI_DLL EditBox
         : public Widget
         , public IMEDelegate
@@ -104,9 +114,10 @@ namespace ui {
             DONE,
             SEND,
             SEARCH,
-            GO
+            GO,
+            NEXT
         };
-            
+
         /**
          * @brief The EditBox::InputMode defines the type of text that the user is allowed
          * to enter.
@@ -117,39 +128,39 @@ namespace ui {
              * The user is allowed to enter any text, including line breaks.
              */
             ANY,
-                
+
             /**
              * The user is allowed to enter an e-mail address.
              */
             EMAIL_ADDRESS,
-                
+
             /**
              * The user is allowed to enter an integer value.
              */
             NUMERIC,
-                
+
             /**
              * The user is allowed to enter a phone number.
              */
             PHONE_NUMBER,
-                
+
             /**
              * The user is allowed to enter a URL.
              */
             URL,
-                
+
             /**
              * The user is allowed to enter a real number value.
              * This extends kEditBoxInputModeNumeric by allowing a decimal point.
              */
             DECIMAL,
-                
+
             /**
              * The user is allowed to enter any text, except for line breaks.
              */
             SINGLE_LINE,
         };
-            
+
         /**
          * @brief The EditBox::InputFlag defines how the input text is displayed/formatted.
          */
@@ -160,7 +171,7 @@ namespace ui {
              * obscured whenever possible. This implies EDIT_BOX_INPUT_FLAG_SENSITIVE.
              */
             PASSWORD,
-                
+
             /**
              * Indicates that the text entered is sensitive data that the
              * implementation must never store into a dictionary or table for use
@@ -168,25 +179,30 @@ namespace ui {
              * A credit card number is an example of sensitive data.
              */
             SENSITIVE,
-                
+
             /**
              * This flag is a hint to the implementation that during text editing,
              * the initial letter of each word should be capitalized.
              */
             INITIAL_CAPS_WORD,
-                
+
             /**
              * This flag is a hint to the implementation that during text editing,
              * the initial letter of each sentence should be capitalized.
              */
             INITIAL_CAPS_SENTENCE,
-                
+
             /**
              * Capitalize all characters automatically.
              */
-            INTIAL_CAPS_ALL_CHARACTERS,
+            INITIAL_CAPS_ALL_CHARACTERS,
+
+            /**
+             * Lowercase all characters automatically.
+             */
+            LOWERCASE_ALL_CHARACTERS
         };
-            
+
         /**
          * create a edit box with size.
          * @return An autorelease pointer of EditBox, you don't need to release it only if you retain it again.
@@ -196,29 +212,38 @@ namespace ui {
                                Scale9Sprite* pressedSprite = nullptr,
                                Scale9Sprite* disabledSprite = nullptr);
 
-            
         /**
          * create a edit box with size.
          * @return An autorelease pointer of EditBox, you don't need to release it only if you retain it again.
          */
         static EditBox* create(const Size& size,
-                               const std::string& normal9SpriteBg,
+                               const std::string& normalImage,
+                               TextureResType texType);
+
+        /**
+         * create a edit box with size.
+         * @return An autorelease pointer of EditBox, you don't need to release it only if you retain it again.
+         */
+        static EditBox* create(const Size& size,
+                               const std::string& normalImage,
+                               const std::string& pressedImage = "",
+                               const std::string& disabledImage = "",
                                TextureResType texType = TextureResType::LOCAL);
-            
+
         /**
          * Constructor.
          * @js ctor
          * @lua new
          */
-        EditBox(void);
-            
+        EditBox();
+
         /**
          * Destructor.
          * @js NA
          * @lua NA
          */
-        virtual ~EditBox(void);
-            
+        virtual ~EditBox();
+
         /**
          * Init edit box with specified size. This method should be invoked right after constructor.
          * @param size The size of edit box.
@@ -229,8 +254,7 @@ namespace ui {
         bool initWithSizeAndBackgroundSprite(const Size& size,
                                              const std::string& normal9SpriteBg,
                                              TextureResType texType = TextureResType::LOCAL);
-            
-        
+
         /**
          * Init edit box with specified size. This method should be invoked right after constructor.
          * @param size The size of edit box.
@@ -238,6 +262,113 @@ namespace ui {
          * @return Whether initialization is successfully or not.
          */
         bool initWithSizeAndBackgroundSprite(const Size& size, Scale9Sprite* normal9SpriteBg);
+
+        /**
+         * Init edit box with specified size. This method should be invoked right after constructor.
+         * @param size The size of edit box.
+         * @param normalSprite  normal state image of edit box.
+         * @param pressedSprite  pressed state image of edit box.
+         * @param disabledSprite  disabled state image of edit box.
+         * @return Whether initialization is successfully or not.
+         */
+        bool initWithSizeAndBackgroundSprite(const Size& size, Scale9Sprite* normalSprite, Scale9Sprite* pressedSprite, Scale9Sprite* disabledSprite);
+
+        /**
+         * Init edit box with specified size. This method should be invoked right after constructor.
+         * @param size The size of edit box.
+         * @param normalImage  normal state texture name.
+         * @param pressedImage  pressed state texture name.
+         * @param disabledImage  disabled state texture name.
+         * @return Whether initialization is successfully or not.
+         */
+        bool initWithSizeAndTexture(const Size& size,
+                                    const std::string& normalImage,
+                                    const std::string& pressedImage = "",
+                                    const std::string& disabledImage = "",
+                                    TextureResType texType = TextureResType::LOCAL);
+
+        /**
+         * Load textures for edit box.
+         *
+         * @param normal    normal state texture name.
+         * @param pressed    pressed state texture name.
+         * @param disabled    disabled state texture name.
+         * @param texType    @see `TextureResType`
+         */
+        void loadTextures(const std::string& normal,
+                          const std::string& pressed,
+                          const std::string& disabled = "",
+                          TextureResType texType = TextureResType::LOCAL);
+
+        /**
+         * Load normal state texture for edit box.
+         *
+         * @param normal    normal state texture.
+         * @param texType    @see `TextureResType`
+         */
+        void loadTextureNormal(const std::string& normal, TextureResType texType = TextureResType::LOCAL);
+
+        /**
+         * Load pressed state texture for edit box.
+         *
+         * @param pressed    pressed state texture.
+         * @param texType    @see `TextureResType`
+         */
+        void loadTexturePressed(const std::string& pressed, TextureResType texType = TextureResType::LOCAL);
+
+        /**
+         * Load disabled state texture for edit box.
+         *
+         * @param disabled    dark state texture.
+         * @param texType    @see `TextureResType`
+         */
+        void loadTextureDisabled(const std::string& disabled, TextureResType texType = TextureResType::LOCAL);
+
+        /**
+         * Sets capInsets for edit box.
+         *
+         * @param capInsets    capInset in Rect.
+         */
+        void setCapInsets(const Rect &capInsets);
+
+        /**
+         * Sets capInsets for edit box, only the normal state scale9 renderer will be affected.
+         *
+         * @param capInsets    capInsets in Rect.
+         */
+        void setCapInsetsNormalRenderer(const Rect &capInsets);
+
+        /**
+         * Return the capInsets of normal state scale9sprite.
+         * @return The normal scale9 renderer capInsets.
+         */
+        const Rect& getCapInsetsNormalRenderer() const;
+
+        /**
+         * Sets capInsets for edit box, only the pressed state scale9 renderer will be affected.
+         *
+         * @param capInsets    capInsets in Rect
+         */
+        void setCapInsetsPressedRenderer(const Rect &capInsets);
+
+        /**
+         * Return the capInsets of pressed state scale9sprite.
+         * @return The pressed scale9 renderer capInsets.
+         */
+        const Rect& getCapInsetsPressedRenderer() const;
+
+        /**
+         * Sets capInsets for edit box, only the disabled state scale9 renderer will be affected.
+         *
+         * @param capInsets  capInsets in Rect.
+         */
+        void setCapInsetsDisabledRenderer(const Rect &capInsets);
+
+        /**
+         * Return the capInsets of disabled state scale9sprite.
+         * @return The disabled scale9 renderer capInsets.
+         */
+        const Rect& getCapInsetsDisabledRenderer() const;
 
         /**
          * Gets/Sets the delegate for edit box.
@@ -250,7 +381,7 @@ namespace ui {
          * @lua NA
          */
         EditBoxDelegate* getDelegate();
-            
+
 #if CC_ENABLE_SCRIPT_BINDING
         /**
          * Registers a script function that will be called for EditBox events.
@@ -279,78 +410,107 @@ namespace ui {
          * @lua NA
          */
         void registerScriptEditBoxHandler(int handler);
-            
+
         /**
          * Unregisters a script function that will be called for EditBox events.
          * @js NA
          * @lua NA
          */
-        void unregisterScriptEditBoxHandler(void);
+        void unregisterScriptEditBoxHandler();
         /**
          * get a script Handler
          * @js NA
          * @lua NA
          */
-        int  getScriptEditBoxHandler(void){ return _scriptEditBoxHandler ;}
-            
+        int  getScriptEditBoxHandler(){ return _scriptEditBoxHandler ;}
+
 #endif // #if CC_ENABLE_SCRIPT_BINDING
-            
+
         /**
          * Set the text entered in the edit box.
          * @param pText The given text.
          */
         void setText(const char* pText);
-            
+
         /**
          * Get the text entered in the edit box.
          * @return The text entered in the edit box.
          */
-        const char* getText(void);
-            
+        const char* getText() const;
+
         /**
          * Set the font. Only system font is allowed.
          * @param pFontName The font name.
          * @param fontSize The font size.
          */
         void setFont(const char* pFontName, int fontSize);
-            
+
         /**
          * Set the font name. Only system font is allowed.
          * @param pFontName The font name.
          */
         void setFontName(const char* pFontName);
-            
+
+        /**
+         * Get the font name.
+         * @return The font name.
+         */
+        const char* getFontName() const;
+
         /**
          * Set the font size.
          * @param fontSize The font size.
          */
         void setFontSize(int fontSize);
-            
+
+        /**
+         * Get the font size.
+         * @return The font size.
+         */
+        int getFontSize() const;
+
         /**
          * Set the font color of the widget's text.
          */
         void setFontColor(const Color3B& color);
         void setFontColor(const Color4B& color);
-            
+
+        /**
+         * Get the font color of the widget's text.
+         */
+        const Color4B& getFontColor() const;
+
         /**
          * Set the placeholder's font. Only system font is allowed.
          * @param pFontName The font name.
          * @param fontSize The font size.
          */
         void setPlaceholderFont(const char* pFontName, int fontSize);
-            
+
         /**
          * Set the placeholder's font name. only system font is allowed.
          * @param pFontName The font name.
          */
         void setPlaceholderFontName(const char* pFontName);
-            
+
+        /**
+         * Get the placeholder's font name. only system font is allowed.
+         * @return The font name.
+         */
+        const char* getPlaceholderFontName() const;
+
         /**
          * Set the placeholder's font size.
          * @param fontSize The font size.
          */
         void setPlaceholderFontSize(int fontSize);
-            
+
+        /**
+         * Get the placeholder's font size.
+         * @return The font size.
+         */
+        int getPlaceholderFontSize() const;
+
         /**
          * Set the font color of the placeholder text when the edit box is empty.
          */
@@ -360,26 +520,37 @@ namespace ui {
          * Set the font color of the placeholder text when the edit box is empty.
          */
         void setPlaceholderFontColor(const Color4B& color);
-            
+
+        /**
+         * Get the font color of the placeholder text when the edit box is empty.
+         */
+        const Color4B& getPlaceholderFontColor() const;
+
         /**
          * Set a text in the edit box that acts as a placeholder when an
          * edit box is empty.
          * @param pText The given text.
          */
         void setPlaceHolder(const char* pText);
-            
+
         /**
          * Get a text in the edit box that acts as a placeholder when an
          * edit box is empty.
          */
-        const char* getPlaceHolder(void);
-            
+        const char* getPlaceHolder() const;
+
         /**
          * Set the input mode of the edit box.
          * @param inputMode One of the EditBox::InputMode constants.
          */
         void setInputMode(InputMode inputMode);
-            
+
+        /**
+         * Get the input mode of the edit box.
+         * @return One of the EditBox::InputMode constants.
+         */
+        InputMode getInputMode() const;
+
         /**
          * Sets the maximum input length of the edit box.
          * Setting this value enables multiline input mode by default.
@@ -388,26 +559,48 @@ namespace ui {
          * @param maxLength The maximum length.
          */
         void setMaxLength(int maxLength);
-            
+
         /**
          * Gets the maximum input length of the edit box.
          *
          * @return Maximum input length.
          */
         int getMaxLength();
-            
+
         /**
          * Set the input flags that are to be applied to the edit box.
          * @param inputFlag One of the EditBox::InputFlag constants.
          */
         void setInputFlag(InputFlag inputFlag);
-            
+
+        /**
+         * Get the input flags that are to be applied to the edit box.
+         * @return One of the EditBox::InputFlag constants.
+         */
+        InputFlag getInputFlag() const;
+
         /**
          * Set the return type that are to be applied to the edit box.
          * @param returnType One of the EditBox::KeyboardReturnType constants.
          */
-        void setReturnType(EditBox::KeyboardReturnType returnType);
-            
+        void setReturnType(KeyboardReturnType returnType);
+
+        /**
+         * Get the return type that are to be applied to the edit box.
+         * @return One of the EditBox::KeyboardReturnType constants.
+         */
+        KeyboardReturnType getReturnType() const;
+
+        /**
+         * Set the text horizontal alignment.
+         */
+        void setTextHorizontalAlignment(TextHAlignment alignment);
+
+        /**
+         * Get the text horizontal alignment.
+         */
+        TextHAlignment getTextHorizontalAlignment() const;
+
         /* override functions */
         virtual void setPosition(const Vec2& pos) override;
         virtual void setVisible(bool visible) override;
@@ -428,12 +621,12 @@ namespace ui {
          * @js NA
          * @lua NA
          */
-        virtual void onEnter(void) override;
+        virtual void onEnter() override;
         /**
          * @js NA
          * @lua NA
          */
-        virtual void onExit(void) override;
+        virtual void onExit() override;
         /**
          * @js NA
          * @lua NA
@@ -454,41 +647,66 @@ namespace ui {
          * @lua NA
          */
         virtual void keyboardDidHide(IMEKeyboardNotificationInfo& info) override;
-            
-        /* callback funtions
-         * @js NA
-         * @lua NA
-         */
-        void touchDownAction(Ref *sender, TouchEventType controlEvent);
-            
+
+        void openKeyboard() const;
+
     protected:
+        virtual void releaseUpEvent() override;
+
+        virtual void initRenderer() override;
+        virtual void onPressStateChangedToNormal() override;
+        virtual void onPressStateChangedToPressed() override;
+        virtual void onPressStateChangedToDisabled() override;
+        virtual void onSizeChanged() override;
+
+        void loadTextureNormal(SpriteFrame* normalSpriteFrame);
+        void setupNormalTexture(bool textureLoaded);
+        void loadTexturePressed(SpriteFrame* pressedSpriteFrame);
+        void setupPressedTexture(bool textureLoaded);
+        void loadTextureDisabled(SpriteFrame* disabledSpriteFrame);
+        void setupDisabledTexture(bool textureLoaded);
+
+        void normalTextureScaleChangedWithSize();
+        void pressedTextureScaleChangedWithSize();
+        void disabledTextureScaleChangedWithSize();
+
         virtual void adaptRenderers() override;
 
+    protected:
         void updatePosition(float dt);
-        EditBoxImpl*      _editBoxImpl;
-        EditBoxDelegate*  _delegate;
-            
-        InputMode    _editBoxInputMode;
-        InputFlag    _editBoxInputFlag;
-        EditBox::KeyboardReturnType  _keyboardReturnType;
-            
-        Scale9Sprite *_backgroundSprite;
-        std::string _text;
-        std::string _placeHolder;
-            
-        std::string _fontName;
-        std::string _placeholderFontName;
-            
-        int _fontSize;
-        int _placeholderFontSize;
-            
-        Color4B _colText;
-        Color4B _colPlaceHolder;
-            
-        int   _maxLength;
-        float _adjustHeight;
+
+        Scale9Sprite* _normalRenderer = nullptr;
+        Scale9Sprite* _pressedRenderer = nullptr;
+        Scale9Sprite* _disabledRenderer = nullptr;
+
+        Rect _capInsetsNormal;
+        Rect _capInsetsPressed;
+        Rect _capInsetsDisabled;
+
+        Size _normalTextureSize;
+        Size _pressedTextureSize;
+        Size _disabledTextureSize;
+
+        bool _normalTextureLoaded = false;
+        bool _pressedTextureLoaded = false;
+        bool _disabledTextureLoaded = false;
+        bool _normalTextureAdaptDirty = true;
+        bool _pressedTextureAdaptDirty = true;
+        bool _disabledTextureAdaptDirty = true;
+
+        std::string _normalFileName;
+        std::string _pressedFileName;
+        std::string _disabledFileName;
+        TextureResType _normalTexType = TextureResType::LOCAL;
+        TextureResType _pressedTexType = TextureResType::LOCAL;
+        TextureResType _disabledTexType = TextureResType::LOCAL;
+
+        EditBoxImpl*      _editBoxImpl = nullptr;
+        EditBoxDelegate*  _delegate = nullptr;
+
+        float _adjustHeight = 0.f;
 #if CC_ENABLE_SCRIPT_BINDING
-        int   _scriptEditBoxHandler;
+        int   _scriptEditBoxHandler = 0;
 #endif
     };
 }

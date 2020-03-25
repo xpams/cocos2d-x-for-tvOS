@@ -19,7 +19,7 @@
 #ifndef __FTBDF_H__
 #define __FTBDF_H__
 
-#include <ft2build.h>
+#include "ft2build.h"
 #include FT_FREETYPE_H
 
 #ifdef FREETYPE_H
@@ -45,7 +45,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Description>                                                         */
   /*    This section contains the declaration of functions specific to BDF */
-  /*    and PCF fonts.                                                     */
+  /*    and PCF font.                                                     */
   /*                                                                       */
   /*************************************************************************/
 

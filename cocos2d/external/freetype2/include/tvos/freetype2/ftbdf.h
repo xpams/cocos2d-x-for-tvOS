@@ -45,7 +45,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Description>                                                         */
   /*    This section contains the declaration of functions specific to BDF */
-  /*    and PCF fonts.                                                     */
+  /*    and PCF font.                                                     */
   /*                                                                       */
   /*************************************************************************/
 

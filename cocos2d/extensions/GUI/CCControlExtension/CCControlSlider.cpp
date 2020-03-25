@@ -5,6 +5,8 @@
  * Copyright 2011 Yannick Loriot.
  * http://yannickloriot.com
  * 
+ * Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -122,7 +124,7 @@ bool ControlSlider::initWithSprites(Sprite * backgroundSprite, Sprite* progressS
         CCASSERT(thumbSprite,           "Thumb sprite must be not nil");
         CCASSERT(selectedThumbSprite,   "Thumb sprite must be not nil");
 
-        ignoreAnchorPointForPosition(false);
+        setIgnoreAnchorPointForPosition(false);
 
         this->setBackgroundSprite(backgroundSprite);
         this->setProgressSprite(progressSprite);
@@ -246,7 +248,7 @@ Vec2 ControlSlider::locationFromTouch(Touch* touch)
 }
 
 
-bool ControlSlider::onTouchBegan(Touch* touch, Event* pEvent)
+bool ControlSlider::onTouchBegan(Touch* touch, Event* /*pEvent*/)
 {
     if (!isTouchInside(touch) || !isEnabled() || !isVisible())
     {
@@ -258,13 +260,13 @@ bool ControlSlider::onTouchBegan(Touch* touch, Event* pEvent)
     return true;
 }
 
-void ControlSlider::onTouchMoved(Touch *pTouch, Event *pEvent)
+void ControlSlider::onTouchMoved(Touch *pTouch, Event* /*pEvent*/)
 {
     Vec2 location = locationFromTouch(pTouch);
     sliderMoved(location);
 }
 
-void ControlSlider::onTouchEnded(Touch *pTouch, Event *pEvent)
+void ControlSlider::onTouchEnded(Touch* /*pTouch*/, Event* /*pEvent*/)
 {
     sliderEnded(Vec2::ZERO);
 }
@@ -303,7 +305,7 @@ void ControlSlider::sliderMoved(Vec2 location)
     setValue(valueForLocation(location));
 }
 
-void ControlSlider::sliderEnded(Vec2 location)
+void ControlSlider::sliderEnded(Vec2 /*location*/)
 {
     if (this->isSelected())
     {

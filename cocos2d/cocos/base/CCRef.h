@@ -1,6 +1,7 @@
 /****************************************************************************
 Copyright (c) 2010-2012 cocos2d-x.org
-Copyright (c) 2013-2014 Chukong Technologies
+Copyright (c) 2013-2017 Chukong Technologies
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -56,20 +57,10 @@ public:
      * @lua NA
      */
     virtual ~Clonable() {};
-
-    /** Returns a copy of the Ref.
-     * @deprecated Use clone() instead.
-     */
-    CC_DEPRECATED_ATTRIBUTE Ref* copy() const
-    {
-        // use "clone" instead
-        CC_ASSERT(false);
-        return nullptr;
-    }
 };
 
 /**
- * Ref is used for reference count manangement. If a class inherits from Ref,
+ * Ref is used for reference count management. If a class inherits from Ref,
  * then it is easy to be shared in different places.
  * @js NA
  */
@@ -91,7 +82,7 @@ public:
      *
      * This decrements the Ref's reference count.
      *
-     * If the reference count reaches 0 after the descrement, this Ref is
+     * If the reference count reaches 0 after the decrement, this Ref is
      * destructed.
      *
      * @see retain, autorelease
@@ -102,10 +93,10 @@ public:
     /**
      * Releases the ownership sometime soon automatically.
      *
-     * This descrements the Ref's reference count at the end of current
+     * This decrements the Ref's reference count at the end of current
      * autorelease pool block.
      *
-     * If the reference count reaches 0 after the descrement, this Ref is
+     * If the reference count reaches 0 after the decrement, this Ref is
      * destructed.
      *
      * @returns The Ref itself.
@@ -156,6 +147,11 @@ public:
     int                 _luaID;
     /// scriptObject, support for swift
     void* _scriptObject;
+
+    /**
+     When true, it means that the object was already rooted.
+     */
+    bool _rooted;
 #endif
 
     // Memory leak diagnostic data (only included when CC_REF_LEAK_DETECTION is defined and its value isn't zero)
@@ -180,16 +176,6 @@ typedef void (Ref::*SEL_SCHEDULE)(float);
 #define CC_CALLFUNCO_SELECTOR(_SELECTOR) static_cast<cocos2d::SEL_CallFuncO>(&_SELECTOR)
 #define CC_MENU_SELECTOR(_SELECTOR) static_cast<cocos2d::SEL_MenuHandler>(&_SELECTOR)
 #define CC_SCHEDULE_SELECTOR(_SELECTOR) static_cast<cocos2d::SEL_SCHEDULE>(&_SELECTOR)
-
-// Deprecated
-#define callfunc_selector(_SELECTOR) CC_CALLFUNC_SELECTOR(_SELECTOR)
-#define callfuncN_selector(_SELECTOR) CC_CALLFUNCN_SELECTOR(_SELECTOR)
-#define callfuncND_selector(_SELECTOR) CC_CALLFUNCND_SELECTOR(_SELECTOR)
-#define callfuncO_selector(_SELECTOR) CC_CALLFUNCO_SELECTOR(_SELECTOR)
-#define menu_selector(_SELECTOR) CC_MENU_SELECTOR(_SELECTOR)
-#define schedule_selector(_SELECTOR) CC_SCHEDULE_SELECTOR(_SELECTOR)
-
-
 
 NS_CC_END
 // end of base group

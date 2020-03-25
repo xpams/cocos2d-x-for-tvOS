@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2013-2014 Chukong Technologies
+ Copyright (c) 2013-2017 Chukong Technologies
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -22,7 +23,7 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-#include "s3tc.h"
+#include "base/s3tc.h"
 
 //Decode S3TC encode block to 4x4 RGB32 pixels
 static void s3tc_decode_block(uint8_t **blockData,

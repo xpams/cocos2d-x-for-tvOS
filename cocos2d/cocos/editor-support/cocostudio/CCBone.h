@@ -1,5 +1,6 @@
-﻿/****************************************************************************
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+/****************************************************************************
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -25,12 +26,12 @@ THE SOFTWARE.
 #ifndef __CCBONE_H__
 #define __CCBONE_H__
 
-#include "cocostudio/CCArmatureDefine.h"
-#include "cocostudio/CCDatas.h"
-#include "cocostudio/CCTween.h"
-#include "cocostudio/CCDecorativeDisplay.h"
-#include "cocostudio/CCDisplayManager.h"
-#include "cocostudio/CocosStudioExport.h"
+#include "editor-support/cocostudio/CCArmatureDefine.h"
+#include "editor-support/cocostudio/CCDatas.h"
+#include "editor-support/cocostudio/CCTween.h"
+#include "editor-support/cocostudio/CCDecorativeDisplay.h"
+#include "editor-support/cocostudio/CCDisplayManager.h"
+#include "editor-support/cocostudio/CocosStudioExport.h"
 #include "2d/CCNode.h"
 #include "math/CCMath.h"
 
@@ -63,7 +64,7 @@ public:
      * @js NA
      * @lua NA
      */
-    virtual ~Bone(void);
+    virtual ~Bone();
 
     /**
      * Initializes an empty Bone with nothing init.
@@ -107,7 +108,7 @@ public:
 
     /**
      * Set parent bone.
-     * If parent is NUll, then also remove this bone from armature.
+     * If parent is null, then also remove this bone from armature.
      * It will not set the Armature, if you want to add the bone to a Armature, you should use Armature::addBone(Bone *bone, const char* parentName).
      *
      * @param parent  the parent bone.
@@ -137,7 +138,7 @@ public:
     void update(float delta) override;
 
     void updateDisplayedColor(const cocos2d::Color3B &parentColor) override;
-    void updateDisplayedOpacity(GLubyte parentOpacity) override;
+    void updateDisplayedOpacity(uint8_t parentOpacity) override;
 
     //! Update color to render display
     virtual void updateColor() override;
@@ -198,13 +199,13 @@ public:
      * Set blend function
      */
     virtual void setBlendFunc(const cocos2d::BlendFunc& blendFunc);
-    virtual cocos2d::BlendFunc getBlendFunc(void) { return _blendFunc; }
+    virtual cocos2d::BlendFunc getBlendFunc() { return _blendFunc; }
 
     /*
      * Set if blend function is dirty 
      */
     virtual void setBlendDirty(bool dirty) { _blendDirty = dirty; }
-    virtual bool isBlendDirty(void) { return _blendDirty; }
+    virtual bool isBlendDirty() { return _blendDirty; }
 
     virtual FrameData *getTweenData() const { return _tweenData; }
 

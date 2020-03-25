@@ -1,5 +1,6 @@
 ﻿/****************************************************************************
  Copyright (c) 2014 cocos2d-x.org
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -25,9 +26,9 @@
 #ifndef __TestCpp__WidgetReaderProtocol__
 #define __TestCpp__WidgetReaderProtocol__
 
-#include "cocos2d.h"
-#include "cocostudio/DictionaryHelper.h"
-#include "cocostudio/CocosStudioExport.h"
+
+#include "editor-support/cocostudio/DictionaryHelper.h"
+#include "editor-support/cocostudio/CocosStudioExport.h"
 
 namespace protocolbuffers
 {

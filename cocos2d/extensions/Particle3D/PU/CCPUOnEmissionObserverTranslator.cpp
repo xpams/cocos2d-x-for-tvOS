@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (C) 2013 Henry van Merode. All rights reserved.
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -34,12 +35,12 @@ PUOnEmissionObserverTranslator::PUOnEmissionObserverTranslator()
 {
 }
 //-------------------------------------------------------------------------
-bool PUOnEmissionObserverTranslator::translateChildProperty( PUScriptCompiler* compiler, PUAbstractNode *node )
+bool PUOnEmissionObserverTranslator::translateChildProperty( PUScriptCompiler* /*compiler*/, PUAbstractNode* /*node*/ )
 {
     return false;
 }
 
-bool PUOnEmissionObserverTranslator::translateChildObject( PUScriptCompiler* compiler, PUAbstractNode *node )
+bool PUOnEmissionObserverTranslator::translateChildObject( PUScriptCompiler* /*compiler*/, PUAbstractNode* /*node*/ )
 {
     // No objects
     return false;

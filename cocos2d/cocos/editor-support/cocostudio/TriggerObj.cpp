@@ -1,5 +1,6 @@
 /****************************************************************************
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -21,17 +22,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
-#include "TriggerObj.h"
+#include "editor-support/cocostudio/TriggerObj.h"
+#include "base/CCEventListenerCustom.h"
 
 using namespace cocos2d;
 
 namespace cocostudio {
     
-BaseTriggerCondition::BaseTriggerCondition(void)
+BaseTriggerCondition::BaseTriggerCondition()
 {
 }
 
-BaseTriggerCondition::~BaseTriggerCondition(void)
+BaseTriggerCondition::~BaseTriggerCondition()
 {
 }
 
@@ -45,11 +47,11 @@ bool BaseTriggerCondition::detect()
     return true;
 }
 
-void BaseTriggerCondition::serialize(const rapidjson::Value &val)
+void BaseTriggerCondition::serialize(const rapidjson::Value& /*val*/)
 {
 }
     
-void BaseTriggerCondition::serialize(cocostudio::CocoLoader *cocoLoader, cocostudio::stExpCocoNode *cocoNode)
+void BaseTriggerCondition::serialize(cocostudio::CocoLoader* /*cocoLoader*/, cocostudio::stExpCocoNode* /*cocoNode*/)
 {
     
 }
@@ -58,11 +60,11 @@ void BaseTriggerCondition::removeAll()
 {
 }
 
-BaseTriggerAction::BaseTriggerAction(void)
+BaseTriggerAction::BaseTriggerAction()
 {
 }
 
-BaseTriggerAction::~BaseTriggerAction(void)
+BaseTriggerAction::~BaseTriggerAction()
 {
 }
 
@@ -76,11 +78,11 @@ void BaseTriggerAction::done()
 
 }
 
-void BaseTriggerAction::serialize(const rapidjson::Value &val)
+void BaseTriggerAction::serialize(const rapidjson::Value& /*val*/)
 {
 }
 
-void BaseTriggerAction::serialize(cocostudio::CocoLoader *cocoLoader, cocostudio::stExpCocoNode *cocoNode)
+void BaseTriggerAction::serialize(cocostudio::CocoLoader* /*cocoLoader*/, cocostudio::stExpCocoNode* /*cocoNode*/)
 {
 }
 
@@ -88,13 +90,13 @@ void BaseTriggerAction::removeAll()
 {
 }
 
-TriggerObj::TriggerObj(void)
+TriggerObj::TriggerObj()
 :_id(UINT_MAX)
 ,_enabled(true)
 {
 }
 
-TriggerObj::~TriggerObj(void)
+TriggerObj::~TriggerObj()
 {
 }
 
@@ -224,12 +226,11 @@ void TriggerObj::serialize(const rapidjson::Value &val)
             continue;
         }
 
-        char* buf = new char[10];
+        char buf[10];
         sprintf(buf, "%d", event);
         std::string custom_event_name(buf);
-        CC_SAFE_DELETE_ARRAY(buf);
 
-        EventListenerCustom* listener = EventListenerCustom::create(custom_event_name, [=](EventCustom* evt){
+        EventListenerCustom* listener = EventListenerCustom::create(custom_event_name, [=](EventCustom* /*evt*/){
             if (detect())
             {
                 done();
@@ -316,12 +317,11 @@ void TriggerObj::serialize(cocostudio::CocoLoader *pCocoLoader, cocostudio::stEx
                 {
                     continue;
                 }
-                char* buf = new char[10];
+                char buf[10];
                 sprintf(buf, "%d", event);
                 std::string custom_event_name(buf);
-                CC_SAFE_DELETE_ARRAY(buf);
                 
-                EventListenerCustom* listener = EventListenerCustom::create(custom_event_name, [=](EventCustom* evt){
+                EventListenerCustom* listener = EventListenerCustom::create(custom_event_name, [=](EventCustom* /*evt*/){
                     if (detect())
                     {
                         done();

@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (C) 2013 Henry van Merode. All rights reserved.
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -34,19 +35,19 @@ const PUParticle3DInterParticleCollider::InterParticleCollisionResponse PUPartic
          PUParticle3DInterParticleCollider::IPCR_AVERAGE_VELOCITY;
 
 //-----------------------------------------------------------------------
-PUParticle3DInterParticleCollider::PUParticle3DInterParticleCollider(void) : 
+PUParticle3DInterParticleCollider::PUParticle3DInterParticleCollider() : 
     PUBaseCollider(),
     _adjustment(DEFAULT_ADJUSTMENT),
     _interParticleCollisionResponse(DEFAULT_COLLISION_RESPONSE)
 {
 }
 
-PUParticle3DInterParticleCollider::~PUParticle3DInterParticleCollider( void )
+PUParticle3DInterParticleCollider::~PUParticle3DInterParticleCollider()
 {
 
 }
 //-----------------------------------------------------------------------
-float PUParticle3DInterParticleCollider::getAdjustment(void) const
+float PUParticle3DInterParticleCollider::getAdjustment() const
 {
     return _adjustment;
 }
@@ -56,7 +57,7 @@ void PUParticle3DInterParticleCollider::setAdjustment(float adjustment)
     _adjustment = adjustment;
 }
 //-----------------------------------------------------------------------
-PUParticle3DInterParticleCollider::InterParticleCollisionResponse PUParticle3DInterParticleCollider::getInterParticleCollisionResponse(void) const
+PUParticle3DInterParticleCollider::InterParticleCollisionResponse PUParticle3DInterParticleCollider::getInterParticleCollisionResponse() const
 {
     return _interParticleCollisionResponse;
 }
@@ -78,7 +79,7 @@ void PUParticle3DInterParticleCollider::unPrepare()
     //particleTechnique->setSpatialHashingUsed(false);
 }
 //-----------------------------------------------------------------------
-bool PUParticle3DInterParticleCollider::validateAndExecuteSphereCollision (PUParticle3D* particle1, PUParticle3D* particle2, float timeElapsed)
+bool PUParticle3DInterParticleCollider::validateAndExecuteSphereCollision (PUParticle3D* particle1, PUParticle3D* particle2, float /*timeElapsed*/)
 {
     PUParticle3D* vp1 = static_cast<PUParticle3D*>(particle1);
     PUParticle3D* vp2 = static_cast<PUParticle3D*>(particle2);
@@ -126,7 +127,7 @@ bool PUParticle3DInterParticleCollider::validateAndExecuteSphereCollision (PUPar
 }
 //-----------------------------------------------------------------------
 
-void PUParticle3DInterParticleCollider::updatePUAffector( PUParticle3D *particle, float deltaTime )
+void PUParticle3DInterParticleCollider::updatePUAffector( PUParticle3D* /*particle*/, float /*deltaTime*/ )
 {
     //CCASSERT(0, "nonsupport yet");
     //for (auto iter : _particleSystem->getParticles())

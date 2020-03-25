@@ -1,5 +1,6 @@
 /****************************************************************************
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -36,6 +37,7 @@ NS_CC_BEGIN
  */
 
 class Sprite;
+struct CC_DLL ResourceData;
 
 namespace ui {
     class Scale9Sprite;
@@ -142,14 +144,14 @@ public:
      * @param capInsets Capinsets for progress bar slider.
      * @js NA
      */
-    void setCapInsetProgressBarRebderer(const Rect &capInsets);
+    void setCapInsetProgressBarRenderer(const Rect &capInsets);
     
     /**
      * Gets capinsets for progress bar slider, if slider is using scale9 renderer.
      * @return Capinsets for progress bar slider.
      * @js NA
      */
-    const Rect& getCapInsetsProgressBarRebderer()const;
+    const Rect& getCapInsetsProgressBarRenderer()const;
     
     /**
      * Load textures for slider ball.
@@ -203,6 +205,11 @@ public:
     void setPercent(int percent);
     
     /**
+     * Updates the visual elements of the slider.
+     */
+    void updateVisualSlider();
+    
+    /**
      * Gets the progress direction of slider.
      *
      * @return percent Percent value from 1 to 100.
@@ -222,9 +229,7 @@ public:
      * @return The maximum percent of the Slider.
      */
     int getMaxPercent()const;
-
     
-    CC_DEPRECATED_ATTRIBUTE void addEventListenerSlider(Ref* target,SEL_SlidPercentChangedEvent selector);
     /**
      * Add call back function called when slider's percent has changed to slider.
      *
@@ -246,7 +251,7 @@ public:
     //override "ignoreContentAdaptWithSize" method of widget.
     virtual void ignoreContentAdaptWithSize(bool ignore) override;
     
-    //override the widget's hitTest function to perfom its own
+    //override the widget's hitTest function to perform its own
     virtual bool hitTest(const Vec2 &pt, const Camera* camera, Vec3 *p) const override;
     /**
      * Returns the "class name" of widget.
@@ -264,7 +269,17 @@ public:
      */
     float getZoomScale()const;
 
-    
+    Sprite* getSlidBallNormalRenderer() const;
+    Sprite* getSlidBallPressedRenderer() const;
+    Sprite* getSlidBallDisabledRenderer() const;
+    Node* getSlidBallRenderer() const;
+
+    ResourceData getBackFile();
+    ResourceData getProgressBarFile();
+    ResourceData getBallNormalFile();
+    ResourceData getBallPressedFile();
+    ResourceData getBallDisabledFile();
+
 CC_CONSTRUCTOR_ACCESS:
     virtual bool init() override;
 
@@ -294,7 +309,9 @@ protected:
     Scale9Sprite*  _barRenderer;
     Scale9Sprite* _progressBarRenderer;
     Size _barTextureSize;
+    Rect _originalBarRect;
     Size _progressBarTextureSize;
+    Rect _originalProgressBarRect;
     
     Sprite* _slidBallNormalRenderer;
     Sprite* _slidBallPressedRenderer;
@@ -319,18 +336,6 @@ protected:
     Rect _capInsetsProgressBarRenderer;
 
     Ref*       _sliderEventListener;
-#if defined(__GNUC__) && ((__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1)))
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#elif _MSC_VER >= 1400 //vs 2005 or higher
-#pragma warning (push)
-#pragma warning (disable: 4996)
-#endif
-    SEL_SlidPercentChangedEvent    _sliderEventSelector;
-#if defined(__GNUC__) && ((__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1)))
-#pragma GCC diagnostic warning "-Wdeprecated-declarations"
-#elif _MSC_VER >= 1400 //vs 2005 or higher
-#pragma warning (pop)
-#endif
     
     ccSliderCallback  _eventCallback;
 
@@ -341,6 +346,12 @@ protected:
     TextureResType _ballDTexType;
     bool _barRendererAdaptDirty;
     bool _progressBarRendererDirty;
+
+    std::string _textureFile;
+    std::string _progressBarTextureFile;
+    std::string _slidBallNormalTextureFile;
+    std::string _slidBallPressedTextureFile;
+    std::string _slidBallDisabledTextureFile;
 };
 
 }

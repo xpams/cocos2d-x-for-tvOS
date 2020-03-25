@@ -1,5 +1,6 @@
 /****************************************************************************
 Copyright (c) 2013 cocos2d-x.org
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -62,7 +63,8 @@ void FileServer::readResFileFinfo()
     FILE * pFile = fopen (filecfg.c_str() , "r");
     if(pFile)
     {
-        rapidjson::FileStream inputStream(pFile);
+        char buffer[65536];
+        rapidjson::FileReadStream inputStream(pFile, buffer, sizeof(buffer));
         _filecfgjson.ParseStream<0>(inputStream);
         fclose(pFile);
     }
@@ -257,7 +259,7 @@ _responseEndThread(false)
     _writePath = FileUtils::getInstance()->getWritablePath();
     
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
-    std::string getCurAppName(void);
+#include "Widget_mac.h"
     _writePath += getCurAppName();
     _writePath += "/";
 #endif
@@ -508,7 +510,7 @@ void FileServer::loopResponse()
         char dataBuf[1024] = {0};
         struct ResponseHeaderStruct
         {
-            char startFlag[12];
+            char startFlag[13]; // needs to store PROTO_START, which is 12+NULL long
             unsigned short protoNum;
             unsigned short protoBufLen;
         };

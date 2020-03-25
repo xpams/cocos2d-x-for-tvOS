@@ -8,6 +8,8 @@
  * Modified by Yannick Loriot.
  * http://yannickloriot.com
  * 
+ * Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -161,7 +163,7 @@ void ControlColourPicker::updateHueAndControlPicker()
 }
 
 
-void ControlColourPicker::hueSliderValueChanged(Ref * sender, Control::EventType controlEvent)
+void ControlColourPicker::hueSliderValueChanged(Ref * sender, Control::EventType /*controlEvent*/)
 {
     _hsv.h      = ((ControlHuePicker*)sender)->getHue();
 
@@ -175,7 +177,7 @@ void ControlColourPicker::hueSliderValueChanged(Ref * sender, Control::EventType
     updateControlPicker();
 }
 
-void ControlColourPicker::colourSliderValueChanged(Ref * sender, Control::EventType controlEvent)
+void ControlColourPicker::colourSliderValueChanged(Ref * sender, Control::EventType /*controlEvent*/)
 {
     _hsv.s=((ControlSaturationBrightnessPicker*)sender)->getSaturation();
     _hsv.v=((ControlSaturationBrightnessPicker*)sender)->getBrightness();
@@ -191,7 +193,7 @@ void ControlColourPicker::colourSliderValueChanged(Ref * sender, Control::EventT
 }
 
 //ignore all touches, handled by children
-bool ControlColourPicker::onTouchBegan(Touch* touch, Event* pEvent)
+bool ControlColourPicker::onTouchBegan(Touch* /*touch*/, Event* /*pEvent*/)
 {
     return false;
 }

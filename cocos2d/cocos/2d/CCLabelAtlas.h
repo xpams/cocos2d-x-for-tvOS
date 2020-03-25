@@ -2,7 +2,8 @@
 Copyright (c) 2008-2010 Ricardo Quesada
 Copyright (c) 2010-2012 cocos2d-x.org
 Copyright (c) 2011      Zynga Inc.
-Copyright (c) 2013-2015 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
 http://www.cocos2d-x.org
 
@@ -27,7 +28,7 @@ THE SOFTWARE.
 #ifndef __CCLABEL_ATLAS_H__
 #define __CCLABEL_ATLAS_H__
 
-#include "CCAtlasNode.h"
+#include "2d/CCAtlasNode.h"
 #if CC_LABELATLAS_DEBUG_DRAW
 #include "renderer/CCCustomCommand.h"
 #include "2d/CCDrawNode.h"
@@ -83,7 +84,7 @@ public:
     bool initWithString(const std::string& string, Texture2D* texture, int itemWidth, int itemHeight, int startCharMap);
     
     virtual void setString(const std::string &label) override;
-    virtual const std::string& getString(void) const override;
+    virtual const std::string& getString() const override;
 
     virtual void updateAtlasValues() override;
 	/**

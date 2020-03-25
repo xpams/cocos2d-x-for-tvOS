@@ -1,5 +1,6 @@
 ﻿/****************************************************************************
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -25,21 +26,19 @@ THE SOFTWARE.
 #ifndef __TRIGGEROBJ_H__
 #define __TRIGGEROBJ_H__
 
-#include "CocoStudio.h"
+#include "editor-support/cocostudio/CocoStudio.h"
 #include "base/CCVector.h"
+#include "base/CCEventListenerCustom.h"
 
-namespace cocos2d {
-class EventListenerCustom;
-}
 
 namespace cocostudio {
 
 class CC_STUDIO_DLL BaseTriggerCondition : public cocos2d::Ref
 {
 protected:
-    BaseTriggerCondition(void);
+    BaseTriggerCondition();
 public:
-    virtual ~BaseTriggerCondition(void);
+    virtual ~BaseTriggerCondition();
     virtual bool init();
     virtual bool detect();
     virtual void serialize(const rapidjson::Value &val);
@@ -50,9 +49,9 @@ public:
 class CC_STUDIO_DLL BaseTriggerAction : public cocos2d::Ref
 {
 protected:
-    BaseTriggerAction(void);
+    BaseTriggerAction();
 public:
-    virtual ~BaseTriggerAction(void);
+    virtual ~BaseTriggerAction();
     virtual bool init();
     virtual void done();
     virtual void serialize(const rapidjson::Value &val);
@@ -64,10 +63,10 @@ public:
 class CC_STUDIO_DLL TriggerObj : public cocos2d::Ref
 {
 public:
-    TriggerObj(void);
-    virtual ~TriggerObj(void);
+    TriggerObj();
+    virtual ~TriggerObj();
     virtual bool init();
-    static TriggerObj* create(void);
+    static TriggerObj* create();
     
     virtual bool detect();
     virtual void done();

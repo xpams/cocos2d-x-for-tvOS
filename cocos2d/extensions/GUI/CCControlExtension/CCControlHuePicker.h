@@ -8,6 +8,8 @@
  * Modified by Yannick Loriot.
  * http://yannickloriot.com
  * 
+ * Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -71,7 +73,7 @@ protected:
     void updateSliderPosition(Vec2 location);
     bool checkSliderPosition(Vec2 location);
 
-    //maunally put in the setters
+    //manually put in the setters
     CC_SYNTHESIZE_READONLY(float, _hue, Hue);
     virtual void setHue(float val);
     CC_SYNTHESIZE_READONLY(float, _huePercentage, HuePercentage);

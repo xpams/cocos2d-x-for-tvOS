@@ -25,7 +25,7 @@
   /*                                                                       */
   /* A typical example is                                                  */
   /*                                                                       */
-  /*   #include <ft2build.h>                                               */
+  /*   #include "ft2build.h"                                               */
   /*   #include FT_FREETYPE_H                                              */
   /*                                                                       */
   /*************************************************************************/
@@ -34,7 +34,7 @@
 #ifndef __FT2BUILD_H__
 #define __FT2BUILD_H__
 
-#include <config/ftheader.h>
+#include "config/ftheader.h"
 
 #endif /* __FT2BUILD_H__ */
 

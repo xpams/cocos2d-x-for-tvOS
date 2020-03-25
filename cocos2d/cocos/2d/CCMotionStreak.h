@@ -1,7 +1,8 @@
 /****************************************************************************
 Copyright (c) 2011      ForzeField Studios S.L.
 Copyright (c) 2010-2012 cocos2d-x.org
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -23,8 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
-#ifndef __CCMOTION_STREAK_H__
-#define __CCMOTION_STREAK_H__
+#pragma once
 
 #include "base/CCProtocols.h"
 #include "2d/CCNode.h"
@@ -47,69 +47,24 @@ class CC_DLL MotionStreak : public Node, public TextureProtocol
 public:
     /** Creates and initializes a motion streak with fade in seconds, minimum segments, stroke's width, color, texture filename.
      *
-     * @param fade The fade time, in seconds.
+     * @param timeToFade The fade time, in seconds.
      * @param minSeg The minimum segments.
-     * @param stroke The width of stroke.
-     * @param color The color of stroke.
-     * @param path The texture file name of stoke.
+     * @param strokeWidth The width of stroke.
+     * @param strokeColor The color of stroke.
+     * @param imagePath The texture file name of stoke.
      * @return An autoreleased MotionStreak object.
      */
-    static MotionStreak* create(float fade, float minSeg, float stroke, const Color3B& color, const std::string& path);
+    static MotionStreak* create(float timeToFade, float minSeg, float strokeWidth, const Color3B& strokeColor, const std::string& imagePath);
     /** Creates and initializes a motion streak with fade in seconds, minimum segments, stroke's width, color, texture.
      * 
-     * @param fade The fade time, in seconds.
+     * @param timeToFade The fade time, in seconds.
      * @param minSeg The minimum segments.
-     * @param stroke The width of stroke.
-     * @param color The color of stroke.
+     * @param strokeWidth The width of stroke.
+     * @param strokeColor The color of stroke.
      * @param texture The texture name of stoke.
      * @return An autoreleased MotionStreak object.
      */
-    static MotionStreak* create(float fade, float minSeg, float stroke, const Color3B& color, Texture2D* texture);
-
-    /** Color used for the tint.
-     *
-     * @param colors The color used for the tint.
-     */
-    void tintWithColor(const Color3B& colors);
-
-    /** Remove all living segments of the ribbon.
-     */
-    void reset();
-
-    /** When fast mode is enabled, new points are added faster but with lower precision. 
-     * 
-     * @return True if fast mode is enabled.
-     */
-    inline bool isFastMode() const { return _fastMode; }
-    /** Sets fast mode or not.
-     *
-     * @param bFastMode True if enabled fast mode.
-     */
-    inline void setFastMode(bool bFastMode) { _fastMode = bFastMode; }
-    /** Get stroke.
-     *
-     * @return float stroke.
-     */
-    inline float getStroke() const { return _stroke; }
-    /** Set stroke.
-     *
-     * @param stroke The width of stroke.
-     */
-    inline void setStroke(float stroke) { _stroke = stroke; }
-
-    /** Is the starting position initialized or not.
-     *
-     * @return True if the starting position is initialized.
-     */
-    inline bool isStartingPositionInitialized() const { return _startingPositionInitialized; }
-    /** Sets the starting position initialized or not.
-     *
-     * @param bStartingPositionInitialized True if initialized the starting position.
-     */
-    inline void setStartingPositionInitialized(bool bStartingPositionInitialized)
-    {
-        _startingPositionInitialized = bStartingPositionInitialized; 
-    }
+    static MotionStreak* create(float timeToFade, float minSeg, float strokeWidth, const Color3B& strokeColor, Texture2D* texture);
 
     // Overrides
     virtual void setPosition(const Vec2& position) override;
@@ -118,8 +73,8 @@ public:
     virtual void getPosition(float* x, float* y) const override;
     virtual void setPositionX(float x) override;
     virtual void setPositionY(float y) override;
-    virtual float getPositionX(void) const override;
-    virtual float getPositionY(void) const override;
+    virtual float getPositionX() const override;
+    virtual float getPositionY() const override;
     virtual Vec3 getPosition3D() const override;
     /**
     * @js NA
@@ -142,10 +97,55 @@ public:
     * @lua NA
     */
     virtual const BlendFunc& getBlendFunc() const override;
-    virtual GLubyte getOpacity() const override;
-    virtual void setOpacity(GLubyte opacity) override;
+    virtual uint8_t getOpacity() const override;
+    virtual void setOpacity(uint8_t opacity) override;
     virtual void setOpacityModifyRGB(bool value) override;
     virtual bool isOpacityModifyRGB() const override;
+
+    /** Color used for the tint.
+     *
+     * @param colors The color used for the tint.
+     */
+    void tintWithColor(const Color3B& colors);
+
+    /** Remove all living segments of the ribbon.
+     */
+    void reset();
+
+    /** When fast mode is enabled, new points are added faster but with lower precision. 
+     * 
+     * @return True if fast mode is enabled.
+     */
+    bool isFastMode() const { return _fastMode; }
+    /** Sets fast mode or not.
+     *
+     * @param bFastMode True if enabled fast mode.
+     */
+    void setFastMode(bool bFastMode) { _fastMode = bFastMode; }
+    /** Get stroke.
+     *
+     * @return float stroke.
+     */
+    float getStroke() const { return _stroke; }
+    /** Set stroke.
+     *
+     * @param stroke The width of stroke.
+     */
+    void setStroke(float stroke) { _stroke = stroke; }
+
+    /** Is the starting position initialized or not.
+     *
+     * @return True if the starting position is initialized.
+     */
+    bool isStartingPositionInitialized() const { return _startingPositionInitialized; }
+    /** Sets the starting position initialized or not.
+     *
+     * @param bStartingPositionInitialized True if initialized the starting position.
+     */
+    void setStartingPositionInitialized(bool bStartingPositionInitialized)
+    {
+        _startingPositionInitialized = bStartingPositionInitialized; 
+    }
     
 CC_CONSTRUCTOR_ACCESS:
     MotionStreak();
@@ -158,35 +158,36 @@ CC_CONSTRUCTOR_ACCESS:
     bool initWithFade(float fade, float minSeg, float stroke, const Color3B& color, Texture2D* texture);
 
 protected:
-    //renderer callback
-    void onDraw(const Mat4 &transform, uint32_t flags);
-
-    bool _fastMode;
-    bool _startingPositionInitialized;
+    bool _fastMode = false;
+    bool _startingPositionInitialized = false;
 
     /** texture used for the motion streak */
-    Texture2D* _texture;
-    BlendFunc _blendFunc;
+    Texture2D* _texture = nullptr;
+    BlendFunc _blendFunc = BlendFunc::ALPHA_NON_PREMULTIPLIED;
     Vec2 _positionR;
 
-    float _stroke;
-    float _fadeDelta;
-    float _minSeg;
+    float _stroke = 0.f;
+    float _fadeDelta = 0.f;
+    float _minSeg = 0.f;
 
-    unsigned int _maxPoints;
-    unsigned int _nuPoints;
-    unsigned int _previousNuPoints;
+    unsigned int _maxPoints = 0;
+    unsigned int _nuPoints = 0;
+    unsigned int _previousNuPoints = 0;
 
     /** Pointers */
-    Vec2* _pointVertexes;
-    float* _pointState;
+    Vec2* _pointVertexes = nullptr;
+    float* _pointState = nullptr;
 
-    // Opengl
-    Vec2* _vertices;
-    GLubyte* _colorPointer;
-    Tex2F* _texCoords;
+    Vec2* _vertices = nullptr;
+    uint8_t* _colorPointer = nullptr;
+    Tex2F* _texCoords = nullptr;
+    unsigned int _vertexCount = 0;
     
     CustomCommand _customCommand;
+    
+    backend::UniformLocation _mvpMatrixLocaiton;
+    backend::UniformLocation _textureLocation;
+    backend::ProgramState* _programState = nullptr;
 
 private:
     CC_DISALLOW_COPY_AND_ASSIGN(MotionStreak);
@@ -196,5 +197,3 @@ private:
 /// @}
 
 NS_CC_END
-
-#endif //__CCMOTION_STREAK_H__

@@ -1,5 +1,6 @@
 ﻿/****************************************************************************
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -26,19 +27,19 @@ THE SOFTWARE.
 #define __CC_EXTENTIONS_CCCOMBASE_H__
 
 #include <string>
-#include "DictionaryHelper.h"
-#include "cocostudio/CocosStudioExport.h"
+#include "editor-support/cocostudio/DictionaryHelper.h"
+#include "editor-support/cocostudio/CocosStudioExport.h"
 #include "base/ObjectFactory.h"
-#include "CocoLoader.h"
+#include "editor-support/cocostudio/CocoLoader.h"
 
 
 #define DECLARE_CLASS_COMPONENT_INFO \
     public: \
         static cocos2d::ObjectFactory::TInfo Type; \
-        static cocos2d::Ref* createInstance(void); \
+        static cocos2d::Ref* createInstance(); \
         
 #define IMPLEMENT_CLASS_COMPONENT_INFO(className) \
-        cocos2d::Ref* className::createInstance(void) \
+        cocos2d::Ref* className::createInstance() \
         { \
             return className::create(); \
         } \

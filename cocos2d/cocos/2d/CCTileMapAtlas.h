@@ -2,7 +2,8 @@
 Copyright (c) 2008-2010 Ricardo Quesada
 Copyright (c) 2010-2012 cocos2d-x.org
 Copyright (c) 2011      Zynga Inc.
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -78,11 +79,7 @@ public:
      *For the moment only channel R is used
      */
     Color3B getTileAt(const Vec2& position) const;
-    /**
-     * Returns a tile from position x,y.
-     *For the moment only channel R is used
-     */
-    CC_DEPRECATED_ATTRIBUTE Color3B tileAt(const Vec2& position) const { return getTileAt(position); };
+
     /** sets a tile at position x,y.
     For the moment only channel R is used
     */
@@ -94,13 +91,13 @@ public:
      * Query TGA image info.
      *@return The TGA image info.
      */
-    inline struct sImageTGA* getTGAInfo() const { return _TGAInfo; };
+    struct sImageTGA* getTGAInfo() const { return _TGAInfo; }
 
     /**
      * Set the TGA image info for TileMapAtlas
      *@param TGAInfo The TGA info in sImageTGA.
      */
-    inline void setTGAInfo(struct sImageTGA* TGAInfo) { _TGAInfo = TGAInfo; };
+    void setTGAInfo(struct sImageTGA* TGAInfo) { _TGAInfo = TGAInfo; }
 
 protected:
     void loadTGAfile(const std::string& file);

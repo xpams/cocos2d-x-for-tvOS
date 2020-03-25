@@ -1,5 +1,6 @@
 ﻿/****************************************************************************
  Copyright (c) 2014 cocos2d-x.org
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -25,7 +26,7 @@
 #ifndef __cocos2d_libs__NodeReaderProtocol__
 #define __cocos2d_libs__NodeReaderProtocol__
 
-#include "cocostudio/CocosStudioExport.h"
+#include "editor-support/cocostudio/CocosStudioExport.h"
 
 namespace flatbuffers
 {

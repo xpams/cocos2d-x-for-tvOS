@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (C) 2013 Henry van Merode. All rights reserved.
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -32,9 +33,9 @@ NS_CC_BEGIN
 const float PUOnRandomObserver::DEFAULT_THRESHOLD = 0.5f;
 
 //-----------------------------------------------------------------------
-PUOnRandomObserver::PUOnRandomObserver(void) : 
-    PUObserver(),
-    _threshold(DEFAULT_THRESHOLD)
+PUOnRandomObserver::PUOnRandomObserver()
+: PUObserver()
+, _threshold(DEFAULT_THRESHOLD)
 {
 }
 //-----------------------------------------------------------------------
@@ -47,12 +48,12 @@ void PUOnRandomObserver::preUpdateObserver(float deltaTime)
     handleObserve(0, deltaTime);
 }
 //-----------------------------------------------------------------------
-void PUOnRandomObserver::updateObserver(PUParticle3D *particle, float deltaTime, bool firstParticle)
+void PUOnRandomObserver::updateObserver(PUParticle3D* /*particle*/, float /*deltaTime*/, bool /*firstParticle*/)
 {
     // No need to determine per particle
 }
 //-----------------------------------------------------------------------
-bool PUOnRandomObserver::observe (PUParticle3D* particle, float timeElapsed)
+bool PUOnRandomObserver::observe (PUParticle3D* /*particle*/, float /*timeElapsed*/)
 {
     return (CCRANDOM_0_1() > _threshold);
 }

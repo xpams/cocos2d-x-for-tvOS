@@ -1,5 +1,6 @@
 ﻿/****************************************************************************
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -118,9 +119,9 @@ public:
     
 CC_CONSTRUCTOR_ACCESS:
     Physics3DObject()
-    : _type(PhysicsObjType::UNKNOWN)
+    : _isEnabled(true)
+    , _type(PhysicsObjType::UNKNOWN)
     , _userData(nullptr)
-    , _isEnabled(true)
     , _physicsWorld(nullptr)
     , _mask(-1)
     {
@@ -379,7 +380,7 @@ struct CC_DLL Physics3DColliderDes
     float restitution;
     /**the hit fraction*/
     float hitFraction;
-    /**the swep sphere radius*/
+    /**the swept sphere radius*/
     float ccdSweptSphereRadius;
     /**the motion threshold*/
     float ccdMotionThreshold;
@@ -438,7 +439,7 @@ public:
     float getRestitution() const;
 
     /** Set friction. 
-     *  @param rest The friction.
+     *  @param frict The friction.
     */
     void setFriction(float frict);
 

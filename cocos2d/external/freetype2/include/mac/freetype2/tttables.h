@@ -21,7 +21,7 @@
 #define __TTTABLES_H__
 
 
-#include <ft2build.h>
+#include "ft2build.h"
 #include FT_FREETYPE_H
 
 #ifdef FREETYPE_H
@@ -125,7 +125,7 @@ FT_BEGIN_HEADER
   /*                              from the baseline to the top-most of all */
   /*                              glyph points found in the font.          */
   /*                                                                       */
-  /*                              This value is invalid in many fonts, as  */
+  /*                              This value is invalid in many font, as  */
   /*                              it is usually set by the font designer,  */
   /*                              and often reflects only a portion of the */
   /*                              glyphs found in the font (maybe ASCII).  */
@@ -139,7 +139,7 @@ FT_BEGIN_HEADER
   /*                              all glyph points found in the font.  It  */
   /*                              is negative.                             */
   /*                                                                       */
-  /*                              This value is invalid in many fonts, as  */
+  /*                              This value is invalid in many font, as  */
   /*                              it is usually set by the font designer,  */
   /*                              and often reflects only a portion of the */
   /*                              glyphs found in the font (maybe ASCII).  */
@@ -244,7 +244,7 @@ FT_BEGIN_HEADER
   /*                               from the baseline to the top-most of    */
   /*                               all glyph points found in the font.     */
   /*                                                                       */
-  /*                               This value is invalid in many fonts, as */
+  /*                               This value is invalid in many font, as */
   /*                               it is usually set by the font designer, */
   /*                               and often reflects only a portion of    */
   /*                               the glyphs found in the font (maybe     */
@@ -259,7 +259,7 @@ FT_BEGIN_HEADER
   /*                               bottom-most of all glyph points found   */
   /*                               in the font.  It is negative.           */
   /*                                                                       */
-  /*                               This value is invalid in many fonts, as */
+  /*                               This value is invalid in many font, as */
   /*                               it is usually set by the font designer, */
   /*                               and often reflects only a portion of    */
   /*                               the glyphs found in the font (maybe     */
@@ -296,7 +296,7 @@ FT_BEGIN_HEADER
   /*    caret_Slope_Run         :: The run coefficient of the cursor's     */
   /*                               slope.                                  */
   /*                                                                       */
-  /*    caret_Offset            :: The cursor's offset for slanted fonts.  */
+  /*    caret_Offset            :: The cursor's offset for slanted font.  */
   /*                               This value is `reserved' in vmtx        */
   /*                               version 1.0.                            */
   /*                                                                       */
@@ -362,7 +362,7 @@ FT_BEGIN_HEADER
   /*    A structure used to model a TrueType OS/2 table.  All fields       */
   /*    comply to the OpenType specification.                              */
   /*                                                                       */
-  /*    Note that we now support old Mac fonts that do not include an OS/2 */
+  /*    Note that we now support old Mac font that do not include an OS/2 */
   /*    table.  In this case, the `version' field is always set to 0xFFFF. */
   /*                                                                       */
   typedef struct  TT_OS2_

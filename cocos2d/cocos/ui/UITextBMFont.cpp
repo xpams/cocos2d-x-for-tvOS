@@ -1,5 +1,6 @@
 /****************************************************************************
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -24,6 +25,7 @@ THE SOFTWARE.
 
 #include "ui/UITextBMFont.h"
 #include "2d/CCLabel.h"
+#include "editor-support/cocostudio/CocosStudioExtension.h"
 
 NS_CC_BEGIN
 
@@ -35,7 +37,6 @@ IMPLEMENT_CLASS_GUI_INFO(TextBMFont)
     
 TextBMFont::TextBMFont():
 _labelBMFontRenderer(nullptr),
-_fntFileHasInit(false),
 _fntFileName(""),
 _stringValue(""),
 _labelBMFontRendererAdaptDirty(true)
@@ -88,7 +89,6 @@ void TextBMFont::setFntFile(const std::string& fileName)
     _fntFileName = fileName;
     _labelBMFontRenderer->setBMFontFilePath(fileName);
     
-    _fntFileHasInit = true;
     updateContentSizeWithTextureSize(_labelBMFontRenderer->getContentSize());
     _labelBMFontRendererAdaptDirty = true;
 }
@@ -101,10 +101,6 @@ void TextBMFont::setString(const std::string& value)
     }
     _stringValue = value;
     _labelBMFontRenderer->setString(value);
-    if (!_fntFileHasInit)
-    {
-        return;
-    }
     updateContentSizeWithTextureSize(_labelBMFontRenderer->getContentSize());
     _labelBMFontRendererAdaptDirty = true;
 }
@@ -186,6 +182,19 @@ void TextBMFont::copySpecialProperties(Widget *widget)
     }
 }
 
+ResourceData TextBMFont::getRenderFile()
+{
+    ResourceData rData;
+    rData.type = 0;
+    rData.file = _fntFileName;
+    return rData;
+}
+
+void TextBMFont::resetRender()
+{
+    this->removeProtectedChild(_labelBMFontRenderer);
+    this->initRenderer();
+}
 }
 
 NS_CC_END

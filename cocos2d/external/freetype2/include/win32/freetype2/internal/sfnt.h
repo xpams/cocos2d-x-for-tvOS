@@ -56,7 +56,7 @@ FT_BEGIN_HEADER
   /* <Note>                                                                */
   /*    The stream cursor must be at the font file's origin.               */
   /*                                                                       */
-  /*    This function recognizes fonts embedded in a `TrueType             */
+  /*    This function recognizes font embedded in a `TrueType             */
   /*    collection'.                                                       */
   /*                                                                       */
   /*    Once the format tag has been validated by the font driver, it      */

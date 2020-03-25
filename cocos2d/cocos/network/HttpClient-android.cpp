@@ -1,7 +1,8 @@
 /****************************************************************************
  Copyright (c) 2012      greathqy
  Copyright (c) 2012      cocos2d-x.org
- Copyright (c) 2013-2014 Chukong Technologies Inc.
+ Copyright (c) 2013-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -27,7 +28,7 @@
 #include "platform/CCPlatformConfig.h"
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
 
-#include "HttpClient.h"
+#include "network/HttpClient.h"
 
 #include <queue>
 #include <sstream>
@@ -85,8 +86,8 @@ class HttpURLConnection
 {
 public:
     HttpURLConnection(HttpClient* httpClient)
-    :_httpURLConnection(nullptr)
-    ,_client(httpClient)
+    :_client(httpClient)
+    ,_httpURLConnection(nullptr)
     ,_requestmethod("")
     ,_responseCookies("")
     ,_cookieFileName("")
@@ -109,7 +110,7 @@ public:
 
         JniMethodInfo methodInfo;
         if (JniHelper::getStaticMethodInfo(methodInfo,
-                                           "org/cocos2dx/lib/Cocos2dxHttpURLConnection",
+                                           "org.cocos2dx.lib.Cocos2dxHttpURLConnection",
                                            "setRequestMethod",
                                            "(Ljava/net/HttpURLConnection;Ljava/lang/String;)V"))
         {
@@ -133,18 +134,16 @@ public:
         if(!headers.empty())
         {
             /* append custom headers one by one */
-            for (HttpRequestHeadersIter it = headers.begin(); it != headers.end(); ++it)
+            for (auto& header : headers)
             {
-                std::string val = *it;
-                
-                int len = val.length();
-                int pos = val.find(':');
+                int len = header.length();
+                int pos = header.find(':');
                 if (-1 == pos || pos >= len)
                 {
                     continue;
                 }
-                std::string str1 = val.substr(0, pos);
-                std::string str2 = val.substr(pos + 1, len - pos - 1);
+                std::string str1 = header.substr(0, pos);
+                std::string str2 = header.substr(pos + 1, len - pos - 1);
                 addRequestHeader(str1.c_str(), str2.c_str());
             }
         }
@@ -159,7 +158,7 @@ public:
         int suc = 0;
         JniMethodInfo methodInfo;
         if (JniHelper::getStaticMethodInfo(methodInfo,
-                                           "org/cocos2dx/lib/Cocos2dxHttpURLConnection",
+                                           "org.cocos2dx.lib.Cocos2dxHttpURLConnection",
                                            "connect",
                                            "(Ljava/net/HttpURLConnection;)I"))
         {
@@ -175,7 +174,7 @@ public:
     {
         JniMethodInfo methodInfo;
         if (JniHelper::getStaticMethodInfo(methodInfo,
-                                           "org/cocos2dx/lib/Cocos2dxHttpURLConnection",
+                                           "org.cocos2dx.lib.Cocos2dxHttpURLConnection",
                                            "disconnect",
                                            "(Ljava/net/HttpURLConnection;)V"))
         {
@@ -190,7 +189,7 @@ public:
         int responseCode = 0;
         JniMethodInfo methodInfo;
         if (JniHelper::getStaticMethodInfo(methodInfo,
-                                           "org/cocos2dx/lib/Cocos2dxHttpURLConnection",
+                                           "org.cocos2dx.lib.Cocos2dxHttpURLConnection",
                                            "getResponseCode",
                                            "(Ljava/net/HttpURLConnection;)I"))
         {
@@ -207,7 +206,7 @@ public:
         char* message = nullptr;
         JniMethodInfo methodInfo;
         if (JniHelper::getStaticMethodInfo(methodInfo,
-                                           "org/cocos2dx/lib/Cocos2dxHttpURLConnection",
+                                           "org.cocos2dx.lib.Cocos2dxHttpURLConnection",
                                            "getResponseMessage",
                                            "(Ljava/net/HttpURLConnection;)Ljava/lang/String;"))
         {
@@ -228,7 +227,7 @@ public:
     {
         JniMethodInfo methodInfo;
         if (JniHelper::getStaticMethodInfo(methodInfo,
-                                           "org/cocos2dx/lib/Cocos2dxHttpURLConnection",
+                                           "org.cocos2dx.lib.Cocos2dxHttpURLConnection",
                                            "sendRequest",
                                            "(Ljava/net/HttpURLConnection;[B)V"))
         {
@@ -275,7 +274,7 @@ public:
         char* headers = nullptr;
         JniMethodInfo methodInfo;
         if (JniHelper::getStaticMethodInfo(methodInfo,
-                                           "org/cocos2dx/lib/Cocos2dxHttpURLConnection",
+                                           "org.cocos2dx.lib.Cocos2dxHttpURLConnection",
                                            "getResponseHeaders",
                                            "(Ljava/net/HttpURLConnection;)Ljava/lang/String;"))
         {
@@ -302,7 +301,7 @@ public:
         char* content = nullptr;
         JniMethodInfo methodInfo;
         if (JniHelper::getStaticMethodInfo(methodInfo,
-                                           "org/cocos2dx/lib/Cocos2dxHttpURLConnection",
+                                           "org.cocos2dx.lib.Cocos2dxHttpURLConnection",
                                            "getResponseContent",
                                            "(Ljava/net/HttpURLConnection;)[B"))
         {
@@ -325,7 +324,7 @@ public:
         char* value = nullptr;
         JniMethodInfo methodInfo;
         if (JniHelper::getStaticMethodInfo(methodInfo,
-                                           "org/cocos2dx/lib/Cocos2dxHttpURLConnection",
+                                           "org.cocos2dx.lib.Cocos2dxHttpURLConnection",
                                            "getResponseHeaderByKey",
                                            "(Ljava/net/HttpURLConnection;Ljava/lang/String;)Ljava/lang/String;"))
         {
@@ -348,7 +347,7 @@ public:
         int contentLength = 0;
         JniMethodInfo methodInfo;
         if (JniHelper::getStaticMethodInfo(methodInfo,
-                                           "org/cocos2dx/lib/Cocos2dxHttpURLConnection",
+                                           "org.cocos2dx.lib.Cocos2dxHttpURLConnection",
                                            "getResponseHeaderByKeyInt",
                                            "(Ljava/net/HttpURLConnection;Ljava/lang/String;)I"))
         {
@@ -367,7 +366,7 @@ public:
         char* header = nullptr;
         JniMethodInfo methodInfo;
         if (JniHelper::getStaticMethodInfo(methodInfo,
-                                           "org/cocos2dx/lib/Cocos2dxHttpURLConnection",
+                                           "org.cocos2dx.lib.Cocos2dxHttpURLConnection",
                                            "getResponseHeaderByIdx",
                                            "(Ljava/net/HttpURLConnection;I)Ljava/lang/String;"))
         {
@@ -383,7 +382,7 @@ public:
         return header;
     }
     
-    const std::string getCookieFileName()
+    const std::string& getCookieFileName() const
     {
         return _cookieFileName;
     }
@@ -399,11 +398,11 @@ public:
     }
     
 private:
-    void createHttpURLConnection(std::string url)
+    void createHttpURLConnection(const std::string& url)
     {
         JniMethodInfo methodInfo;
         if (JniHelper::getStaticMethodInfo(methodInfo,
-            "org/cocos2dx/lib/Cocos2dxHttpURLConnection",
+            "org.cocos2dx.lib.Cocos2dxHttpURLConnection",
             "createHttpURLConnection",
             "(Ljava/lang/String;)Ljava/net/HttpURLConnection;"))
         {
@@ -421,7 +420,7 @@ private:
     {
         JniMethodInfo methodInfo;
         if (JniHelper::getStaticMethodInfo(methodInfo,
-            "org/cocos2dx/lib/Cocos2dxHttpURLConnection",
+            "org.cocos2dx.lib.Cocos2dxHttpURLConnection",
             "addRequestHeader",
             "(Ljava/net/HttpURLConnection;Ljava/lang/String;Ljava/lang/String;)V"))
         {
@@ -462,14 +461,11 @@ private:
         if (cookiesVec.empty())
             return;
         
-        HttpCookiesIter iter = cookiesVec.begin();
-        
         std::vector<CookiesInfo> cookiesInfoVec;
         cookiesInfoVec.clear();
 
-        for (; iter != cookiesVec.end(); iter++)
+        for (auto& cookies : cookiesVec)
         {
-            std::string cookies = *iter;
             if (cookies.find("#HttpOnly_") != std::string::npos)
             {
                 cookies = cookies.substr(10);
@@ -502,16 +498,15 @@ private:
             cookiesInfoVec.push_back(co);
         }
 
-        std::vector<CookiesInfo>::iterator cookiesIter = cookiesInfoVec.begin();
         std::string sendCookiesInfo = "";
         int cookiesCount = 0;
-        for (; cookiesIter != cookiesInfoVec.end(); cookiesIter++)
+        for (auto& cookieInfo : cookiesInfoVec)
         {
-            if (_url.find(cookiesIter->domain) != std::string::npos)
+            if (_url.find(cookieInfo.domain) != std::string::npos)
             {
-                std::string keyValue = cookiesIter->key;
+                std::string keyValue = cookieInfo.key;
                 keyValue.append("=");
-                keyValue.append(cookiesIter->value);
+                keyValue.append(cookieInfo.value);
                 if (cookiesCount != 0)
                     sendCookiesInfo.append(";");
                 
@@ -528,7 +523,7 @@ private:
     {
         JniMethodInfo methodInfo;
         if (JniHelper::getStaticMethodInfo(methodInfo,
-            "org/cocos2dx/lib/Cocos2dxHttpURLConnection",
+            "org.cocos2dx.lib.Cocos2dxHttpURLConnection",
             "setReadAndConnectTimeout",
             "(Ljava/net/HttpURLConnection;II)V"))
         {
@@ -547,7 +542,7 @@ private:
 
         JniMethodInfo methodInfo;
         if (JniHelper::getStaticMethodInfo(methodInfo,
-            "org/cocos2dx/lib/Cocos2dxHttpURLConnection",
+            "org.cocos2dx.lib.Cocos2dxHttpURLConnection",
             "setVerifySSL",
             "(Ljava/net/HttpURLConnection;Ljava/lang/String;)V"))
         {
@@ -584,10 +579,8 @@ private:
         {
             return nullptr;
         }
-        char *ret = nullptr;
         std::string strValue = cocos2d::StringUtils::getStringUTFCharsJNI(env, jstr);
-        ret = strdup(strValue.c_str());
-        return ret;
+        return strdup(strValue.c_str());
     }
 
     int getCStrFromJByteArray(jbyteArray jba, JNIEnv* env, char** ppData)
@@ -598,17 +591,15 @@ private:
             return 0;
         }
 
-        char* str = nullptr;
-
-        int len  = env->GetArrayLength(jba);
-        str = (char*)malloc(sizeof(char)*len);
+        int len = env->GetArrayLength(jba);
+        char* str = (char*)malloc(sizeof(char)*len);
         env->GetByteArrayRegion(jba, 0, len, (jbyte*)str);
 
         *ppData = str;
         return len;
     }
 
-    const std::string getCookieString()
+    const std::string& getCookieString() const
     {
         return _responseCookies;
     }
@@ -686,6 +677,14 @@ void HttpClient::processResponse(HttpResponse* response, char* responseMessage)
 
     responseCode = urlConnection.getResponseCode();
 
+    if (0 == responseCode)
+    {
+       response->setSucceed(false);
+       response->setErrorBuffer("connect failed");
+       response->setResponseCode(-1);
+       return;
+    }
+
     char* headers = urlConnection.getResponseHeaders();
     if (nullptr != headers)
     {
@@ -713,8 +712,11 @@ void HttpClient::processResponse(HttpResponse* response, char* responseMessage)
     free(contentInfo);
     
     char *messageInfo = urlConnection.getResponseMessage();
-    strcpy(responseMessage, messageInfo);
-    free(messageInfo);
+    if (messageInfo)
+    {
+        strncpy(responseMessage, messageInfo, RESPONSE_BUFFER_SIZE-1);
+        free(messageInfo);
+    }
 
     urlConnection.disconnect();
 
@@ -877,12 +879,14 @@ void HttpClient::setSSLVerification(const std::string& caFile)
 }
 
 HttpClient::HttpClient()
-: _timeoutForConnect(30)
+: _isInited(false)
+, _timeoutForConnect(30)
 , _timeoutForRead(60)
-, _isInited(false)
 , _threadCount(0)
-, _requestSentinel(new HttpRequest())
 , _cookie(nullptr)
+, _requestSentinel(new HttpRequest())
+, _clearRequestPredicate(nullptr)
+, _clearResponsePredicate(nullptr)
 {
     CCLOG("In the constructor of HttpClient!");
     increaseThreadCount();
@@ -892,11 +896,11 @@ HttpClient::HttpClient()
 HttpClient::~HttpClient()
 {
     CCLOG("In the destructor of HttpClient!");
-    CC_SAFE_DELETE(_requestSentinel);
+    CC_SAFE_RELEASE(_requestSentinel);
 }
 
 //Lazy create semaphore & mutex & thread
-bool HttpClient::lazyInitThreadSemphore()
+bool HttpClient::lazyInitThreadSemaphore()
 {
     if (_isInited)
     {
@@ -915,7 +919,7 @@ bool HttpClient::lazyInitThreadSemphore()
 //Add a get task to queue
 void HttpClient::send(HttpRequest* request)
 {    
-    if (!lazyInitThreadSemphore()) 
+    if (!lazyInitThreadSemaphore()) 
     {
         return;
     }
@@ -987,6 +991,39 @@ void HttpClient::dispatchResponseCallbacks()
         // do not release in other thread
         request->release();
     }
+}
+
+void HttpClient::clearResponseAndRequestQueue()
+{
+    _requestQueueMutex.lock();
+    if (_requestQueue.size())
+    {
+        for (auto it = _requestQueue.begin(); it != _requestQueue.end();)
+        {
+            if(!_clearRequestPredicate ||
+               _clearRequestPredicate((*it)))
+            {
+                (*it)->release();
+                it =_requestQueue.erase(it);
+            }
+            else
+            {
+                it++;
+            }
+        }
+    }
+    _requestQueueMutex.unlock();
+    
+    _responseQueueMutex.lock();
+    if (_clearResponsePredicate)
+    {
+        _responseQueue.erase(std::remove_if(_responseQueue.begin(), _responseQueue.end(), _clearResponsePredicate), _responseQueue.end());
+    }
+    else
+    {
+        _responseQueue.clear();
+    }
+    _responseQueueMutex.unlock();
 }
 
 void HttpClient::increaseThreadCount()

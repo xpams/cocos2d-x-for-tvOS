@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (C) 2013 Henry van Merode. All rights reserved.
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -39,7 +40,7 @@ PUSlaveBehaviour::~PUSlaveBehaviour()
 
 }
 
-void PUSlaveBehaviour::updateBehaviour( PUParticle3D *particle, float deltaTime )
+void PUSlaveBehaviour::updateBehaviour( PUParticle3D *particle, float /*deltaTime*/ )
 {
     if (masterParticle && !masterParticle->hasEventFlags(PUParticle3D::PEF_EXPIRED))
     {
@@ -57,7 +58,7 @@ PUSlaveBehaviour* PUSlaveBehaviour::clone()
 
 PUSlaveBehaviour* PUSlaveBehaviour::create()
 {
-    auto pb = new PUSlaveBehaviour();
+    auto pb = new (std::nothrow) PUSlaveBehaviour();
     pb->autorelease();
     return pb;
 }

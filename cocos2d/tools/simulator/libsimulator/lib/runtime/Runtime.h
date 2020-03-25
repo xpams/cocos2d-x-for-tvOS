@@ -1,5 +1,6 @@
 /****************************************************************************
 Copyright (c) 2013 cocos2d-x.org
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -28,14 +29,17 @@ THE SOFTWARE.
 #include <string>
 #include <functional>
 #include <unordered_map>
+#include "SimulatorExport.h"
 
 void recvBuf(int fd, char *pbuf, unsigned long bufsize);
 
 void sendBuf(int fd, const char *pbuf, unsigned long bufsize);
 
-std::string& replaceAll(std::string& str, const std::string& old_value, const std::string& new_value);
+CC_LIBSIM_DLL extern std::string g_projectPath;
 
-std::string getIPAddress();
+CC_LIBSIM_DLL std::string& replaceAll(std::string& str, const std::string& old_value, const std::string& new_value);
+
+CC_LIBSIM_DLL std::string getIPAddress();
 
 const char* getRuntimeVersion();
 
@@ -53,7 +57,7 @@ const char* getRuntimeVersion();
 #define kRuntimeEngineCCS 4
 
 class RuntimeProtocol;
-class RuntimeEngine
+class CC_LIBSIM_DLL RuntimeEngine
 {
 public:
     static RuntimeEngine* getInstance();

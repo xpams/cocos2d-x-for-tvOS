@@ -49,7 +49,7 @@
   /* Note that on the extremely rare platforms that do not provide      */
   /* integer types that are _exactly_ 16 and 32 bits wide (e.g. some    */
   /* old Crays where `int' is 36 bits), we do not make any guarantee    */
-  /* about the correct behaviour of FT2 with all fonts.                 */
+  /* about the correct behaviour of FT2 with all font.                 */
   /*                                                                    */
   /* In these case, `ftconfig.h' will refuse to compile anyway with a   */
   /* message like `couldn't find 32-bit type' or something similar.     */

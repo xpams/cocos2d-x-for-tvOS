@@ -1,5 +1,6 @@
 /****************************************************************************
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -21,27 +22,33 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
-#include "cocostudio/CCSGUIReader.h"
-#include "ui/CocosGUI.h"
-#include "cocostudio/CCActionManagerEx.h"
+#include "editor-support/cocostudio/CCSGUIReader.h"
+
 #include <fstream>
 #include <iostream>
-#include "WidgetReader/ButtonReader/ButtonReader.h"
-#include "WidgetReader/CheckBoxReader/CheckBoxReader.h"
-#include "WidgetReader/SliderReader/SliderReader.h"
-#include "WidgetReader/ImageViewReader/ImageViewReader.h"
-#include "WidgetReader/LoadingBarReader/LoadingBarReader.h"
-#include "WidgetReader/TextAtlasReader/TextAtlasReader.h"
-#include "WidgetReader/TextReader/TextReader.h"
-#include "WidgetReader/TextBMFontReader/TextBMFontReader.h"
-#include "WidgetReader/TextFieldReader/TextFieldReader.h"
-#include "WidgetReader/LayoutReader/LayoutReader.h"
-#include "WidgetReader/PageViewReader/PageViewReader.h"
-#include "WidgetReader/ScrollViewReader/ScrollViewReader.h"
-#include "WidgetReader/ListViewReader/ListViewReader.h"
-#include "cocostudio/CocoLoader.h"
 #include "ui/CocosGUI.h"
+#include "platform/CCFileUtils.h"
+#include "2d/CCSpriteFrameCache.h"
+#include "base/CCDirector.h"
+#include "base/ccUtils.h"
+
+#include "editor-support/cocostudio/CCActionManagerEx.h"
+#include "editor-support/cocostudio/WidgetReader/ButtonReader/ButtonReader.h"
+#include "editor-support/cocostudio/WidgetReader/CheckBoxReader/CheckBoxReader.h"
+#include "editor-support/cocostudio/WidgetReader/SliderReader/SliderReader.h"
+#include "editor-support/cocostudio/WidgetReader/ImageViewReader/ImageViewReader.h"
+#include "editor-support/cocostudio/WidgetReader/LoadingBarReader/LoadingBarReader.h"
+#include "editor-support/cocostudio/WidgetReader/TextAtlasReader/TextAtlasReader.h"
+#include "editor-support/cocostudio/WidgetReader/TextReader/TextReader.h"
+#include "editor-support/cocostudio/WidgetReader/TextBMFontReader/TextBMFontReader.h"
+#include "editor-support/cocostudio/WidgetReader/TextFieldReader/TextFieldReader.h"
+#include "editor-support/cocostudio/WidgetReader/LayoutReader/LayoutReader.h"
+#include "editor-support/cocostudio/WidgetReader/PageViewReader/PageViewReader.h"
+#include "editor-support/cocostudio/WidgetReader/ScrollViewReader/ScrollViewReader.h"
+#include "editor-support/cocostudio/WidgetReader/ListViewReader/ListViewReader.h"
+#include "editor-support/cocostudio/CocoLoader.h"
 #include "tinyxml2.h"
+
 
 using namespace cocos2d;
 using namespace cocos2d::ui;
@@ -110,19 +117,19 @@ int GUIReader::getVersionInteger(const char *str)
     {
         return 0;
     }
-    size_t pos = strVersion.find_first_of(".");
+    size_t pos = strVersion.find_first_of('.');
     std::string t = strVersion.substr(0,pos);
     strVersion = strVersion.substr(pos+1,strVersion.length()-1);
     
-    pos = strVersion.find_first_of(".");
+    pos = strVersion.find_first_of('.');
     std::string h = strVersion.substr(0,pos);
     strVersion = strVersion.substr(pos+1,strVersion.length()-1);
     
-    pos = strVersion.find_first_of(".");
+    pos = strVersion.find_first_of('.');
     std::string te = strVersion.substr(0,pos);
     strVersion = strVersion.substr(pos+1,strVersion.length()-1);
     
-    pos = strVersion.find_first_of(".");
+    pos = strVersion.find_first_of('.');
     std::string s = strVersion.substr(0,pos);
     
     int it = atoi(t.c_str());
@@ -146,7 +153,7 @@ void GUIReader::storeFileDesignSize(const char *fileName, const cocos2d::Size &s
     _fileDesignSizes[keyHeight] = cocos2d::Value(size.height);
 }
 
-const cocos2d::Size GUIReader::getFileDesignSize(const char* fileName) const
+cocos2d::Size GUIReader::getFileDesignSize(const char* fileName) const
 {
     std::string keyWidth = fileName;
     keyWidth.append("width");
@@ -493,7 +500,7 @@ Widget* WidgetPropertiesReader0250::createWidget(const rapidjson::Value& data, c
         const char* file = DICTOOL->getStringValueFromArray_json(data, "textures", i);
         std::string tp = fullPath;
         tp.append(file);
-        SpriteFrameCache::getInstance()->addSpriteFramesWithFile(tp.c_str());
+        SpriteFrameCache::getInstance()->addSpriteFramesWithFile(tp);
     }
     float fileDesignWidth = DICTOOL->getFloatValue_json(data, "designWidth");
     float fileDesignHeight = DICTOOL->getFloatValue_json(data, "designHeight");
@@ -924,9 +931,8 @@ void WidgetPropertiesReader0250::setPropsForLabelAtlasFromJsonDictionary(Widget*
     if (sv && cmf && iw && ih && scm && (strcmp(DICTOOL->getStringValue_json(options, "charMapFile"), "") != 0))
     {
         std::string tp_c = m_strFilePath;
-        const char* cmf_tp = nullptr;
         const char* cmft = DICTOOL->getStringValue_json(options, "charMapFile");
-        cmf_tp = tp_c.append(cmft).c_str();
+        const char* cmf_tp = tp_c.append(cmft).c_str();
         
         labelAtlas->setProperty(DICTOOL->getStringValue_json(options, "stringValue"),cmf_tp,DICTOOL->getIntValue_json(options, "itemWidth"),DICTOOL->getIntValue_json(options,"itemHeight"),DICTOOL->getStringValue_json(options, "startCharMap"));
         labelAtlas->setProperty(DICTOOL->getStringValue_json(options, "stringValue"),cmf_tp,DICTOOL->getIntValue_json(options, "itemWidth") / CC_CONTENT_SCALE_FACTOR() ,DICTOOL->getIntValue_json(options,"itemHeight") / CC_CONTENT_SCALE_FACTOR(), DICTOOL->getStringValue_json(options, "startCharMap"));
@@ -1178,9 +1184,8 @@ void WidgetPropertiesReader0250::setPropsForLabelBMFontFromJsonDictionary(Widget
     cocos2d::ui::TextBMFont* labelBMFont = static_cast<cocos2d::ui::TextBMFont*>(widget);
     
     std::string tp_c = m_strFilePath;
-    const char* cmf_tp = nullptr;
     const char* cmft = DICTOOL->getStringValue_json(options, "fileName");
-    cmf_tp = tp_c.append(cmft).c_str();
+    const char* cmf_tp = tp_c.append(cmft).c_str();
     
     labelBMFont->setFntFile(cmf_tp);
     
@@ -1190,18 +1195,36 @@ void WidgetPropertiesReader0250::setPropsForLabelBMFontFromJsonDictionary(Widget
     setColorPropsForWidgetFromJsonDictionary(widget,options);
 }
     
-void WidgetPropertiesReader0250::setPropsForAllWidgetFromJsonDictionary(WidgetReaderProtocol *reader, Widget *widget, const rapidjson::Value &options)
+void WidgetPropertiesReader0250::setPropsForAllWidgetFromJsonDictionary(WidgetReaderProtocol* /*reader*/, Widget* /*widget*/, const rapidjson::Value& /*options*/)
 {
     
 }
 
-void WidgetPropertiesReader0250::setPropsForAllCustomWidgetFromJsonDictionary(const std::string &classType,
-                                                                              cocos2d::ui::Widget *widget,
-                                                                              const rapidjson::Value &customOptions)
+void WidgetPropertiesReader0250::setPropsForAllCustomWidgetFromJsonDictionary(const std::string& /*classType*/,
+                                                                              cocos2d::ui::Widget* /*widget*/,
+                                                                              const rapidjson::Value& /*customOptions*/)
 {
     
 }
 
+Widget* WidgetPropertiesReader0250::createWidgetFromBinary(CocoLoader* /*cocoLoader*/,
+                                                    stExpCocoNode* /*pCocoNode*/,
+                                                    const char* /*fileName*/)
+{
+    return nullptr;
+}
+
+Widget* WidgetPropertiesReader0250::widgetFromBinary(CocoLoader* /*cocoLoader*/,
+                                              stExpCocoNode* /*pCocoNode*/)
+{
+    return nullptr;
+}
+
+void WidgetPropertiesReader0250::setPropsForAllWidgetFromBinary(WidgetReaderProtocol* /*reader*/,
+                                            cocos2d::ui::Widget* /*widget*/,
+                                            CocoLoader* /*cocoLoader*/,
+                                            stExpCocoNode* /*pCocoNode*/)
+{}
 
 /*0.3.0.0~1.0.0.0*/
 Widget* WidgetPropertiesReader0300::createWidget(const rapidjson::Value& data, const char* fullPath, const char* fileName)
@@ -1215,7 +1238,7 @@ Widget* WidgetPropertiesReader0300::createWidget(const rapidjson::Value& data, c
         const char* file = DICTOOL->getStringValueFromArray_json(data, "textures", i);
         std::string tp = fullPath;
         tp.append(file);
-        SpriteFrameCache::getInstance()->addSpriteFramesWithFile(tp.c_str());
+        SpriteFrameCache::getInstance()->addSpriteFramesWithFile(tp);
     }
     float fileDesignWidth = DICTOOL->getFloatValue_json(data, "designWidth");
     float fileDesignHeight = DICTOOL->getFloatValue_json(data, "designHeight");
@@ -1254,8 +1277,8 @@ Widget* WidgetPropertiesReader0300::createWidget(const rapidjson::Value& data, c
 {
     
     stExpCocoNode *tpChildArray = cocoNode->GetChildArray(cocoLoader);
-    float fileDesignWidth;
-    float fileDesignHeight;
+    float fileDesignWidth = 0.0f;
+    float fileDesignHeight = 0.0f;
     
     Widget* widget =  nullptr;
 
@@ -1454,7 +1477,13 @@ void WidgetPropertiesReader0300::setPropsForAllWidgetFromBinary(WidgetReaderProt
 {
     reader->setPropsFromBinary(widget, cocoLoader, cocoNode);
 }
-
+    
+void WidgetPropertiesReader0300::setPropsForAllCustomWidgetFromBinary(const std::string& /*classType*/,
+                                                  cocos2d::ui::Widget* /*widget*/,
+                                                  CocoLoader* /*cocoLoader*/,
+                                                  stExpCocoNode* /*pCocoNode*/) {
+    //TODO: custom property
+}
     
 Widget* WidgetPropertiesReader0300::widgetFromJsonDictionary(const rapidjson::Value& data)
 {

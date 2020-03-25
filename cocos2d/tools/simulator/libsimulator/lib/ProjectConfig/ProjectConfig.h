@@ -1,3 +1,27 @@
+/****************************************************************************
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
+ 
+ http://www.cocos2d-x.org
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ 
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ ****************************************************************************/
+
 
 #ifndef __PROJECT_CONFIG_H_
 #define __PROJECT_CONFIG_H_
@@ -8,6 +32,7 @@
 using namespace std;
 
 #include "cocos2d.h"
+#include "SimulatorExport.h"
 
 #define kCCRuntimeDebuggerNone      0
 #define kCCRuntimeDebuggerLDT       1
@@ -27,17 +52,18 @@ using namespace std;
 #define kProjectConfigDebugger                  1024    // -debugger-ldt, -debugger-codeide, -disable-debugger
 #define kProjectConfigListen                    2048    //
 #define kProjectConfigSearchPath                4096    //
+#define kProjectConfigFirstSearchPath            8192    // -first-search-path
 
 #define kProjectConfigOpenRecent (kProjectConfigProjectDir | kProjectConfigScriptFile | kProjectConfigPackagePath | kProjectConfigWritablePath | kProjectConfigFrameSize | kProjectConfigFrameScale | kProjectConfigShowConsole | kProjectConfigLoadPrecompiledFramework | kProjectConfigWriteDebugLogToFile)
 
-#define kProjectConfigAll (kProjectConfigProjectDir | kProjectConfigScriptFile | kProjectConfigPackagePath | kProjectConfigWritablePath | kProjectConfigFrameSize | kProjectConfigFrameScale | kProjectConfigShowConsole | kProjectConfigLoadPrecompiledFramework | kProjectConfigWriteDebugLogToFile | kProjectConfigWindowOffset | kProjectConfigDebugger | kProjectConfigListen | kProjectConfigSearchPath)
+#define kProjectConfigAll (kProjectConfigProjectDir | kProjectConfigScriptFile | kProjectConfigPackagePath | kProjectConfigWritablePath | kProjectConfigFrameSize | kProjectConfigFrameScale | kProjectConfigShowConsole | kProjectConfigLoadPrecompiledFramework | kProjectConfigWriteDebugLogToFile | kProjectConfigWindowOffset | kProjectConfigDebugger | kProjectConfigListen | kProjectConfigSearchPath | kProjectConfigFirstSearchPath)
 
 
 #define kProjectConfigConsolePort   6010
 #define kProjectConfigUploadPort    6020
 #define kProjectConfigDebugPort     5086
 
-class ProjectConfig
+class CC_LIBSIM_DLL ProjectConfig
 {
 public:
     ProjectConfig();
@@ -103,7 +129,10 @@ public:
     const std::string &getBindAddress() const;
     void setSearchPath(const vector<string> &args);
     const vector<string> &getSearchPath() const;
-    
+    void setFirstSearchPath(const vector<string> &args);
+    const vector<string> &getFirstSearchPath() const;
+    void setLanguageDataPath(const std::string &filePath);
+
     bool isAppMenu() const;
     bool isResizeWindow() const;
     bool isRetinaDisplay() const;
@@ -132,6 +161,8 @@ private:
     int _fileUploadPort;
     string _bindAddress;
     vector<string> _searchPath;
+    vector<string> _firstSearchPath;
+    string _languageDataPath;
 
     void normalize();
     string replaceProjectDirToMacro(const string &path) const;

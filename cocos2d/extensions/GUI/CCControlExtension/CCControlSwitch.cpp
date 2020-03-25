@@ -5,6 +5,8 @@
  * Copyright 2012 Yannick Loriot. All rights reserved.
  * http://yannickloriot.com
  * 
+ * Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -193,8 +195,12 @@ bool ControlSwitchSprite::initWithMaskSprite(
         
         clipper->addChild(onSprite);
         clipper->addChild(offSprite);
-        clipper->addChild(onLabel);
-        clipper->addChild(offLabel);
+        if (onLabel) {
+            clipper->addChild(onLabel); // might be null
+        }
+        if (offLabel) {
+            clipper->addChild(offLabel); // might be null
+        }
         clipper->addChild(thumbSprite);
         
         addChild(clipper);
@@ -329,7 +335,7 @@ bool ControlSwitch::initWithMaskSprite(Sprite *maskSprite, Sprite * onSprite, Sp
         _switchSprite->setPosition(_switchSprite->getContentSize().width / 2, _switchSprite->getContentSize().height / 2);
         addChild(_switchSprite);
         
-        ignoreAnchorPointForPosition(false);
+        setIgnoreAnchorPointForPosition(false);
         setAnchorPoint(Vec2(0.5f, 0.5f));
         setContentSize(_switchSprite->getContentSize());
         return true;
@@ -396,7 +402,7 @@ Vec2 ControlSwitch::locationFromTouch(Touch* pTouch)
     return touchLocation;
 }
 
-bool ControlSwitch::onTouchBegan(Touch *pTouch, Event *pEvent)
+bool ControlSwitch::onTouchBegan(Touch *pTouch, Event* /*pEvent*/)
 {
     if (!isTouchInside(pTouch) || !isEnabled() || !isVisible())
     {
@@ -415,7 +421,7 @@ bool ControlSwitch::onTouchBegan(Touch *pTouch, Event *pEvent)
     return true;
 }
 
-void ControlSwitch::onTouchMoved(Touch *pTouch, Event *pEvent)
+void ControlSwitch::onTouchMoved(Touch *pTouch, Event* /*pEvent*/)
 {
     Vec2 location    = this->locationFromTouch(pTouch);
     location            = Vec2(location.x - _initialTouchXPosition, 0);
@@ -425,7 +431,7 @@ void ControlSwitch::onTouchMoved(Touch *pTouch, Event *pEvent)
     _switchSprite->setSliderXPosition(location.x);
 }
 
-void ControlSwitch::onTouchEnded(Touch *pTouch, Event *pEvent)
+void ControlSwitch::onTouchEnded(Touch *pTouch, Event* /*pEvent*/)
 {
     Vec2 location   = this->locationFromTouch(pTouch);
     
@@ -441,7 +447,7 @@ void ControlSwitch::onTouchEnded(Touch *pTouch, Event *pEvent)
     }
 }
 
-void ControlSwitch::onTouchCancelled(Touch *pTouch, Event *pEvent)
+void ControlSwitch::onTouchCancelled(Touch *pTouch, Event* /*pEvent*/)
 {
     Vec2 location   = this->locationFromTouch(pTouch);
     

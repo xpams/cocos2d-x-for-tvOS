@@ -1,5 +1,6 @@
 /****************************************************************************
  Copyright (c) 2014 cocos2d-x.org
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -22,10 +23,14 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-#include "ParticleReader.h"
+#include "editor-support/cocostudio/WidgetReader/ParticleReader/ParticleReader.h"
 
-#include "cocostudio/CSParseBinary_generated.h"
-#include "cocostudio/WidgetReader/NodeReader/NodeReader.h"
+#include "base/ccTypes.h"
+#include "base/ccUtils.h"
+#include "2d/CCParticleSystemQuad.h"
+#include "platform/CCFileUtils.h"
+#include "editor-support/cocostudio/CSParseBinary_generated.h"
+#include "editor-support/cocostudio/WidgetReader/NodeReader/NodeReader.h"
 
 #include "tinyxml2.h"
 #include "flatbuffers/flatbuffers.h"
@@ -53,7 +58,7 @@ namespace cocostudio
     {
         if (!_instanceParticleReader)
         {
-            _instanceParticleReader = new ParticleReader();
+            _instanceParticleReader = new (std::nothrow) ParticleReader();
         }
         
         return _instanceParticleReader;
@@ -123,11 +128,11 @@ namespace cocostudio
                     
                     if (name == "Src")
                     {
-                        blendFunc.src = atoi(value.c_str());
+                        blendFunc.src = utils::toBackendBlendFactor(atoi(value.c_str()));
                     }
                     else if (name == "Dst")
                     {
-                        blendFunc.dst = atoi(value.c_str());
+                        blendFunc.dst = utils::toBackendBlendFactor(atoi(value.c_str()));
                     }
                     
                     attribute = attribute->Next();
@@ -137,7 +142,7 @@ namespace cocostudio
             child = child->NextSiblingElement();
         }
         
-        flatbuffers::BlendFunc f_blendFunc(blendFunc.src, blendFunc.dst);
+        flatbuffers::BlendFunc f_blendFunc(utils::toGLBlendFactor(blendFunc.src), utils::toGLBlendFactor(blendFunc.dst));
         
         auto options = CreateParticleSystemOptions(*builder,
                                                    nodeOptions,
@@ -160,8 +165,8 @@ namespace cocostudio
         if (particle && f_blendFunc)
         {
             cocos2d::BlendFunc blendFunc = cocos2d::BlendFunc::ALPHA_PREMULTIPLIED;
-            blendFunc.src = f_blendFunc->src();
-            blendFunc.dst = f_blendFunc->dst();
+            blendFunc.src = utils::toBackendBlendFactor(f_blendFunc->src());
+            blendFunc.dst = utils::toBackendBlendFactor(f_blendFunc->dst());
             particle->setBlendFunc(blendFunc);
         }
         

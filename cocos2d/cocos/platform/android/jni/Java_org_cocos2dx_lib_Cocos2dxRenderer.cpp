@@ -1,11 +1,35 @@
+/****************************************************************************
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
+ 
+ http://www.cocos2d-x.org
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ 
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ ****************************************************************************/
+
 #include "base/CCIMEDispatcher.h"
 #include "base/CCDirector.h"
 #include "base/CCEventType.h"
 #include "base/CCEventCustom.h"
 #include "base/CCEventDispatcher.h"
-#include "../CCApplication.h"
+#include "platform/CCApplication.h"
 #include "platform/CCFileUtils.h"
-#include "JniHelper.h"
+#include "platform/android/jni/JniHelper.h"
 #include <jni.h>
 
 #include "base/ccUTF8.h"
@@ -27,10 +51,17 @@ extern "C" {
     }
 
     JNIEXPORT void JNICALL Java_org_cocos2dx_lib_Cocos2dxRenderer_nativeOnResume() {
+        static bool firstTime = true;
         if (Director::getInstance()->getOpenGLView()) {
-            Application::getInstance()->applicationWillEnterForeground();
+            // don't invoke at first to keep the same logic as iOS
+            // can refer to https://github.com/cocos2d/cocos2d-x/issues/14206
+            if (!firstTime)
+                Application::getInstance()->applicationWillEnterForeground();
+
             cocos2d::EventCustom foregroundEvent(EVENT_COME_TO_FOREGROUND);
             cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&foregroundEvent);
+
+            firstTime = false;
         }
     }
 

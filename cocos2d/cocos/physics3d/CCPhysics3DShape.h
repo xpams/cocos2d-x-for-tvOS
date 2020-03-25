@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -86,7 +87,7 @@ public:
     
     /**
      * create capsule shape
-     * @param radius The radius of casule.
+     * @param radius The radius of capsule.
      * @param height The height (cylinder part).
      */
     static Physics3DShape* createCapsule(float radius, float height);

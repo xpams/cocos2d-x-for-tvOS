@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (C) 2013 Henry van Merode. All rights reserved.
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -32,21 +33,21 @@ NS_CC_BEGIN
 const Vec3 PUOnPositionObserver::DEFAULT_POSITION_THRESHOLD(0, 0, 0);
 
 //-----------------------------------------------------------------------
-PUOnPositionObserver::PUOnPositionObserver(void) : 
-    PUObserver(),
-    _positionXThreshold(DEFAULT_POSITION_THRESHOLD.x),
-    _positionYThreshold(DEFAULT_POSITION_THRESHOLD.y),
-    _positionZThreshold(DEFAULT_POSITION_THRESHOLD.z),
-    _positionXThresholdSet(false),
-    _positionYThresholdSet(false),
-    _positionZThresholdSet(false),
-    _comparePositionX(CO_LESS_THAN),
-    _comparePositionY(CO_LESS_THAN),
-    _comparePositionZ(CO_LESS_THAN)
+PUOnPositionObserver::PUOnPositionObserver()
+: PUObserver()
+, _positionXThreshold(DEFAULT_POSITION_THRESHOLD.x)
+, _positionYThreshold(DEFAULT_POSITION_THRESHOLD.y)
+, _positionZThreshold(DEFAULT_POSITION_THRESHOLD.z)
+, _positionXThresholdSet(false)
+, _positionYThresholdSet(false)
+, _positionZThresholdSet(false)
+, _comparePositionX(CO_LESS_THAN)
+, _comparePositionY(CO_LESS_THAN)
+, _comparePositionZ(CO_LESS_THAN)
 {
 }
 //-----------------------------------------------------------------------
-bool PUOnPositionObserver::observe (PUParticle3D* particle, float timeElapsed)
+bool PUOnPositionObserver::observe (PUParticle3D* particle, float /*timeElapsed*/)
 {
     if (!particle)
         return false;

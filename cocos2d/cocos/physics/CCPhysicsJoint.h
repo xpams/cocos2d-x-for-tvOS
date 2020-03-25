@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2013 Chukong Technologies Inc.
+ Copyright (c) 2013-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -25,6 +26,8 @@
 #ifndef __CCPHYSICS_JOINT_H__
 #define __CCPHYSICS_JOINT_H__
 
+#include <functional>
+
 #include "base/ccConfig.h"
 #if CC_USE_PHYSICS
 
@@ -39,6 +42,8 @@ class Node;
 class PhysicsBody;
 class PhysicsWorld;
 
+class WriteCache;
+
 /**
  * @addtogroup physics
  * @{
@@ -52,41 +57,43 @@ class PhysicsWorld;
 class CC_DLL PhysicsJoint
 {
 protected:
+    typedef std::function<void()> DelayTask;
+protected:
     PhysicsJoint();
     virtual ~PhysicsJoint() = 0;
 
 public:
     /**Get physics body a connected to this joint.*/
-    inline PhysicsBody* getBodyA() const { return _bodyA; }
+    PhysicsBody* getBodyA() const { return _bodyA; }
     
     /**Get physics body b connected to this joint.*/
-    inline PhysicsBody* getBodyB() const { return _bodyB; }
+    PhysicsBody* getBodyB() const { return _bodyB; }
 
     /**Get the physics world.*/
-    inline PhysicsWorld* getWorld() const { return _world; }
+    PhysicsWorld* getWorld() const { return _world; }
     
     /**
      * Get this joint's tag.
      *
-     * @return An interger number.
+     * @return An integer number.
      */
-    inline int getTag() const { return _tag; }
+    int getTag() const { return _tag; }
     
     /**
      * Set this joint's tag.
      *
-     * @param tag An interger number that identifies a PhysicsJoint.
+     * @param tag An integer number that identifies a PhysicsJoint.
      */
-    inline void setTag(int tag) { _tag = tag; }
+    void setTag(int tag) { _tag = tag; }
     
     /** Determines if the joint is enable. */
-    inline bool isEnabled() const { return _enable; }
+    bool isEnabled() const { return _enable; }
 
     /** Enable/Disable the joint. */
     void setEnable(bool enable);
     
-    /** Determines if the collsion is enable. */
-    inline bool isCollisionEnabled() const { return _collisionEnable; }
+    /** Determines if the collision is enable. */
+    bool isCollisionEnabled() const { return _collisionEnable; }
     
     /** Enable/disable the collision between two bodies. */
     void setCollisionEnable(bool enable);
@@ -104,18 +111,25 @@ protected:
     bool init(PhysicsBody* a, PhysicsBody* b);
 
     bool initJoint();
+
+    void delay(const DelayTask & task) { _delayTasks.push_back(task); }
+
+    void flushDelayTasks();
     
     /** Create constraints for this type joint */
     virtual bool createConstraints() { return false; }
 
     std::vector<cpConstraint*> _cpConstraints;
+    std::vector<DelayTask> _delayTasks;
     PhysicsBody* _bodyA;
     PhysicsBody* _bodyB;
     PhysicsWorld* _world;
 
+    WriteCache *_writeCache = nullptr;
+
     bool _enable;
     bool _collisionEnable;
-    bool _destoryMark;
+    bool _destroyMark;
     int _tag;
     float _maxForce;
 
@@ -570,6 +584,7 @@ protected:
 
 /** @} */
 /** @} */
+
 
 
 NS_CC_END

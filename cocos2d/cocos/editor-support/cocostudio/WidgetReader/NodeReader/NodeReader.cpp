@@ -1,5 +1,6 @@
 /****************************************************************************
  Copyright (c) 2014 cocos2d-x.org
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -22,11 +23,11 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-#include "NodeReader.h"
+#include "editor-support/cocostudio/WidgetReader/NodeReader/NodeReader.h"
 
-#include "cocostudio/CSParseBinary_generated.h"
-#include "cocostudio/ActionTimeline/CCActionTimeline.h"
-#include "cocostudio/CCComExtensionData.h"
+#include "editor-support/cocostudio/CSParseBinary_generated.h"
+#include "editor-support/cocostudio/ActionTimeline/CCActionTimeline.h"
+#include "editor-support/cocostudio/CCComExtensionData.h"
 
 #include "tinyxml2.h"
 #include "flatbuffers/flatbuffers.h"
@@ -73,7 +74,7 @@ namespace cocostudio
     {
         if (!_instanceNodeReader)
         {
-            _instanceNodeReader = new NodeReader();
+            _instanceNodeReader = new (std::nothrow) NodeReader();
         }
         
         return _instanceNodeReader;
@@ -92,7 +93,7 @@ namespace cocostudio
         Vec2 rotationSkew;
         int zOrder = 0;
         bool visible = true;
-        GLubyte alpha = 255;
+        uint8_t alpha = 255;
         int tag = 0;
         Vec2 position;
         Vec2 scale(1.0f, 1.0f);
@@ -512,9 +513,9 @@ namespace cocostudio
         ComExtensionData* extensionData = ComExtensionData::create();
         extensionData->setCustomProperty(customProperty);
         extensionData->setActionTag(actionTag);
-        if (node->getComponent("ComExtensionData"))
+        if (node->getComponent(ComExtensionData::COMPONENT_NAME))
         {
-            node->removeComponent("ComExtensionData");
+            node->removeComponent(ComExtensionData::COMPONENT_NAME);
         }
         node->addComponent(extensionData);
         

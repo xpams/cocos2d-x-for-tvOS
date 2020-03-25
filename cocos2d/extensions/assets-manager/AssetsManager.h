@@ -1,5 +1,6 @@
 /****************************************************************************
  Copyright (c) 2013 cocos2d-x.org
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -33,7 +34,10 @@
 #include "extensions/ExtensionMacros.h"
 #include "extensions/ExtensionExport.h"
 
-#if (CC_TARGET_PLATFORM != CC_PLATFORM_WINRT) || (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT && _MSC_VER < 1900)
+
+namespace cocos2d { namespace network {
+    class Downloader;
+}}
 
 NS_CC_EXT_BEGIN
 
@@ -52,7 +56,7 @@ public:
         // Error caused by creating a file to store downloaded data
         CREATE_FILE,
         /** Error caused by network
-         -- network unavaivable
+         -- network unavailable
          -- timeout
          -- ...
          */
@@ -87,7 +91,7 @@ public:
     
     typedef std::function<void(int)> ErrorCallback;
     typedef std::function<void(int)> ProgressCallback;
-    typedef std::function<void(void)> SuccessCallback;
+    typedef std::function<void()> SuccessCallback;
 
     /* @brief To access within scripting environment
      */
@@ -136,7 +140,7 @@ public:
     /* @brief Sets storage path.
      *
      * @param storagePath The path to store downloaded resources.
-     * @warm The path should be a valid path.
+     * @warning The path should be a valid path.
      */
     void setStoragePath(const char* storagePath);
     
@@ -156,31 +160,16 @@ public:
      */
     void setConnectionTimeout(unsigned int timeout);
     
-    /** @brief Gets connection time out in secondes
+    /** @brief Gets connection time out in seconds
      */
     unsigned int getConnectionTimeout();
-    
-    /* downloadAndUncompress is the entry of a new thread 
-     */
-    friend int assetsManagerProgressFunc(void *, double, double, double, double);
 
 protected:
-    bool downLoad();
     void checkStoragePath();
     bool uncompress();
-    bool createDirectory(const char *path);
     void setSearchPath();
     void downloadAndUncompress();
 
-private:
-    /** @brief Initializes storage path.
-     */
-    void createStoragePath();
-    
-    /** @brief Destroys storage path.
-     */
-    void destroyStoragePath();
-    
 private:
     //! The path to store downloaded resources.
     std::string _storagePath;
@@ -193,7 +182,7 @@ private:
     
     std::string _downloadedVersion;
     
-    void *_curl;
+    cocos2d::network::Downloader* _downloader;
 
     unsigned int _connectionTimeout;
     
@@ -216,7 +205,7 @@ public:
      * @js NA
      * @lua NA
      */
-    virtual void onError(AssetsManager::ErrorCode errorCode) {};
+    virtual void onError(AssetsManager::ErrorCode errorCode) {}
     /** @brief Call back function for recording downloading percent
         @param percent How much percent downloaded
         @warning    This call back function just for recording downloading percent.
@@ -225,19 +214,18 @@ public:
      * @js NA
      * @lua NA
      */
-    virtual void onProgress(int percent) {};
+    virtual void onProgress(int percent) {}
     /** @brief Call back function for success
      * @js NA
      * @lua NA
      */
-    virtual void onSuccess() {};
+    virtual void onSuccess() {}
 };
 
 // Deprecated declaration
 CC_DEPRECATED_ATTRIBUTE typedef AssetsManager CCAssetsManager;
 CC_DEPRECATED_ATTRIBUTE typedef AssetsManagerDelegateProtocol CCAssetsManagerDelegateProtocol;
 
-NS_CC_EXT_END;
+NS_CC_EXT_END
 
-#endif /* #if (CC_TARGET_PLATFORM != CC_PLATFORM_WINRT) || (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT && _MSC_VER < 1900) */
 #endif /* defined(__AssetsManager__) */

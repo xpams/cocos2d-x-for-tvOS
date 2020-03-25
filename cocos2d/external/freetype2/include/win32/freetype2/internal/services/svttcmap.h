@@ -46,7 +46,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Fields>                                                              */
   /*    language ::                                                        */
-  /*      The language ID used in Mac fonts.  Definitions of values are in */
+  /*      The language ID used in Mac font.  Definitions of values are in */
   /*      `ttnameid.h'.                                                    */
   /*                                                                       */
   /*    format ::                                                          */

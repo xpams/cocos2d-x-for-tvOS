@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2013-2014 Chukong Technologies Inc.
+ Copyright (c) 2013-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -46,7 +47,7 @@ class EventCustom;
  *        auto listener = EventListenerCustom::create(callback);
  *        dispatcher->addEventListenerWithSceneGraphPriority(listener, one_node);
  *
- *     Dispatchs a custom event:
+ *     Dispatches a custom event:
  *
  *        EventCustom event("your_event_type");
  *        dispatcher->dispatchEvent(&event);

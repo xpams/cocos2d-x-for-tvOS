@@ -1,7 +1,8 @@
 /****************************************************************************
  Copyright (c) 2010-2012 cocos2d-x.org
- Copyright (c) 2013-2014 Chukong Technologies Inc.
- 
+ Copyright (c) 2013-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
+
  http://www.cocos2d-x.org
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -50,7 +51,10 @@ _bytes(nullptr),
 _size(0)
 {
     CCLOGINFO("In the copy constructor of Data.");
-    copy(other._bytes, other._size);
+    if (other._bytes && other._size)
+    {
+        copy(other._bytes, other._size);
+    }
 }
 
 Data::~Data()
@@ -61,23 +65,31 @@ Data::~Data()
 
 Data& Data::operator= (const Data& other)
 {
-    CCLOGINFO("In the copy assignment of Data.");
-    copy(other._bytes, other._size);
+    if (this != &other)
+    {
+        CCLOGINFO("In the copy assignment of Data.");
+        copy(other._bytes, other._size);
+    }
     return *this;
 }
 
 Data& Data::operator= (Data&& other)
 {
-    CCLOGINFO("In the move assignment of Data.");
-    move(other);
+    if (this != &other)
+    {
+        CCLOGINFO("In the move assignment of Data.");
+        move(other);
+    }
     return *this;
 }
 
 void Data::move(Data& other)
 {
+    if(_bytes != other._bytes) clear();
+    
     _bytes = other._bytes;
     _size = other._size;
-    
+
     other._bytes = nullptr;
     other._size = 0;
 }
@@ -97,29 +109,46 @@ ssize_t Data::getSize() const
     return _size;
 }
 
-void Data::copy(const unsigned char* bytes, const ssize_t size)
+ssize_t Data::copy(const unsigned char* bytes, const ssize_t size)
 {
-    clear();
-    
-    if (size > 0)
+    CCASSERT(size >= 0, "copy size should be non-negative");
+    CCASSERT(bytes, "bytes should not be nullptr");
+
+    if (size <= 0) return 0;
+
+    if (bytes != _bytes)
     {
-        _size = size;
-        _bytes = (unsigned char*)malloc(sizeof(unsigned char) * _size);
-        memcpy(_bytes, bytes, _size);
+        clear();
+        _bytes = (unsigned char*)malloc(sizeof(unsigned char) * size);
+        memcpy(_bytes, bytes, size);
     }
+
+    _size = size;
+    return _size;
 }
 
 void Data::fastSet(unsigned char* bytes, const ssize_t size)
 {
+    CCASSERT(size >= 0, "fastSet size should be non-negative");
+    //CCASSERT(bytes, "bytes should not be nullptr");
     _bytes = bytes;
     _size = size;
 }
 
 void Data::clear()
 {
-    free(_bytes);
+    if(_bytes) free(_bytes);
     _bytes = nullptr;
     _size = 0;
+}
+
+unsigned char* Data::takeBuffer(ssize_t* size)
+{
+    auto buffer = getBytes();
+    if (size)
+        *size = getSize();
+    fastSet(nullptr, 0);
+    return buffer;
 }
 
 NS_CC_END

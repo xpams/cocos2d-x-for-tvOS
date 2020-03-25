@@ -1,6 +1,7 @@
 /****************************************************************************
 Copyright (c) 2011      Laschweinski
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -27,7 +28,7 @@ THE SOFTWARE.
 #if CC_TARGET_PLATFORM == CC_PLATFORM_LINUX
 
 #include "platform/CCCommon.h"
-#include "CCStdC-linux.h"
+#include "platform/linux/CCStdC-linux.h"
 #include "base/CCConsole.h"
 
 NS_CC_BEGIN

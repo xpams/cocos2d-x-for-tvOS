@@ -29,7 +29,7 @@
 #define __FTMAC_H__
 
 
-#include <ft2build.h>
+#include "ft2build.h"
 
 
 FT_BEGIN_HEADER
@@ -88,7 +88,7 @@ FT_BEGIN_HEADER
   /*    FreeType error code.  0~means success.                             */
   /*                                                                       */
   /* <Notes>                                                               */
-  /*    This function can be used to create @FT_Face objects from fonts    */
+  /*    This function can be used to create @FT_Face objects from font    */
   /*    that are installed in the system as follows.                       */
   /*                                                                       */
   /*    {                                                                  */

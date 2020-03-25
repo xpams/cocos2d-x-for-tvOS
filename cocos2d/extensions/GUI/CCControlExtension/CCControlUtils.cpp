@@ -1,5 +1,6 @@
 /****************************************************************************
 Copyright (c) 2012 cocos2d-x.org
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -92,7 +93,7 @@ RGBA ControlUtils::RGBfromHSV(HSV value)
     
     if (value.s <= 0.0) // < is bogus, just shuts up warnings
     {       
-        if (isnan(value.h)) // value.h == NAN
+        if (std::isnan(value.h)) // value.h == NAN
         {   
             out.r = value.v;
             out.g = value.v;

@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -55,7 +56,7 @@ struct CC_DLL Particle3D
     float depth;//Own depth
     
     //user defined property
-    std::map<std::string, void*> userDefs;
+    std::unordered_map<std::string, void*> userDefs;
 };
 
 template<typename T>
@@ -75,7 +76,7 @@ public:
         //_locked.erase(_locked.begin());
         _released.splice(_released.end(), _locked, _locked.begin());
         return p;
-    };
+    }
 
     void lockLatestData(){
         _locked.push_back(*_releasedIter);
@@ -84,7 +85,7 @@ public:
         {
             --_releasedIter;
         }
-    };
+    }
 
     void lockData(T *data){
         PoolIterator tempIter = _releasedIter;
@@ -104,27 +105,27 @@ public:
         //_locked.insert(_locked.end(), _released.begin(), _released.end());
         //_released.clear();
         _releasedIter = _released.begin();
-    };
+    }
 
     T* getFirst(){
         _releasedIter = _released.begin();
         if (_releasedIter == _released.end()) return nullptr;
         return *_releasedIter;
-    };
+    }
 
     T* getNext(){
         if (_releasedIter == _released.end()) return nullptr;
         ++_releasedIter;
         if (_releasedIter == _released.end()) return nullptr;
         return *_releasedIter;
-    };
+    }
 
     const PoolList& getActiveDataList() const { return _released; };
     const PoolList& getUnActiveDataList() const { return _locked; };
 
     void addData(T* data){
         _locked.push_back(data); 
-    };
+    }
 
     bool empty() const { return _released.empty(); };
 
@@ -134,7 +135,7 @@ public:
             delete iter;
         }
         _locked.clear();
-    };
+    }
 
 private:
 
@@ -205,6 +206,10 @@ public:
      */
     void setRender(Particle3DRender* render);
     /**
+    * return particle render
+    */
+    Particle3DRender* getRender(){ return _render; }
+    /**
      * add particle affector
      */
     void addAffector(Particle3DAffector* affector);
@@ -254,7 +259,7 @@ public:
      */
     State getState() const { return _state; }
 
-    bool isKeepLocal(void) const { return _keepLocal; }
+    bool isKeepLocal() const { return _keepLocal; }
     void setKeepLocal(bool keepLocal);
 
      /** 
@@ -265,7 +270,7 @@ public:
     /**
      * is enabled
      */
-    bool isEnabled(void) const { return _isEnabled; }
+    bool isEnabled() const { return _isEnabled; }
 
 CC_CONSTRUCTOR_ACCESS:
     ParticleSystem3D();

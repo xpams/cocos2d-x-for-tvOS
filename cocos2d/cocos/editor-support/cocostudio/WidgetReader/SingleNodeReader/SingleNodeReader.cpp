@@ -1,5 +1,6 @@
 /****************************************************************************
  Copyright (c) 2014 cocos2d-x.org
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -22,11 +23,11 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-#include "SingleNodeReader.h"
+#include "editor-support/cocostudio/WidgetReader/SingleNodeReader/SingleNodeReader.h"
 
-#include "cocostudio/CSParseBinary_generated.h"
-#include "cocostudio/ActionTimeline/CCActionTimeline.h"
-#include "cocostudio/WidgetReader/NodeReader/NodeReader.h"
+#include "editor-support/cocostudio/CSParseBinary_generated.h"
+#include "editor-support/cocostudio/ActionTimeline/CCActionTimeline.h"
+#include "editor-support/cocostudio/WidgetReader/NodeReader/NodeReader.h"
 
 #include "tinyxml2.h"
 #include "flatbuffers/flatbuffers.h"
@@ -56,7 +57,7 @@ namespace cocostudio
     {
         if (!_instanceSingleNodeReader)
         {
-            _instanceSingleNodeReader = new SingleNodeReader();
+            _instanceSingleNodeReader = new (std::nothrow) SingleNodeReader();
         }
         
         return _instanceSingleNodeReader;

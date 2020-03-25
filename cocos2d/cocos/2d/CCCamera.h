@@ -1,5 +1,6 @@
 /****************************************************************************
-Copyright (c) 2014 Chukong Technologies Inc.
+Copyright (c) 2014-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2019 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -24,14 +25,12 @@ THE SOFTWARE.
  Code based GamePlay3D's Camera: http://gameplay3d.org
 
  ****************************************************************************/
-#ifndef _CCCAMERA_H__
-#define _CCCAMERA_H__
+#pragma once
 
 #include "2d/CCNode.h"
 #include "3d/CCFrustum.h"
 #include "renderer/CCQuadCommand.h"
 #include "renderer/CCCustomCommand.h"
-#include "renderer/CCFrameBuffer.h"
 
 NS_CC_BEGIN
 
@@ -98,7 +97,20 @@ public:
 
     /** create default camera, the camera type depends on Director::getProjection, the depth of the default camera is 0 */
     static Camera* create();
-    
+
+    /**
+     * Get the visiting camera , the visiting camera shall be set on Scene::render
+     */
+    static const Camera* getVisitingCamera();
+
+    static const Viewport& getDefaultViewport();
+    static void setDefaultViewport(const Viewport& vp);
+
+    /**
+     * Get the default camera of the current running scene.
+     */
+    static Camera* getDefaultCamera();
+
     /**
     * Gets the type of camera.
     *
@@ -107,8 +119,8 @@ public:
     Camera::Type getType() const { return _type; }
 
     /**get & set Camera flag*/
-    CameraFlag getCameraFlag() const { return (CameraFlag)_cameraFlag; }
-    void setCameraFlag(CameraFlag flag) { _cameraFlag = (unsigned short)flag; }
+    CameraFlag getCameraFlag() const { return _cameraFlag; }
+    void setCameraFlag(CameraFlag flag) { _cameraFlag = flag; }
 
     /**
     * Make Camera looks at target
@@ -228,15 +240,6 @@ public:
     virtual void onExit() override;
 
     /**
-     * Get the visiting camera , the visiting camera shall be set on Scene::render
-     */
-    static const Camera* getVisitingCamera() { return _visitingCamera; }
-
-    /**
-     * Get the default camera of the current running scene.
-     */
-    static Camera* getDefaultCamera();
-    /**
      Before rendering scene with this camera, the background need to be cleared. It clears the depth buffer with max depth by default. Use setBackgroundBrush to modify the default behavior
      */
     void clearBackground();
@@ -244,86 +247,71 @@ public:
      Apply the FBO, RenderTargets and viewport.
      */
     void apply();
-    /**
-     Set FBO, which will attacha several render target for the rendered result.
-    */
-    void setFrameBufferObject(experimental::FrameBuffer* fbo);
-    /**
-     Set Viewport for camera.
-     */
-    void setViewport(const experimental::Viewport& vp) { _viewport = vp; }
-    
+
     /**
      * Whether or not the viewprojection matrix was updated since the last frame.
      * @return True if the viewprojection matrix was updated since the last frame.
      */
     bool isViewProjectionUpdated() const {return _viewProjectionUpdated;}
-    
+
     /**
      * set the background brush. See CameraBackgroundBrush for more information.
      * @param clearBrush Brush used to clear the background
      */
     void setBackgroundBrush(CameraBackgroundBrush* clearBrush);
-    
+
     /**
      * Get clear brush
      */
     CameraBackgroundBrush* getBackgroundBrush() const { return _clearBrush; }
-    
+
     virtual void visit(Renderer* renderer, const Mat4 &parentTransform, uint32_t parentFlags) override;
-    
+
+    bool isBrushValid();
+
 CC_CONSTRUCTOR_ACCESS:
     Camera();
     ~Camera();
-    
+
     /**
      * Set the scene,this method shall not be invoke manually
      */
     void setScene(Scene* scene);
-    
-    /**set additional matrix for the projection matrix, it multiplys mat to projection matrix when called, used by WP8*/
+
+    /**set additional matrix for the projection matrix, it multiplies mat to projection matrix when called, used by WP8*/
     void setAdditionalProjection(const Mat4& mat);
-    
+
     /** init camera */
     bool initDefault();
     bool initPerspective(float fieldOfView, float aspectRatio, float nearPlane, float farPlane);
     bool initOrthographic(float zoomX, float zoomY, float nearPlane, float farPlane);
-    void applyFrameBufferObject();
     void applyViewport();
-protected:
 
-    Scene* _scene; //Scene camera belongs to
+protected:
+    static Camera* _visitingCamera;
+    static Viewport _defaultViewport;
+
+    Scene* _scene = nullptr; //Scene camera belongs to
     Mat4 _projection;
     mutable Mat4 _view;
     mutable Mat4 _viewInv;
     mutable Mat4 _viewProjection;
+
     Vec3 _up;
     Camera::Type _type;
-    float _fieldOfView;
-    float _zoom[2];
-    float _aspectRatio;
-    float _nearPlane;
-    float _farPlane;
-    mutable bool  _viewProjectionDirty;
-    bool _viewProjectionUpdated; //Whether or not the viewprojection matrix was updated since the last frame.
-    unsigned short _cameraFlag; // camera flag
+    float _fieldOfView = 0.f;
+    float _zoom[2] = {0.f};
+    float _aspectRatio = 0.f;
+    float _nearPlane = 0.f;
+    float _farPlane = 0.f;
+    mutable bool  _viewProjectionDirty = true;
+    bool _viewProjectionUpdated = false; //Whether or not the viewprojection matrix was updated since the last frame.
+    CameraFlag _cameraFlag = CameraFlag::DEFAULT; // camera flag
     mutable Frustum _frustum;   // camera frustum
-    mutable bool _frustumDirty;
-    int8_t  _depth;                 //camera depth, the depth of camera with CameraFlag::DEFAULT flag is 0 by default, a camera with larger depth is drawn on top of camera with smaller detph
-    static Camera* _visitingCamera;
-    
-    CameraBackgroundBrush* _clearBrush; //brush used to clear the back ground
-    
-    experimental::Viewport _viewport;
-    
-    experimental::FrameBuffer* _fbo;
-protected:
-    static experimental::Viewport _defaultViewport;
-public:
-    static const experimental::Viewport& getDefaultViewport() { return _defaultViewport; }
-    static void setDefaultViewport(const experimental::Viewport& vp) { _defaultViewport = vp; }
+    mutable bool _frustumDirty = true;
+    int8_t  _depth = -1;                 //camera depth, the depth of camera with CameraFlag::DEFAULT flag is 0 by default, a camera with larger depth is drawn on top of camera with smaller depth
+
+    CameraBackgroundBrush* _clearBrush = nullptr; //brush used to clear the back ground
 };
 
 NS_CC_END
-
-#endif// __CCCAMERA_H_

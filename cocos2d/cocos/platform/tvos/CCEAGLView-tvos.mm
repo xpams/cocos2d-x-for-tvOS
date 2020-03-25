@@ -60,25 +60,19 @@ APPLE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Copyright (C) 2008 Apple Inc. All Rights Reserved.
 
 */
-
-#include "platform/CCPlatformConfig.h"
-#if CC_TARGET_PLATFORM == CC_PLATFORM_TVOS
-
-#import "CCEAGLView-tvos.h"
+#import "platform/tvos/CCEAGLView-tvos.h"
 
 #import <QuartzCore/QuartzCore.h>
+#import <Metal/Metal.h>
 
 #import "base/CCDirector.h"
-#import "deprecated/CCSet.h"
 #import "base/CCTouch.h"
 #import "base/CCIMEDispatcher.h"
-#import "CCGLViewImpl-tvos.h"
-#import "CCES2Renderer-tvos.h"
-#import "OpenGL_Internal-tvos.h"
+#import "renderer/backend/metal/DeviceMTL.h"
 
 //CLASS IMPLEMENTATIONS:
 
-#define TVOS_MAX_TOUCHES_COUNT     10
+#define IOS_MAX_TOUCHES_COUNT     10
 
 @interface CCEAGLView (Private)
 - (BOOL) setupSurfaceWithSharegroup:(EAGLSharegroup*)sharegroup;
@@ -95,7 +89,7 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 @synthesize keyboardShowNotification = keyboardShowNotification_;
 + (Class) layerClass
 {
-    return [CAEAGLLayer class];
+    return [CAMetalLayer class];
 }
 
 + (id) viewWithFrame:(CGRect)frame
@@ -120,38 +114,43 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 
 - (id) initWithFrame:(CGRect)frame
 {
-    return [self initWithFrame:frame pixelFormat:kEAGLColorFormatRGB565 depthFormat:0 preserveBackbuffer:NO sharegroup:nil multiSampling:NO numberOfSamples:0];
+     return [self initWithFrame:frame pixelFormat:kEAGLColorFormatRGB565 depthFormat:0 preserveBackbuffer:NO sharegroup:nil multiSampling:NO numberOfSamples:0];
+    //OpenGL disabe;
+//    return [self initWithFrame:frame pixelFormat:@"" depthFormat:0 preserveBackbuffer:NO sharegroup:nil multiSampling:NO numberOfSamples:0];
 }
 
-- (id) initWithFrame:(CGRect)frame pixelFormat:(NSString*)format 
+- (id) initWithFrame:(CGRect)frame pixelFormat:(NSString*)format
 {
     return [self initWithFrame:frame pixelFormat:format depthFormat:0 preserveBackbuffer:NO sharegroup:nil multiSampling:NO numberOfSamples:0];
 }
 
-- (id) initWithFrame:(CGRect)frame pixelFormat:(NSString*)format depthFormat:(GLuint)depth preserveBackbuffer:(BOOL)retained sharegroup:(EAGLSharegroup*)sharegroup multiSampling:(BOOL)sampling numberOfSamples:(unsigned int)nSamples;
+- (id) initWithFrame:(CGRect)frame pixelFormat:(NSString*)format depthFormat:(GLuint)depth preserveBackbuffer:(BOOL)retained sharegroup:(EAGLSharegroup*)sharegroup multiSampling:(BOOL)sampling numberOfSamples:(unsigned int)nSamples
 {
     if((self = [super initWithFrame:frame]))
     {
         isUseUITextField = YES;
-        pixelformat_ = format;
-        depthFormat_ = depth;
-        multiSampling_ = sampling;
-        requestedSamples_ = nSamples;
-        preserveBackbuffer_ = retained;
         markedText_ = nil;
-        if( ! [self setupSurfaceWithSharegroup:sharegroup] ) {
-            [self release];
-            return nil;
-        }
-
 
         originalRect_ = self.frame;
         self.keyboardShowNotification = nil;
+        self.autocorrectionType = UITextAutocorrectionTypeNo;
         
         if ([self respondsToSelector:@selector(setContentScaleFactor:)])
         {
             self.contentScaleFactor = [[UIScreen mainScreen] scale];
         }
+
+        id<MTLDevice> device = MTLCreateSystemDefaultDevice();
+        if (!device)
+        {
+             CCLOG("Doesn't support metal.");
+             return nil;
+        }
+        CAMetalLayer* metalLayer = (CAMetalLayer*)[self layer];
+//        metalLayer.device = device;
+//        metalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
+//        metalLayer.framebufferOnly = YES;
+        cocos2d::backend::DeviceMTL::setCAMetalLayer(metalLayer);
     }
     
     return self;
@@ -159,42 +158,33 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 
 -(id) initWithCoder:(NSCoder *)aDecoder
 {
-    if( (self = [super initWithCoder:aDecoder]) ) {
-        
-        CAEAGLLayer*            eaglLayer = (CAEAGLLayer*)[self layer];
-        
-        pixelformat_ = kEAGLColorFormatRGB565;
-        depthFormat_ = 0; // GL_DEPTH_COMPONENT24_OES;
-        multiSampling_= NO;
-        requestedSamples_ = 0;
-        size_ = [eaglLayer bounds].size;
+    if ( (self = [super initWithCoder:aDecoder]) )
+    {
+        size_ = [self bounds].size;
         markedText_ = nil;
-        
-        if( ! [self setupSurfaceWithSharegroup:nil] ) {
-            [self release];
-            return nil;
-        }
     }
     
     return self;
 }
 
-- (void)didMoveToWindow;
+- (void)didMoveToWindow
 {
-//    [[NSNotificationCenter defaultCenter] addObserver:self
-//                                             selector:@selector(onUIKeyboardNotification:)
-//                                                 name:UIKeyboardWillShowNotification object:nil];
-//    
-//    [[NSNotificationCenter defaultCenter] addObserver:self
-//                                             selector:@selector(onUIKeyboardNotification:)
-//                                                 name:UIKeyboardDidShowNotification object:nil];
-//    [[NSNotificationCenter defaultCenter] addObserver:self
-//                                             selector:@selector(onUIKeyboardNotification:)
-//                                                 name:UIKeyboardWillHideNotification object:nil];
-//    
-//    [[NSNotificationCenter defaultCenter] addObserver:self
-//                                             selector:@selector(onUIKeyboardNotification:)
-//                                                 name:UIKeyboardDidHideNotification object:nil];
+#if !defined(CC_TARGET_OS_TVOS)
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(onUIKeyboardNotification:)
+                                                 name:UIKeyboardWillShowNotification object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(onUIKeyboardNotification:)
+                                                 name:UIKeyboardDidShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(onUIKeyboardNotification:)
+                                                 name:UIKeyboardWillHideNotification object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(onUIKeyboardNotification:)
+                                                 name:UIKeyboardDidHideNotification object:nil];
+#endif
 }
 
 -(int) getWidth
@@ -209,139 +199,31 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
     return (int)bound.height * self.contentScaleFactor;
 }
 
-
--(BOOL) setupSurfaceWithSharegroup:(EAGLSharegroup*)sharegroup
-{
-    CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
-    
-    eaglLayer.opaque = YES;
-    eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
-                                    [NSNumber numberWithBool:preserveBackbuffer_], kEAGLDrawablePropertyRetainedBacking,
-                                    pixelformat_, kEAGLDrawablePropertyColorFormat, nil];
-    
-    
-    renderer_ = [[CCES2Renderer alloc] initWithDepthFormat:depthFormat_
-                                         withPixelFormat:[self convertPixelFormat:pixelformat_]
-                                          withSharegroup:sharegroup
-                                       withMultiSampling:multiSampling_
-                                     withNumberOfSamples:requestedSamples_];
-    
-    NSAssert(renderer_, @"OpenGL ES 2.O is required.");
-    if (!renderer_)
-        return NO;
-    
-    context_ = [renderer_ context];
-    
-    #if GL_EXT_discard_framebuffer == 1
-        discardFramebufferSupported_ = YES;
-    #else
-        discardFramebufferSupported_ = NO;
-    #endif
-    
-    CHECK_GL_ERROR();
-    
-    return YES;
-}
-
 - (void) dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self]; // remove keyboard notification
-    [renderer_ release];
     self.keyboardShowNotification = nullptr; // implicit release
     [super dealloc];
 }
 
 - (void) layoutSubviews
 {
-    [renderer_ resizeFromLayer:(CAEAGLLayer*)self.layer];
-    size_ = [renderer_ backingSize];
+    if (!cocos2d::Director::getInstance()->isValid())
+        return;
 
-    // Issue #914 #924
-//     Director *director = [Director sharedDirector];
-//     [director reshapeProjection:size_];
-    cocos2d::Size size;
-    size.width = size_.width;
-    size.height = size_.height;
-    //cocos2d::Director::getInstance()->reshapeProjection(size);
+    size_ = [self bounds].size;
+    size_.width *= self.contentScaleFactor;
+    size_.height *= self.contentScaleFactor;
 
     // Avoid flicker. Issue #350
-    //[director performSelectorOnMainThread:@selector(drawScene) withObject:nil waitUntilDone:YES];
-    cocos2d::Director::getInstance()->drawScene();
+    if ([NSThread isMainThread])
+    {
+        cocos2d::Director::getInstance()->drawScene();
+    }
 }
 
 - (void) swapBuffers
 {
-    // IMPORTANT:
-    // - preconditions
-    //    -> context_ MUST be the OpenGL context
-    //    -> renderbuffer_ must be the the RENDER BUFFER
-
-#ifdef __IPHONE_4_0
-    
-    if (multiSampling_)
-    {
-        /* Resolve from msaaFramebuffer to resolveFramebuffer */
-        //glDisable(GL_SCISSOR_TEST);     
-        glBindFramebuffer(GL_READ_FRAMEBUFFER_APPLE, [renderer_ msaaFrameBuffer]);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER_APPLE, [renderer_ defaultFrameBuffer]);
-        glResolveMultisampleFramebufferAPPLE();
-    }
-    
-    if(discardFramebufferSupported_)
-    {    
-        if (multiSampling_)
-        {
-            if (depthFormat_)
-            {
-                GLenum attachments[] = {GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT};
-                glDiscardFramebufferEXT(GL_READ_FRAMEBUFFER_APPLE, 2, attachments);
-            }
-            else
-            {
-                GLenum attachments[] = {GL_COLOR_ATTACHMENT0};
-                glDiscardFramebufferEXT(GL_READ_FRAMEBUFFER_APPLE, 1, attachments);
-            }
-            
-            glBindRenderbuffer(GL_RENDERBUFFER, [renderer_ colorRenderBuffer]);
-    
-        }    
-        
-        // not MSAA
-        else if (depthFormat_ ) {
-            GLenum attachments[] = { GL_DEPTH_ATTACHMENT};
-            glDiscardFramebufferEXT(GL_FRAMEBUFFER, 1, attachments);
-        }
-    }
-    
-#endif // __IPHONE_4_0
-    
-     if(![context_ presentRenderbuffer:GL_RENDERBUFFER])
-        {
-//         CCLOG(@"cocos2d: Failed to swap renderbuffer in %s\n", __FUNCTION__);
-        }
-
-#if COCOS2D_DEBUG
-    CHECK_GL_ERROR();
-#endif
-    
-    // We can safely re-bind the framebuffer here, since this will be the
-    // 1st instruction of the new main loop
-    if( multiSampling_ )
-        glBindFramebuffer(GL_FRAMEBUFFER, [renderer_ msaaFrameBuffer]);    
-}
-
-- (unsigned int) convertPixelFormat:(NSString*) pixelFormat
-{
-    // define the pixel format
-    GLenum pFormat;
-    
-    
-    if([pixelFormat isEqualToString:@"EAGLColorFormat565"]) 
-        pFormat = GL_RGB565;
-    else 
-        pFormat = GL_RGBA8_OES;
-    
-    return pFormat;
 }
 
 #pragma mark CCEAGLView - Point conversion
@@ -377,8 +259,8 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
     
     for(UIView* view in subviews)
     {
-        if([view isKindOfClass:NSClassFromString(@"CCCustomUITextField")] ||
-           [view isKindOfClass:NSClassFromString(@"UICustomUITextField")])
+        if([view isKindOfClass:NSClassFromString(@"UITextView")] ||
+           [view isKindOfClass:NSClassFromString(@"UITextField")])
         {
             if ([view isFirstResponder])
             {
@@ -398,15 +280,20 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
         [self handleTouchesAfterKeyboardShow];
     }
     
-    UITouch* ids[TVOS_MAX_TOUCHES_COUNT] = {0};
-    float xs[TVOS_MAX_TOUCHES_COUNT] = {0.0f};
-    float ys[TVOS_MAX_TOUCHES_COUNT] = {0.0f};
+    UITouch* ids[IOS_MAX_TOUCHES_COUNT] = {0};
+    float xs[IOS_MAX_TOUCHES_COUNT] = {0.0f};
+    float ys[IOS_MAX_TOUCHES_COUNT] = {0.0f};
     
     int i = 0;
     for (UITouch *touch in touches) {
+        if (i >= IOS_MAX_TOUCHES_COUNT) {
+            CCLOG("warning: touches more than 10, should adjust IOS_MAX_TOUCHES_COUNT");
+            break;
+        }
+
         ids[i] = touch;
-        xs[i] = [touch locationInView: [touch view]].x * self.contentScaleFactor;;
-        ys[i] = [touch locationInView: [touch view]].y * self.contentScaleFactor;;
+        xs[i] = [touch locationInView: [touch view]].x * self.contentScaleFactor;
+        ys[i] = [touch locationInView: [touch view]].y * self.contentScaleFactor;
         ++i;
     }
 
@@ -416,33 +303,52 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    UITouch* ids[TVOS_MAX_TOUCHES_COUNT] = {0};
-    float xs[TVOS_MAX_TOUCHES_COUNT] = {0.0f};
-    float ys[TVOS_MAX_TOUCHES_COUNT] = {0.0f};
+    UITouch* ids[IOS_MAX_TOUCHES_COUNT] = {0};
+    float xs[IOS_MAX_TOUCHES_COUNT] = {0.0f};
+    float ys[IOS_MAX_TOUCHES_COUNT] = {0.0f};
+    float fs[IOS_MAX_TOUCHES_COUNT] = {0.0f};
+    float ms[IOS_MAX_TOUCHES_COUNT] = {0.0f};
     
     int i = 0;
     for (UITouch *touch in touches) {
+        if (i >= IOS_MAX_TOUCHES_COUNT) {
+            CCLOG("warning: touches more than 10, should adjust IOS_MAX_TOUCHES_COUNT");
+            break;
+        }
+
         ids[i] = touch;
-        xs[i] = [touch locationInView: [touch view]].x * self.contentScaleFactor;;
-        ys[i] = [touch locationInView: [touch view]].y * self.contentScaleFactor;;
+        xs[i] = [touch locationInView: [touch view]].x * self.contentScaleFactor;
+        ys[i] = [touch locationInView: [touch view]].y * self.contentScaleFactor;
+#if defined(__IPHONE_9_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_9_0)
+        // running on iOS 9.0 or higher version
+        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 9.0f) {
+            fs[i] = touch.force;
+            ms[i] = touch.maximumPossibleForce;
+        }
+#endif
         ++i;
     }
 
     auto glview = cocos2d::Director::getInstance()->getOpenGLView();
-    glview->handleTouchesMove(i, (intptr_t*)ids, xs, ys);
+    glview->handleTouchesMove(i, (intptr_t*)ids, xs, ys, fs, ms);
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    UITouch* ids[TVOS_MAX_TOUCHES_COUNT] = {0};
-    float xs[TVOS_MAX_TOUCHES_COUNT] = {0.0f};
-    float ys[TVOS_MAX_TOUCHES_COUNT] = {0.0f};
+    UITouch* ids[IOS_MAX_TOUCHES_COUNT] = {0};
+    float xs[IOS_MAX_TOUCHES_COUNT] = {0.0f};
+    float ys[IOS_MAX_TOUCHES_COUNT] = {0.0f};
     
     int i = 0;
     for (UITouch *touch in touches) {
+        if (i >= IOS_MAX_TOUCHES_COUNT) {
+            CCLOG("warning: touches more than 10, should adjust IOS_MAX_TOUCHES_COUNT");
+            break;
+        }
+
         ids[i] = touch;
-        xs[i] = [touch locationInView: [touch view]].x * self.contentScaleFactor;;
-        ys[i] = [touch locationInView: [touch view]].y * self.contentScaleFactor;;
+        xs[i] = [touch locationInView: [touch view]].x * self.contentScaleFactor;
+        ys[i] = [touch locationInView: [touch view]].y * self.contentScaleFactor;
         ++i;
     }
 
@@ -452,15 +358,20 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
     
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    UITouch* ids[TVOS_MAX_TOUCHES_COUNT] = {0};
-    float xs[TVOS_MAX_TOUCHES_COUNT] = {0.0f};
-    float ys[TVOS_MAX_TOUCHES_COUNT] = {0.0f};
+    UITouch* ids[IOS_MAX_TOUCHES_COUNT] = {0};
+    float xs[IOS_MAX_TOUCHES_COUNT] = {0.0f};
+    float ys[IOS_MAX_TOUCHES_COUNT] = {0.0f};
     
     int i = 0;
     for (UITouch *touch in touches) {
+        if (i >= IOS_MAX_TOUCHES_COUNT) {
+            CCLOG("warning: touches more than 10, should adjust IOS_MAX_TOUCHES_COUNT");
+            break;
+        }
+        
         ids[i] = touch;
-        xs[i] = [touch locationInView: [touch view]].x * self.contentScaleFactor;;
-        ys[i] = [touch locationInView: [touch view]].y * self.contentScaleFactor;;
+        xs[i] = [touch locationInView: [touch view]].x * self.contentScaleFactor;
+        ys[i] = [touch locationInView: [touch view]].y * self.contentScaleFactor;
         ++i;
     }
 
@@ -540,26 +451,27 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 @synthesize markedTextStyle;
 // @synthesize selectedTextRange;       // must implement
 @synthesize tokenizer;
+@synthesize autocorrectionType;
 
 /* Text may have a selection, either zero-length (a caret) or ranged.  Editing operations are
  * always performed on the text from this selection.  nil corresponds to no selection. */
-- (void)setSelectedTextRange:(UITextRange *)aSelectedTextRange;
+- (void)setSelectedTextRange:(UITextRange *)aSelectedTextRange
 {
     CCLOG("UITextRange:setSelectedTextRange");
 }
-- (UITextRange *)selectedTextRange;
+- (UITextRange *)selectedTextRange
 {
     return [[[UITextRange alloc] init] autorelease];
 }
 
 #pragma mark UITextInput - Replacing and Returning Text
 
-- (NSString *)textInRange:(UITextRange *)range;
+- (NSString *)textInRange:(UITextRange *)range
 {
     CCLOG("textInRange");
     return @"";
 }
-- (void)replaceRange:(UITextRange *)range withText:(NSString *)theText;
+- (void)replaceRange:(UITextRange *)range withText:(NSString *)theText
 {
     CCLOG("replaceRange");
 }
@@ -574,29 +486,29 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
  * caret or an extended range, always resides within.
  *
  * Setting marked text either replaces the existing marked text or, if none is present,
- * inserts it from the current selection. */ 
+ * inserts it from the current selection. */
 
-- (void)setMarkedTextRange:(UITextRange *)markedTextRange;
+- (void)setMarkedTextRange:(UITextRange *)markedTextRange
 {
     CCLOG("setMarkedTextRange");
 }
 
-- (UITextRange *)markedTextRange;
+- (UITextRange *)markedTextRange
 {
     CCLOG("markedTextRange");
     return nil; // Nil if no marked text.
 }
-- (void)setMarkedTextStyle:(NSDictionary *)markedTextStyle;
+- (void)setMarkedTextStyle:(NSDictionary *)markedTextStyle
 {
     CCLOG("setMarkedTextStyle");
     
 }
-- (NSDictionary *)markedTextStyle;
+- (NSDictionary *)markedTextStyle
 {
     CCLOG("markedTextStyle");
     return nil;
 }
-- (void)setMarkedText:(NSString *)markedText selectedRange:(NSRange)selectedRange;
+- (void)setMarkedText:(NSString *)markedText selectedRange:(NSRange)selectedRange
 {
     CCLOG("setMarkedText");
     if (markedText == markedText_) {
@@ -608,7 +520,7 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
     markedText_ = markedText;
     [markedText_ retain];
 }
-- (void)unmarkText;
+- (void)unmarkText
 {
     CCLOG("unmarkText");
     if (nil == markedText_)
@@ -623,40 +535,40 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 
 #pragma mark Methods for creating ranges and positions.
 
-- (UITextRange *)textRangeFromPosition:(UITextPosition *)fromPosition toPosition:(UITextPosition *)toPosition;
+- (UITextRange *)textRangeFromPosition:(UITextPosition *)fromPosition toPosition:(UITextPosition *)toPosition
 {
     CCLOG("textRangeFromPosition");
     return nil;
 }
-- (UITextPosition *)positionFromPosition:(UITextPosition *)position offset:(NSInteger)offset;
+- (UITextPosition *)positionFromPosition:(UITextPosition *)position offset:(NSInteger)offset
 {
     CCLOG("positionFromPosition");
     return nil;
 }
-- (UITextPosition *)positionFromPosition:(UITextPosition *)position inDirection:(UITextLayoutDirection)direction offset:(NSInteger)offset;
+- (UITextPosition *)positionFromPosition:(UITextPosition *)position inDirection:(UITextLayoutDirection)direction offset:(NSInteger)offset
 {
     CCLOG("positionFromPosition");
     return nil;
 }
 
 /* Simple evaluation of positions */
-- (NSComparisonResult)comparePosition:(UITextPosition *)position toPosition:(UITextPosition *)other;
+- (NSComparisonResult)comparePosition:(UITextPosition *)position toPosition:(UITextPosition *)other
 {
     CCLOG("comparePosition");
     return (NSComparisonResult)0;
 }
-- (NSInteger)offsetFromPosition:(UITextPosition *)from toPosition:(UITextPosition *)toPosition;
+- (NSInteger)offsetFromPosition:(UITextPosition *)from toPosition:(UITextPosition *)toPosition
 {
     CCLOG("offsetFromPosition");
     return 0;
 }
 
-- (UITextPosition *)positionWithinRange:(UITextRange *)range farthestInDirection:(UITextLayoutDirection)direction;
+- (UITextPosition *)positionWithinRange:(UITextRange *)range farthestInDirection:(UITextLayoutDirection)direction
 {
     CCLOG("positionWithinRange");
     return nil;
 }
-- (UITextRange *)characterRangeByExtendingPosition:(UITextPosition *)position inDirection:(UITextLayoutDirection)direction;
+- (UITextRange *)characterRangeByExtendingPosition:(UITextPosition *)position inDirection:(UITextLayoutDirection)direction
 {
     CCLOG("characterRangeByExtendingPosition");
     return nil;
@@ -664,12 +576,12 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 
 #pragma mark Writing direction
 
-- (UITextWritingDirection)baseWritingDirectionForPosition:(UITextPosition *)position inDirection:(UITextStorageDirection)direction;
+- (UITextWritingDirection)baseWritingDirectionForPosition:(UITextPosition *)position inDirection:(UITextStorageDirection)direction
 {
     CCLOG("baseWritingDirectionForPosition");
     return UITextWritingDirectionNatural;
 }
-- (void)setBaseWritingDirection:(UITextWritingDirection)writingDirection forRange:(UITextRange *)range;
+- (void)setBaseWritingDirection:(UITextWritingDirection)writingDirection forRange:(UITextRange *)range
 {
     CCLOG("setBaseWritingDirection");
 }
@@ -677,12 +589,12 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 #pragma mark Geometry
 
 /* Geometry used to provide, for example, a correction rect. */
-- (CGRect)firstRectForRange:(UITextRange *)range;
+- (CGRect)firstRectForRange:(UITextRange *)range
 {
     CCLOG("firstRectForRange");
     return CGRectNull;
 }
-- (CGRect)caretRectForPosition:(UITextPosition *)position;
+- (CGRect)caretRectForPosition:(UITextPosition *)position
 {
     CCLOG("caretRectForPosition");
     return caretRect_;
@@ -691,17 +603,17 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 #pragma mark Hit testing
 
 /* JS - Find the closest position to a given point */
-- (UITextPosition *)closestPositionToPoint:(CGPoint)point;
+- (UITextPosition *)closestPositionToPoint:(CGPoint)point
 {
     CCLOG("closestPositionToPoint");
     return nil;
 }
-- (UITextPosition *)closestPositionToPoint:(CGPoint)point withinRange:(UITextRange *)range;
+- (UITextPosition *)closestPositionToPoint:(CGPoint)point withinRange:(UITextRange *)range
 {
     CCLOG("closestPositionToPoint");
     return nil;
 }
-- (UITextRange *)characterRangeAtPoint:(CGPoint)point;
+- (UITextRange *)characterRangeAtPoint:(CGPoint)point
 {
     CCLOG("characterRangeAtPoint");
     return nil;
@@ -714,23 +626,24 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 }
 
 #pragma mark - UIKeyboard notification
-/*
-- (void)onUIKeyboardNotification:(NSNotification *)notif;
+
+#if !defined(CC_TARGET_OS_TVOS)
+- (void)onUIKeyboardNotification:(NSNotification *)notif
 {
     NSString * type = notif.name;
     
     NSDictionary* info = [notif userInfo];
-    CGRect begin = [self convertRect: 
+    CGRect begin = [self convertRect:
                     [[info objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue]
                             fromView:self];
-    CGRect end = [self convertRect: 
+    CGRect end = [self convertRect:
                   [[info objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue]
                           fromView:self];
     double aniDuration = [[info objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
     
     CGSize viewSize = self.frame.size;
+
     CGFloat tmp;
-    
     switch (getFixedOrientation([[UIApplication sharedApplication] statusBarOrientation]))
     {
         case UIInterfaceOrientationPortrait:
@@ -777,14 +690,11 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
     float scaleX = glview->getScaleX();
     float scaleY = glview->getScaleY();
     
-    
-    
     // Convert to pixel coordinate
     begin = CGRectApplyAffineTransform(begin, CGAffineTransformScale(CGAffineTransformIdentity, self.contentScaleFactor, self.contentScaleFactor));
     end = CGRectApplyAffineTransform(end, CGAffineTransformScale(CGAffineTransformIdentity, self.contentScaleFactor, self.contentScaleFactor));
     
     float offestY = glview->getViewPortRect().origin.y;
-    CCLOG("offestY = %f", offestY);
     if (offestY < 0.0f)
     {
         begin.origin.y += offestY;
@@ -792,7 +702,7 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
         end.size.height -= offestY;
     }
     
-    // Convert to desigin coordinate
+    // Convert to design coordinate
     begin = CGRectApplyAffineTransform(begin, CGAffineTransformScale(CGAffineTransformIdentity, 1.0f/scaleX, 1.0f/scaleY));
     end = CGRectApplyAffineTransform(end, CGAffineTransformScale(CGAffineTransformIdentity, 1.0f/scaleX, 1.0f/scaleY));
 
@@ -809,7 +719,7 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
     notiInfo.duration = (float)aniDuration;
     
     cocos2d::IMEDispatcher* dispatcher = cocos2d::IMEDispatcher::sharedDispatcher();
-    if (UIKeyboardWillShowNotification == type) 
+    if (UIKeyboardWillShowNotification == type)
     {
         self.keyboardShowNotification = notif; // implicit copy
         dispatcher->dispatchKeyboardWillShow(notiInfo);
@@ -819,7 +729,9 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
         //CGSize screenSize = self.window.screen.bounds.size;
         dispatcher->dispatchKeyboardDidShow(notiInfo);
         caretRect_ = end;
-        caretRect_.origin.y = viewSize.height - (caretRect_.origin.y + caretRect_.size.height + [UIFont smallSystemFontSize]);
+
+        int fontSize = [UIFont smallSystemFontSize];
+        caretRect_.origin.y = viewSize.height - (caretRect_.origin.y + caretRect_.size.height + fontSize);
         caretRect_.size.height = 0;
         isKeyboardShown_ = YES;
     }
@@ -834,7 +746,9 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
         isKeyboardShown_ = NO;
     }
 }
+#endif
 
+#if !defined(CC_TARGET_OS_TVOS)
 UIInterfaceOrientation getFixedOrientation(UIInterfaceOrientation statusBarOrientation)
 {
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0)
@@ -843,6 +757,7 @@ UIInterfaceOrientation getFixedOrientation(UIInterfaceOrientation statusBarOrien
     }
     return statusBarOrientation;
 }
+#endif
 
 -(void) doAnimationWhenKeyboardMoveWithDuration:(float)duration distance:(float)dis
 {
@@ -859,7 +774,10 @@ UIInterfaceOrientation getFixedOrientation(UIInterfaceOrientation statusBarOrien
     dis *= glview->getScaleY();
     
     dis /= self.contentScaleFactor;
-    
+
+#if defined(CC_TARGET_OS_TVOS)
+    self.frame = CGRectMake(originalRect_.origin.x, originalRect_.origin.y - dis, originalRect_.size.width, originalRect_.size.height);
+#else
     switch (getFixedOrientation([[UIApplication sharedApplication] statusBarOrientation]))
     {
         case UIInterfaceOrientationPortrait:
@@ -881,6 +799,7 @@ UIInterfaceOrientation getFixedOrientation(UIInterfaceOrientation statusBarOrien
         default:
             break;
     }
+#endif
     
     [UIView commitAnimations];
 }
@@ -893,7 +812,5 @@ UIInterfaceOrientation getFixedOrientation(UIInterfaceOrientation statusBarOrien
         [[NSNotificationCenter defaultCenter]postNotification:self.keyboardShowNotification];
     }
 }
-*/
-@end
 
-#endif // CC_PLATFORM_TVOS
+@end

@@ -1,7 +1,8 @@
 /****************************************************************************
 Copyright (c) 2010      Lam Pham
 Copyright (c) 2010-2012 cocos2d-x.org
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -23,11 +24,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
-#ifndef __MISC_NODE_CCPROGRESS_TIMER_H__
-#define __MISC_NODE_CCPROGRESS_TIMER_H__
+#pragma once
 
 #include "renderer/CCCustomCommand.h"
 #include "2d/CCNode.h"
+#include "renderer/CCPipelineDescriptor.h"
+
+#include <vector>
 
 NS_CC_BEGIN
 
@@ -67,19 +70,19 @@ public:
      *
      * @return A Type
      */
-    inline Type getType() const { return _type; }
+    Type getType() const { return _type; }
 
     /** Percentages are from 0 to 100.
      *
      * @return Percentages.
      */
-    inline float getPercentage() const {return _percentage; }
+    float getPercentage() const { return _percentage; }
 
     /** The image to show the progress percentage, retain. 
      *
      * @return A sprite.
      */
-    inline Sprite* getSprite() const { return _sprite; }
+    Sprite* getSprite() const { return _sprite; }
     
     /** Set the initial percentage values. 
      *
@@ -99,29 +102,22 @@ public:
      */
     void setType(Type type);
     
-    /** Set the Reverse direction.
-     * @js setReverseDirection
-     * @lua setReverseDirection
-     * @param reverse If reverse is false it will clockwise,if is true it will Anti-clockwise.
-     */
-    void setReverseProgress(bool reverse);
-    
-    /** Return the Reverse direction. 
+    /** Return the Reverse direction.
      *
      * @return If the direction is Anti-clockwise,it will return true.
      */
-    inline bool isReverseDirection() { return _reverseDirection; };
+    bool isReverseDirection() { return _reverseDirection; };
     
     /** Set the Reverse direction.
      *
      * @param value If value is false it will clockwise,if is true it will Anti-clockwise.
      */
-    inline void setReverseDirection(bool value) { _reverseDirection = value; };
+    void setReverseDirection(bool value);
 
     /**
      *    Midpoint is used to modify the progress start position.
      *    If you're using radials type then the midpoint changes the center point.
-     *    If you're using bar type the the midpoint changes the bar growth.
+     *    If you're using bar type then the midpoint changes the bar growth.
      *        it expands from the center but clamps to the sprites edge so:
      *        you want a left to right then set the midpoint all the way to Vec2(0,y).
      *        you want a right to left then set the midpoint all the way to Vec2(1,y).
@@ -144,27 +140,27 @@ public:
      *    Set the rate to be Vec2(0,1); and set the midpoint to = Vec2(0,.5f).
      * @param barChangeRate A Vec2.
      */
-    inline void setBarChangeRate(const Vec2& barChangeRate ) { _barChangeRate = barChangeRate; }
+    void setBarChangeRate(const Vec2& barChangeRate ) { _barChangeRate = barChangeRate; }
     
     /** Returns the BarChangeRate.
      *
      * @return A barChangeRate.
      */
-    inline Vec2 getBarChangeRate() const { return _barChangeRate; }
+    Vec2 getBarChangeRate() const { return _barChangeRate; }
 
     // Overrides
     virtual void draw(Renderer *renderer, const Mat4 &transform, uint32_t flags) override;
     virtual void setAnchorPoint(const Vec2& anchorPoint) override;
     virtual void setColor(const Color3B &color) override;
     virtual const Color3B& getColor() const override;
-    virtual void setOpacity(GLubyte opacity) override;
-    virtual GLubyte getOpacity() const override;
+    virtual void setOpacity(uint8_t opacity) override;
+    virtual uint8_t getOpacity() const override;
     
 CC_CONSTRUCTOR_ACCESS:
     /**
      * @js ctor
      */
-    ProgressTimer();
+    ProgressTimer() = default;
     /**
      * @js NA
      * @lua NA
@@ -175,27 +171,34 @@ CC_CONSTRUCTOR_ACCESS:
     bool initWithSprite(Sprite* sp);
     
 protected:
-    void onDraw(const Mat4 &transform, uint32_t flags);
-    
     Tex2F textureCoordFromAlphaPoint(Vec2 alpha);
     Vec2 vertexFromAlphaPoint(Vec2 alpha);
-    void updateProgress(void);
-    void updateBar(void);
-    void updateRadial(void);
-    virtual void updateColor(void) override;
+    void updateProgress();
+    void updateBar();
+    void updateRadial();
+    virtual void updateColor() override;
     Vec2 boundaryTexCoord(char index);
 
-    Type _type;
+    Type _type = Type::RADIAL;
     Vec2 _midpoint;
     Vec2 _barChangeRate;
-    float _percentage;
-    Sprite *_sprite;
-    int _vertexDataCount;
-    V2F_C4B_T2F *_vertexData;
+    float _percentage = 0.0f;
+    Sprite *_sprite = nullptr;
+    std::vector<V2F_C4B_T2F> _vertexData;
+    std::vector<unsigned short> _indexData;
+    bool _reverseDirection = false;
     
     CustomCommand _customCommand;
+    CustomCommand _customCommand2;
+    
+    backend::ProgramState* _programState = nullptr;
+    backend::ProgramState* _programState2 = nullptr;
 
-    bool _reverseDirection;
+    backend::UniformLocation _locMVP1;
+    backend::UniformLocation _locTex1;
+
+    backend::UniformLocation _locMVP2;
+    backend::UniformLocation _locTex2;
 
 private:
     CC_DISALLOW_COPY_AND_ASSIGN(ProgressTimer);
@@ -205,5 +208,3 @@ private:
 /// @}
 
 NS_CC_END
-
-#endif //__MISC_NODE_CCPROGRESS_TIMER_H__

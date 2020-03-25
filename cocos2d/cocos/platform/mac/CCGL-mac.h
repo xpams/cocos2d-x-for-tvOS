@@ -1,6 +1,7 @@
 /****************************************************************************
 Copyright (c) 2010-2012 cocos2d-x.org
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -32,17 +33,6 @@ THE SOFTWARE.
 #import <OpenGL/gl.h>
 #import <OpenGL/glu.h>
 #import <OpenGL/glext.h>
-
-#define CC_GL_DEPTH24_STENCIL8      -1
-
-
-#define glDeleteVertexArrays            glDeleteVertexArraysAPPLE
-#define glGenVertexArrays               glGenVertexArraysAPPLE
-#define glBindVertexArray               glBindVertexArrayAPPLE
-#define glClearDepthf                   glClearDepth
-#define glDepthRangef                   glDepthRange
-#define glReleaseShaderCompiler(xxx)
-
 
 #endif // __PLATFORM_MAC_CCGL_H__
 

@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2013-2014 Chukong Technologies Inc.
+ Copyright (c) 2013-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -43,7 +44,7 @@ class RelativeLayoutParameter;
 
 /**
  *@brief Base class for managing layout.
- * All the concret layout manager should inherit from this class.
+ * All the concrete layout manager should inherit from this class.
  */
 class CC_GUI_DLL LayoutManager : public Ref
 {
@@ -115,9 +116,9 @@ private:
     
     Vector<Widget*> getAllWidgets(LayoutProtocol *layout);
     Widget* getRelativeWidget(Widget* widget);
-    bool caculateFinalPositionWithRelativeWidget(LayoutProtocol *layout);
-    void caculateFinalPositionWithRelativeAlign();
-    
+    bool calculateFinalPositionWithRelativeWidget(LayoutProtocol *layout);
+    void calculateFinalPositionWithRelativeAlign();
+
     ssize_t _unlayoutChildCount;
     Vector<Widget*> _widgetChildren;
     Widget* _widget;

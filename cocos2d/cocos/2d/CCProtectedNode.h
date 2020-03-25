@@ -3,7 +3,8 @@
  Copyright (c) 2009      Valentin Milea
  Copyright (c) 2010-2012 cocos2d-x.org
  Copyright (c) 2011      Zynga Inc.
- Copyright (c) 2013-2014 Chukong Technologies Inc.
+ Copyright (c) 2013-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -50,7 +51,7 @@ public:
      * Creates a ProtectedNode with no argument.
      *@return A instance of ProtectedNode.
      */
-    static ProtectedNode * create(void);
+    static ProtectedNode * create();
     
     /// @{
     /// @name Children and Parent
@@ -104,7 +105,7 @@ public:
     /**
      * Removes a child from the container by tag value. It will also cleanup all running actions depending on the cleanup parameter.
      *
-     * @param tag       An interger number that identifies a child node.
+     * @param tag       An integer number that identifies a child node.
      * @param cleanup   true if all running actions and callbacks on the child node will be cleanup, false otherwise.
      */
     virtual void removeProtectedChildByTag(int tag, bool cleanup = true);
@@ -118,7 +119,7 @@ public:
     /**
      * Removes all children from the container, and do a cleanup to all running actions depending on the cleanup parameter.
      *
-     * @param cleanup   true if all running actions on all children nodes should be cleanup, false oterwise.
+     * @param cleanup   true if all running actions on all children nodes should be cleanup, false otherwise.
      * @js removeAllChildren
      * @lua removeAllChildren
      */
@@ -134,7 +135,7 @@ public:
     
     /**
      * Sorts the children array once before drawing, instead of every time when a child is added or reordered.
-     * This appraoch can improves the performance massively.
+     * This approach can improves the performance massively.
      * @note Don't call this manually unless a child added needs to be removed in the same frame
      */
     virtual void sortAllProtectedChildren();
@@ -176,11 +177,12 @@ public:
      */
     virtual void onExitTransitionDidStart() override;
 
-    virtual void updateDisplayedOpacity(GLubyte parentOpacity) override;
+    virtual void updateDisplayedOpacity(uint8_t parentOpacity) override;
     virtual void updateDisplayedColor(const Color3B& parentColor) override;
     virtual void disableCascadeColor() override;
     virtual void disableCascadeOpacity()override;
     virtual void setCameraMask(unsigned short mask, bool applyChildren = true) override;
+    virtual void setGlobalZOrder(float globalZOrder) override;
 CC_CONSTRUCTOR_ACCESS:
     ProtectedNode();
     virtual ~ProtectedNode();

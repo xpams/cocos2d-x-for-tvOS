@@ -1,5 +1,6 @@
 /****************************************************************************
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -49,8 +50,8 @@ class CC_GUI_DLL Helper
 public:
     /**
      * Find a widget with a specific tag from root widget.
-     * This search will be recursive throught all child widgets.
-     * @param root      The be seached root widget.
+     * This search will be recursive through all child widgets.
+     * @param root      The be searched root widget.
      * @param tag       The widget tag.
      * @return Widget instance pointer.
      */
@@ -58,17 +59,17 @@ public:
     
     /**
      * Find a widget with a specific name from root widget.
-     * This search will be recursive throught all child widgets.
+     * This search will be recursive through all child widgets.
      *
      * @param root      The be searched root widget.
      * @param name      The widget name.
-     * @return Widget isntance pointer.
+     * @return Widget instance pointer.
      */
     static Widget* seekWidgetByName(Widget* root, const std::string& name);
     
     /**
      * Find a widget with a specific action tag from root widget
-     * This search will be recursive throught all child widgets.
+     * This search will be recursive through all child widgets.
      *@param root The be searched root widget.
      *@param tag The widget action's tag.
      *@return Widget instance pointer.

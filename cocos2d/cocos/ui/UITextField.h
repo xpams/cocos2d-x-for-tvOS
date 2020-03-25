@@ -1,5 +1,6 @@
 /****************************************************************************
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -47,6 +48,13 @@ class CC_GUI_DLL UICCTextField: public TextFieldTTF, public TextFieldDelegate
 {
 public:
     /**
+     * @brief Create an empty UICCTextField.
+     *
+     * @return A UICCTextField instance.
+     */
+    static UICCTextField* create();
+    
+    /**
      * Default constructor
      */
     UICCTextField();
@@ -59,7 +67,7 @@ public:
     virtual void onEnter() override;
     
     /**
-     * Create a UICCTextField intance with a placeholder, a fontName and a fontSize.
+     * Create a UICCTextField instance with a placeholder, a fontName and a fontSize.
      *@param placeholder Placeholder in string.
      *@param fontName Font name in string.
      *@param fontSize Font size in float.
@@ -79,7 +87,6 @@ public:
                                            const char * delText,
                                            size_t nLen) override;
     void insertText(const char* text, size_t len) override;
-    void deleteBackward() override;
     
     /**
      * Open up the IME.
@@ -104,8 +111,8 @@ public:
     bool isMaxLengthEnabled()const;
 
     /**
-     * Set maxmize length.
-     *@param length  The maxmize length in integer.
+     * Set maximize length.
+     *@param length  The maximize length in integer.
      */
     void setMaxLength(int length);
 
@@ -116,10 +123,10 @@ public:
     int getMaxLength()const;
 
     /**
-     * Return the total inputed charaters.
+     * Return the total inputed characters.
      *@return Total inputed character count.
      */
-    int getCharCount()const;
+    std::size_t getCharCount()const;
     
     
     /**
@@ -209,32 +216,11 @@ public:
 protected:
     bool _maxLengthEnabled;
     int _maxLength;
-    bool _passwordEnabled;
-    std::string _passwordStyleText;
     bool _attachWithIME;
     bool _detachWithIME;
     bool _insertText;
     bool _deleteBackward;
 };
-
-/**
- * TextField event type.
- * @deprecated Use @see `TextField::EventType` instead.
- */
-typedef enum
-{
-    TEXTFIELD_EVENT_ATTACH_WITH_IME,
-    TEXTFIELD_EVENT_DETACH_WITH_IME,
-    TEXTFIELD_EVENT_INSERT_TEXT,
-    TEXTFIELD_EVENT_DELETE_BACKWARD,
-}TextFiledEventType;
-
-/**
- * A callback which would be called when a TextField event happens.
- * @deprecated Use @see `ccTextFieldCallback` instead.
- */
-typedef void (Ref::*SEL_TextFieldEvent)(Ref*, TextFiledEventType);
-#define textfieldeventselector(_SELECTOR) (SEL_TextFieldEvent)(&_SELECTOR)
 
 /**
  * @brief A widget which allows users to input text.
@@ -404,20 +390,6 @@ public:
     
     /**
      *Change content of TextField.
-     *@deprecated Use @see `setString(const std::string&)` instead.
-     *@param text A string content.
-     */
-    CC_DEPRECATED_ATTRIBUTE void setText(const std::string& text){this->setString(text);}
-
-    /**
-     *Query the content of TextField.
-     *@deprecated Use @see `getString` instead.
-     *@return The string value of TextField.
-     */
-    CC_DEPRECATED_ATTRIBUTE const std::string& getStringValue()const{return this->getString();}
-    
-    /**
-     *Change content of TextField.
      *@param text A string content.
      */
     void setString(const std::string& text);
@@ -555,13 +527,6 @@ public:
     
     /**
      * Add a event listener to TextField, when some predefined event happens, the callback will be called.
-     *@deprecated Use @see `addEventListener` instead.
-     *@param target A pointer of `Ref*` type.
-     *@param selecor A member function pointer with type of `SEL_TextFieldEvent`.
-     */
-    CC_DEPRECATED_ATTRIBUTE void addEventListenerTextField(Ref* target, SEL_TextFieldEvent selecor);
-    /**
-     * Add a event listener to TextField, when some predefined event happens, the callback will be called.
      *@param callback A callback function with type of `ccTextFieldCallback`.
      */
     void addEventListener(const ccTextFieldCallback& callback);
@@ -572,12 +537,12 @@ public:
     virtual std::string getDescription() const override;
     
     /**
-     * @brief Get the the renderer size in auto mode.
+     * @brief Get the renderer size in auto mode.
      *
      * @return A delimitation zone.
      */
     virtual Size getAutoRenderSize();
-    //overide functions.
+    //override functions.
     virtual Size getVirtualRendererSize() const override;
     virtual Node* getVirtualRenderer() override;
     virtual void onEnter() override;
@@ -623,6 +588,30 @@ public:
      */
     TextVAlignment getTextVerticalAlignment() const;
     
+    /**
+     * Set enable cursor use.
+     * @js NA
+     */
+    void setCursorEnabled(bool enabled);
+    
+    /**
+     * Set char showing cursor.
+     * @js NA
+     */
+    void setCursorChar(char cursor);
+    
+    /**
+     * Set cursor position, if enabled
+     * @js NA
+     */
+    void setCursorPosition(std::size_t cursorPosition);
+    
+    /**
+     * Set cursor position to hit letter, if enabled
+     * @js NA
+     */
+    void setCursorFromPoint(const Vec2 &point, const Camera* camera);
+    
 CC_CONSTRUCTOR_ACCESS:
     virtual bool init() override;
     
@@ -647,27 +636,15 @@ protected:
     bool _useTouchArea;
     
     Ref* _textFieldEventListener;
-#if defined(__GNUC__) && ((__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1)))
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#elif _MSC_VER >= 1400 //vs 2005 or higher
-#pragma warning (push)
-#pragma warning (disable: 4996)
-#endif
-    SEL_TextFieldEvent _textFieldEventSelector;
-#if defined(__GNUC__) && ((__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1)))
-#pragma GCC diagnostic warning "-Wdeprecated-declarations"
-#elif _MSC_VER >= 1400 //vs 2005 or higher
-#pragma warning (pop)
-#endif
     ccTextFieldCallback _eventCallback;
     
-    std::string _passwordStyleText;
     bool _textFieldRendererAdaptDirty;
 private:
     enum class FontType
     {
         SYSTEM,
-        TTF
+        TTF,
+        BMFONT
     };
 
     std::string _fontName;

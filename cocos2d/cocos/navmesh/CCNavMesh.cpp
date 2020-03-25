@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -32,11 +33,12 @@
 
 NS_CC_BEGIN
 
+#pragma pack(push,1)
 struct TileCacheSetHeader
 {
-    int magic;
-    int version;
-    int numTiles;
+    int32_t magic;
+    int32_t version;
+    int32_t numTiles;
     dtNavMeshParams meshParams;
     dtTileCacheParams cacheParams;
 };
@@ -44,8 +46,9 @@ struct TileCacheSetHeader
 struct TileCacheTileHeader
 {
     dtCompressedTileRef tileRef;
-    int dataSize;
+    int32_t dataSize;
 };
+#pragma pack(pop)
 
 static unsigned char* parseRow(unsigned char* buf, unsigned char* bufEnd, char* row, int len)
 {
@@ -183,9 +186,9 @@ bool NavMesh::loadNavMeshFile()
         return false;
     }
 
-    _allocator = new LinearAllocator(32000);
-    _compressor = new FastLZCompressor;
-    _meshProcess = new MeshProcess(_geomData);
+    _allocator = new (std::nothrow) LinearAllocator(32000);
+    _compressor = new (std::nothrow) FastLZCompressor;
+    _meshProcess = new (std::nothrow) MeshProcess(_geomData);
     status = _tileCache->init(&header.cacheParams, _allocator, _compressor, _meshProcess);
 
     if (dtStatusFailed(status))
@@ -229,11 +232,11 @@ bool NavMesh::loadNavMeshFile()
 
 bool NavMesh::loadGeomFile()
 {
-    unsigned char* buf = 0;
+    unsigned char* buf = nullptr;
     auto data = FileUtils::getInstance()->getDataFromFile(_geomFilePath);
     if (data.isNull()) return false;
     buf = data.getBytes();
-    _geomData = new GeomData;
+    _geomData = new (std::nothrow) GeomData;
     _geomData->offMeshConCount = 0;
 
     unsigned char* src = buf;

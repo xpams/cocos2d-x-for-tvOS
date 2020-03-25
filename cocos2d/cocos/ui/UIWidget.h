@@ -1,5 +1,6 @@
 /****************************************************************************
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -29,6 +30,7 @@ THE SOFTWARE.
 #include "ui/UILayoutParameter.h"
 #include "ui/GUIDefine.h"
 #include "ui/GUIExport.h"
+#include "ui/UIWidget.h"
 #include "base/CCMap.h"
 
 /**
@@ -42,32 +44,6 @@ class Camera;
 
 namespace ui {
     class LayoutComponent;
-
-/**
- * Touch event type.
- *@deprecated use `Widget::TouchEventType` instead
- */
-typedef enum
-{
-    TOUCH_EVENT_BEGAN,
-    TOUCH_EVENT_MOVED,
-    TOUCH_EVENT_ENDED,
-    TOUCH_EVENT_CANCELED
-}TouchEventType;
-    
-/**
- * Touch event callback.
- *@deprecated use `Widget::ccWidgetTouchCallback` instead
- */
-typedef void (Ref::*SEL_TouchEvent)(Ref*,TouchEventType);
-#define toucheventselector(_SELECTOR) (SEL_TouchEvent)(&_SELECTOR)
-
-
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT)
-#ifdef ABSOLUTE
-#undef ABSOLUTE
-#endif
-#endif
 
 /**
  *@brief Base class for all ui widgets.
@@ -157,7 +133,7 @@ public:
      * @js ctor
      * @lua new
      */
-    Widget(void);
+    Widget();
     
     /**
      * Default destructor
@@ -234,25 +210,18 @@ public:
     /**
      * Determines if the widget is highlighted
      *
-     * @return true if the widget is highlighted, false if the widget is not hignlighted .
+     * @return true if the widget is highlighted, false if the widget is not highlighted.
      */
     bool isHighlighted() const;
 
     /**
-     * Sets whether the widget is hilighted
+     * Sets whether the widget is highlighted
      *
-     * The default value is false, a widget is default to not hilighted
+     * The default value is false, a widget is default to not highlighted
      *
-     * @param hilight   true if the widget is hilighted, false if the widget is not hilighted.
+     * @param highlight   true if the widget is highlighted, false if the widget is not highlighted.
      */
-    void setHighlighted(bool hilight);
-
-    /**
-     * Gets the left boundary position of this widget in parent's coordination system.
-     * @deprecated use `getLeftBoundary` instead.
-     * @return The left boundary position of this widget.
-     */
-    CC_DEPRECATED_ATTRIBUTE float getLeftInParent(){return this->getLeftBoundary();}
+    void setHighlighted(bool highlight);
 
     /**
      * Gets the left boundary position of this widget in parent's coordination system.
@@ -262,34 +231,16 @@ public:
 
     /**
      * Gets the bottom boundary position of this widget in parent's coordination system.
-     * @deprecated use `getBottomBoundary` instead.
-     * @return The bottom boundary position of this widget.
-     */
-    CC_DEPRECATED_ATTRIBUTE float getBottomInParent(){return this->getBottomBoundary();}
-    /**
-     * Gets the bottom boundary position of this widget in parent's coordination system.
      * @return The bottom boundary position of this widget.
      */
     float getBottomBoundary() const;
 
     /**
      * Gets the right boundary position of this widget in parent's coordination system.
-     * @deprecated use `getRightBoundary` instead.
-     * @return The right boundary position of this widget.
-     */
-    CC_DEPRECATED_ATTRIBUTE float getRightInParent(){return this->getRightBoundary();}
-    /**
-     * Gets the right boundary position of this widget in parent's coordination system.
      * @return The right boundary position of this widget.
      */
     float getRightBoundary() const;
 
-    /**
-     * Gets the top boundary position of this widget in parent's coordination system.
-     * @deprecated use `getTopBoundary` instead.
-     * @return The top boundary position of this widget.
-     */
-    CC_DEPRECATED_ATTRIBUTE float getTopInParent(){return this->getTopBoundary();}
     /**
      * Gets the top boundary position of this widget in parent's coordination system.
      * @return The top boundary position of this widget.
@@ -301,10 +252,6 @@ public:
      */
     virtual void visit(cocos2d::Renderer *renderer, const Mat4 &parentTransform, uint32_t parentFlags) override;
 
-    /**
-     * Sets the touch event target/selector to the widget
-     */
-    CC_DEPRECATED_ATTRIBUTE void addTouchEventListener(Ref* target,SEL_TouchEvent selector);
     /**
      * Set a callback to touch vent listener.
      *@param callback  The callback in `ccWidgetEventCallback.`
@@ -371,7 +318,7 @@ public:
     /**
      * Sets whether the widget should be flipped horizontally or not.
      *
-     * @param flippedX true if the widget should be flipped horizaontally, false otherwise.
+     * @param flippedX true if the widget should be flipped horizontally, false otherwise.
      */
     virtual void setFlippedX(bool flippedX);
 
@@ -382,14 +329,14 @@ public:
      * Also, flipping relies on widget's anchor point.
      * Internally, it just use setScaleX(-1) to flip the widget.
      *
-     * @return true if the widget is flipped horizaontally, false otherwise.
+     * @return true if the widget is flipped horizontally, false otherwise.
      */
     virtual bool isFlippedX()const{return _flippedX;};
 
     /**
      * Sets whether the widget should be flipped vertically or not.
      *
-     * @param flippedY true if the widget should be flipped vertically, flase otherwise.
+     * @param flippedY true if the widget should be flipped vertically, false otherwise.
      */
     virtual void setFlippedY(bool flippedY);
 
@@ -400,18 +347,9 @@ public:
      * Also, flipping relies on widget's anchor point.
      * Internally, it just use setScaleY(-1) to flip the widget.
      *
-     * @return true if the widget is flipped vertically, flase otherwise.
+     * @return true if the widget is flipped vertically, false otherwise.
      */
     virtual bool isFlippedY()const{return _flippedY;};
-
-    /** @deprecated Use isFlippedX() instead */
-    CC_DEPRECATED_ATTRIBUTE bool isFlipX() { return isFlippedX(); };
-    /** @deprecated Use setFlippedX() instead */
-    CC_DEPRECATED_ATTRIBUTE void setFlipX(bool flipX) { setFlippedX(flipX); };
-    /** @deprecated Use isFlippedY() instead */
-    CC_DEPRECATED_ATTRIBUTE bool isFlipY() { return isFlippedY(); };
-    /** @deprecated Use setFlippedY() instead */
-    CC_DEPRECATED_ATTRIBUTE void setFlipY(bool flipY) { setFlippedY(flipY); };
 
     //override the setScale function of Node
     virtual void setScaleX(float scaleX) override;
@@ -423,30 +361,15 @@ public:
     virtual float getScaleY() const override;
     virtual float getScale() const override;
     using Node::getScaleZ;
-    
-    /**
-     * Checks a point if in parent's area.
-     *
-     * @param pt A point in `Vec2`.
-     * @deprecated  use `isClippingParentContainsPoint` instead.
-     * @return true if the point is in parent's area, flase otherwise.
-     */
-    CC_DEPRECATED_ATTRIBUTE bool clippingParentAreaContainPoint(const Vec2 &pt){return this->isClippingParentContainsPoint(pt);}
 
     /**
      * Checks a point if in parent's area.
      *
      * @param pt A point in `Vec2`.
-     * @return true if the point is in parent's area, flase otherwise.
+     * @return true if the point is in parent's area, false otherwise.
      */
     bool isClippingParentContainsPoint(const Vec2& pt);
 
-    /**
-     * Gets the touch began point of widget when widget is selected.
-     * @deprecated use `getTouchBeganPosition` instead.
-     * @return the touch began point.
-     */
-    CC_DEPRECATED_ATTRIBUTE const Vec2& getTouchStartPos()const{return this->getTouchBeganPosition();}
     /**
      * Gets the touch began point of widget when widget is selected.
      * @return the touch began point.
@@ -455,34 +378,16 @@ public:
 
     /*
      * Gets the touch move point of widget when widget is selected.
-     * @deprecated use `getTouchMovePosition` instead.
-     * @return the touch move point.
-     */
-    CC_DEPRECATED_ATTRIBUTE const Vec2& getTouchMovePos()const{ return this->getTouchMovePosition();}
-    /*
-     * Gets the touch move point of widget when widget is selected.
      * @return the touch move point.
      */
     const Vec2& getTouchMovePosition()const;
 
     /*
      * Gets the touch end point of widget when widget is selected.
-     * @deprecated use `getTouchEndPosition` instead.
-     * @return the touch end point.
-     */
-    CC_DEPRECATED_ATTRIBUTE const Vec2& getTouchEndPos()const{return this->getTouchEndPosition();}
-    /*
-     * Gets the touch end point of widget when widget is selected.
      * @return the touch end point.
      */
     const Vec2& getTouchEndPosition()const;
 
-    /**
-     * Changes the size that is widget's size
-     * @deprecated use `setContentSize` instead.
-     * @param size that is widget's size
-     */
-    CC_DEPRECATED_ATTRIBUTE virtual void setSize(const Size &size);
     /**
      * Changes the size that is widget's size
      * @param contentSize A content size in `Size`.
@@ -511,13 +416,6 @@ public:
      * @see `SizeType`
      */
     SizeType getSizeType() const;
-
-    /**
-     * Get the size of widget
-     *
-     * @return Widget content size.
-     */
-    CC_DEPRECATED_ATTRIBUTE const Size& getSize() const;
     
     /**
      * Get the user defined widget size.
@@ -546,7 +444,7 @@ public:
      * @param pt        The point in `Vec2`.
      * @param camera    The camera look at widget, used to convert GL screen point to near/far plane.
      * @param p         Point to a Vec3 for store the intersect point, if don't need them set to nullptr.
-     * @return true if the point is in widget's content space, flase otherwise.
+     * @return true if the point is in widget's content space, false otherwise.
      */
     virtual bool hitTest(const Vec2 &pt, const Camera* camera, Vec3 *p) const;
 
@@ -594,28 +492,18 @@ public:
      * @return LayoutParameter
      */
     LayoutParameter* getLayoutParameter()const override;
-    /**
-     * Gets LayoutParameter of widget.
-     *
-     * @see LayoutParameter
-     * @deprecated use `getLayoutParameter()` instead.
-     * @param type  Relative or Linear
-     * @return LayoutParameter
-     */
-    CC_DEPRECATED_ATTRIBUTE LayoutParameter* getLayoutParameter(LayoutParameter::Type type);
-
 
     /**
      * Toggle whether ignore user defined content size for widget.
      * Set true will ignore user defined content size which means 
      * the widget size is always equal to the return value of `getVirtualRendererSize`.
      *
-     * @param ignore set member variabl _ignoreSize to ignore
+     * @param ignore set member variable _ignoreSize to ignore
      */
     virtual void ignoreContentAdaptWithSize(bool ignore);
 
     /**
-     * Query whether the widget ignores user deinfed content size or not
+     * Query whether the widget ignores user defined content size or not
      *
      * @return True means ignore user defined content size, false otherwise.
      */
@@ -728,7 +616,6 @@ public:
     /**
      * Toggle widget focus status.
      *@param focus  pass true to let the widget get focus or pass false to let the widget lose focus
-     *@return void
      */
     void setFocused(bool focus);
     
@@ -741,7 +628,6 @@ public:
     /**
      * Allow widget to accept focus.
      *@param enable pass true/false to enable/disable the focus ability of a widget
-     *@return void
      */
     void setFocusEnabled(bool enable);
     
@@ -762,20 +648,8 @@ public:
     /**
      * Return a current focused widget in your UI scene.
      * No matter what widget object you call this method on , it will return you the exact one focused widget.
-     * @param isWidget  if your set isWidget to true, it will return the _realFocusedWidget which is always a widget
-     *                  otherwise, it will return a widget or a layout.
-     * @deprecated use `getCurrentFocusedWidget` instead.
      */
-    CC_DEPRECATED_ATTRIBUTE Widget* getCurrentFocusedWidget(bool isWidget){
-        CC_UNUSED_PARAM(isWidget);
-        return getCurrentFocusedWidget();
-    }
-
-    /**
-     * Return a current focused widget in your UI scene.
-     * No matter what widget object you call this method on , it will return you the exact one focused widget.
-     */
-    Widget* getCurrentFocusedWidget()const;
+    static Widget* getCurrentFocusedWidget();
 
     /*
      *  Call this method with parameter true to enable the Android Dpad focus navigation feature
@@ -797,7 +671,6 @@ public:
     /**
      *Toggle use unify size.
      *@param enable True to use unify size, false otherwise.
-     *@return void
      */
     void setUnifySizeEnabled(bool enable);
 
@@ -835,7 +708,6 @@ public:
     /**
      * Toggle layout component enable.
      *@param enable Layout Component of a widget
-     *@return void
      */
     void setLayoutComponentEnabled(bool enable);
 
@@ -846,13 +718,15 @@ public:
     bool isLayoutComponentEnabled()const;
 
 CC_CONSTRUCTOR_ACCESS:
+    
+    friend class PageView;
 
     //initializes state of widget.
     virtual bool init() override;
 
     /*
      * @brief Sends the touch event to widget's parent, if a widget wants to handle touch event under another widget, 
-     *        it must overide this function.
+     *        it must override this function.
      * @param  event  the touch event type, it could be BEGAN/MOVED/CANCELED/ENDED
      * @param parent
      * @param point
@@ -864,38 +738,21 @@ CC_CONSTRUCTOR_ACCESS:
      */
     void propagateTouchEvent(TouchEventType event, Widget* sender, Touch *touch);
     
-    friend class PageView;
     /**
      * This method is called when a focus change event happens
      *@param widgetLostFocus  The widget which lose its focus
-     *@param widgetGetFocus  The widget whihc get its focus
-     *@return void
+     *@param widgetGetFocus  The widget which get its focus
      */
     void onFocusChange(Widget* widgetLostFocus, Widget* widgetGetFocus);
     
     /**
      * Dispatch a EventFocus through a EventDispatcher
      *@param widgetLoseFocus  The widget which lose its focus
-     *@param widgetGetFocus he widget whihc get its focus
-     *@return void
+     *@param widgetGetFocus he widget which get its focus
      */
     void  dispatchFocusEvent(Widget* widgetLoseFocus, Widget* widgetGetFocus);
     
 protected:
-    /**
-     * Get a normal state GLProgramState
-     *@since v3.4
-     */
-    
-    GLProgramState* getNormalGLProgramState()const;
-    
-    /**
-     * Get a disabled state GLProgramState
-     *@since v3.4
-     */
-    GLProgramState* getGrayGLProgramState()const;
-     
-    
     //call back function called when size changed.
     virtual void onSizeChanged();
 
@@ -928,7 +785,7 @@ protected:
     void updateContentSizeWithTextureSize(const Size& size);
     
     bool isAncestorsEnabled();
-    Widget* getAncensterWidget(Node* node);
+    Widget* getAncestorWidget(Node* node);
     bool isAncestorsVisible(Node* node);
 
     void cleanupWidget();
@@ -969,30 +826,18 @@ protected:
     bool _flippedX;
     bool _flippedY;
 
-    //use map to enble switch back and forth for user layout parameters
+    //use map to enable switch back and forth for user layout parameters
     Map<int,LayoutParameter*> _layoutParameterDictionary;
     LayoutParameter::Type _layoutParameterType;
 
     bool _focused;
     bool _focusEnabled;
     /**
-     * store the only one focued widget
+     * store the only one focused widget
      */
     static Widget *_focusedWidget;  //both layout & widget will be stored in this variable
 
     Ref*       _touchEventListener;
-    #if defined(__GNUC__) && ((__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1)))
-    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    #elif _MSC_VER >= 1400 //vs 2005 or higher
-    #pragma warning (push)
-    #pragma warning (disable: 4996)
-    #endif
-    SEL_TouchEvent    _touchEventSelector;
-    #if defined(__GNUC__) && ((__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1)))
-    #pragma GCC diagnostic warning "-Wdeprecated-declarations"
-    #elif _MSC_VER >= 1400 //vs 2005 or higher
-    #pragma warning (pop)
-    #endif
     ccWidgetTouchCallback _touchEventCallback;
     ccWidgetClickCallback _clickEventListener;
     ccWidgetEventCallback _ccEventCallback;

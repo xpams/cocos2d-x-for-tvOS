@@ -1,6 +1,7 @@
 /****************************************************************************
 Copyright (c) 2010-2012 cocos2d-x.org
-Copyright (c) 2013-2015 Chukong Technologies
+Copyright (c) 2013-2017 Chukong Technologies
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -50,8 +51,8 @@ static __TYPE__* create() \
     else \
     { \
         delete pRet; \
-        pRet = NULL; \
-        return NULL; \
+        pRet = nullptr; \
+        return nullptr; \
     } \
 }
 
@@ -82,16 +83,16 @@ CC_DEPRECATED_ATTRIBUTE static __TYPE__* node() \
  * Enable it if you want to cache the texture data.
  * Not enabling for Emscripten any more -- doesn't seem necessary and don't want
  * to be different from other platforms unless there's a good reason.
- * 
+ *
  * @since v0.99.5
  */
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID) || (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT) 
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
     #define CC_ENABLE_CACHE_TEXTURE_DATA       1
 #else
     #define CC_ENABLE_CACHE_TEXTURE_DATA       0
 #endif
 
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID) || (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_EMSCRIPTEN)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID) || (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
     /** Application will crash in glDrawElements function on some win32 computers and some android devices.
      *  Indices should be bound again while drawing to avoid this bug.
      */
@@ -110,17 +111,17 @@ CC_DEPRECATED_ATTRIBUTE static __TYPE__* node() \
     #define USING_NS_CC                     using namespace cocos2d
     #define NS_CC                           ::cocos2d
 #else
-    #define NS_CC_BEGIN 
-    #define NS_CC_END 
-    #define USING_NS_CC 
+    #define NS_CC_BEGIN
+    #define NS_CC_END
+    #define USING_NS_CC
     #define NS_CC
-#endif 
+#endif
 //  end of namespace group
 /// @}
 
-/** @def CC_PROPERTY_READONLY 
+/** @def CC_PROPERTY_READONLY
  * It is used to declare a protected variable. We can use getter to read the variable.
- * 
+ *
  * @param varType     the type of variable.
  * @param varName     variable name.
  * @param funName     "get + funName" will be the name of the getter.
@@ -129,14 +130,12 @@ CC_DEPRECATED_ATTRIBUTE static __TYPE__* node() \
  *            If you need protected or private, please declare.
  */
 #define CC_PROPERTY_READONLY(varType, varName, funName)\
-protected: varType varName;\
-public: virtual varType get##funName(void) const;
+protected: varType varName; public: virtual varType get##funName() const;
 
 #define CC_PROPERTY_READONLY_PASS_BY_REF(varType, varName, funName)\
-protected: varType varName;\
-public: virtual const varType& get##funName(void) const;
+protected: varType varName; public: virtual const varType& get##funName() const;
 
-/** @def CC_PROPERTY 
+/** @def CC_PROPERTY
  * It is used to declare a protected variable.
  * We can use getter to read the variable, and use the setter to change the variable.
  *
@@ -149,16 +148,12 @@ public: virtual const varType& get##funName(void) const;
  *            If you need protected or private, please declare.
  */
 #define CC_PROPERTY(varType, varName, funName)\
-protected: varType varName;\
-public: virtual varType get##funName(void);\
-public: virtual void set##funName(varType var);
+protected: varType varName; public: virtual varType get##funName() const; virtual void set##funName(varType var);
 
 #define CC_PROPERTY_PASS_BY_REF(varType, varName, funName)\
-protected: varType varName;\
-public: virtual const varType& get##funName(void) const;\
-public: virtual void set##funName(const varType& var);
+protected: varType varName; public: virtual const varType& get##funName() const; virtual void set##funName(const varType& var);
 
-/** @def CC_SYNTHESIZE_READONLY 
+/** @def CC_SYNTHESIZE_READONLY
  * It is used to declare a protected variable. We can use getter to read the variable.
  *
  * @param varType     The type of variable.
@@ -169,14 +164,12 @@ public: virtual void set##funName(const varType& var);
  *            If you need protected or private, please declare.
  */
 #define CC_SYNTHESIZE_READONLY(varType, varName, funName)\
-protected: varType varName;\
-public: virtual varType get##funName(void) const { return varName; }
+protected: varType varName; public: virtual inline varType get##funName() const { return varName; }
 
 #define CC_SYNTHESIZE_READONLY_PASS_BY_REF(varType, varName, funName)\
-protected: varType varName;\
-public: virtual const varType& get##funName(void) const { return varName; }
+protected: varType varName; public: virtual inline const varType& get##funName() const { return varName; }
 
-/** @def CC_SYNTHESIZE 
+/** @def CC_SYNTHESIZE
  * It is used to declare a protected variable.
  * We can use getter to read the variable, and use the setter to change the variable.
  *
@@ -189,19 +182,13 @@ public: virtual const varType& get##funName(void) const { return varName; }
  *            If you need protected or private, please declare.
  */
 #define CC_SYNTHESIZE(varType, varName, funName)\
-protected: varType varName;\
-public: virtual varType get##funName(void) const { return varName; }\
-public: virtual void set##funName(varType var){ varName = var; }
+protected: varType varName; public: virtual inline varType get##funName() const { return varName; } virtual inline void set##funName(varType var){ varName = var; }
 
 #define CC_SYNTHESIZE_PASS_BY_REF(varType, varName, funName)\
-protected: varType varName;\
-public: virtual const varType& get##funName(void) const { return varName; }\
-public: virtual void set##funName(const varType& var){ varName = var; }
+protected: varType varName; public: virtual inline const varType& get##funName() const { return varName; } virtual inline void set##funName(const varType& var){ varName = var; }
 
 #define CC_SYNTHESIZE_RETAIN(varType, varName, funName)    \
-private: varType varName; \
-public: virtual varType get##funName(void) const { return varName; } \
-public: virtual void set##funName(varType var)   \
+private: varType varName; public: virtual inline varType get##funName() const { return varName; } virtual inline void set##funName(varType var) \
 { \
     if (varName != var) \
     { \
@@ -209,7 +196,7 @@ public: virtual void set##funName(varType var)   \
         CC_SAFE_RELEASE(varName); \
         varName = var; \
     } \
-} 
+}
 
 #define CC_SAFE_DELETE(p)           do { delete (p); (p) = nullptr; } while(0)
 #define CC_SAFE_DELETE_ARRAY(p)     do { if(p) { delete[] (p); (p) = nullptr; } } while(0)
@@ -220,7 +207,7 @@ public: virtual void set##funName(varType var)   \
 #define CC_BREAK_IF(cond)           if(cond) break
 
 #define __CCLOGWITHFUNCTION(s, ...) \
-    log("%s : %s",__FUNCTION__, StringUtils::format(s, ##__VA_ARGS__).c_str())
+    cocos2d::log("%s : %s",__FUNCTION__, cocos2d::StringUtils::format(s, ##__VA_ARGS__).c_str())
 
 /// @name Cocos2d debug
 /// @{
@@ -274,7 +261,7 @@ public: virtual void set##funName(varType var)   \
  *
  * This should be used in the private: declarations for a class
  * that wants to prevent anyone from instantiating it. This is
- * especially useful for classes containing only static methods. 
+ * especially useful for classes containing only static methods.
  */
 #define CC_DISALLOW_IMPLICIT_CONSTRUCTORS(TypeName)    \
     TypeName();                                        \
@@ -286,14 +273,14 @@ public: virtual void set##funName(varType var)   \
 #if defined(__GNUC__) && ((__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1)))
     #define CC_DEPRECATED_ATTRIBUTE __attribute__((deprecated))
 #elif _MSC_VER >= 1400 //vs 2005 or higher
-    #define CC_DEPRECATED_ATTRIBUTE __declspec(deprecated) 
+    #define CC_DEPRECATED_ATTRIBUTE __declspec(deprecated)
 #else
     #define CC_DEPRECATED_ATTRIBUTE
-#endif 
+#endif
 
 /** @def CC_DEPRECATED(...)
  * Macro to mark things deprecated as of a particular version
- * can be used with artibrary parameters which are thrown away.
+ * can be used with arbitrary parameters which are thrown away.
  * e.g. CC_DEPRECATED(4.0) or CC_DEPRECATED(4.0, "not going to need this anymore") etc.
  */
 #define CC_DEPRECATED(...) CC_DEPRECATED_ATTRIBUTE
@@ -327,7 +314,7 @@ public: virtual void set##funName(varType var)   \
 #endif
 
 /** @def CC_REQUIRES_NULL_TERMINATION
- * 
+ *
  */
 #if !defined(CC_REQUIRES_NULL_TERMINATION)
     #if defined(__APPLE_CC__) && (__APPLE_CC__ >= 5549)

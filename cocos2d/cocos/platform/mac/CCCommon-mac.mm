@@ -1,6 +1,7 @@
 /****************************************************************************
 Copyright (c) 2010-2012 cocos2d-x.org
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -51,14 +52,11 @@ void MessageBox(const char * msg, const char * title)
     [alert addButtonWithTitle:@"OK"];
     [alert setMessageText:tmpMsg];
     [alert setInformativeText:tmpTitle];
-    [alert setAlertStyle:NSWarningAlertStyle];
+    [alert setAlertStyle:NSAlertStyleWarning];
 
     auto glview = Director::getInstance()->getOpenGLView();
     id window = glview->getCocoaWindow();
-    [alert beginSheetModalForWindow:window
-                      modalDelegate:[window delegate]
-                     didEndSelector:nil
-                        contextInfo:nil];
+    [alert beginSheetModalForWindow:window completionHandler:nil];
 }
 
 NS_CC_END

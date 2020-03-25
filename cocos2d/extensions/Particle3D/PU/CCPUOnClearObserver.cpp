@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (C) 2013 Henry van Merode. All rights reserved.
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -29,19 +30,19 @@
 NS_CC_BEGIN
 
 //-----------------------------------------------------------------------
-void PUOnClearObserver::notifyStart (void)
+void PUOnClearObserver::notifyStart ()
 {
     PUObserver::notifyStart();
     _continue = false;
 }
 //-----------------------------------------------------------------------
-bool PUOnClearObserver::observe (PUParticle3D* particle, float timeElapsed)
+bool PUOnClearObserver::observe (PUParticle3D* /*particle*/, float /*timeElapsed*/)
 {
     // This function always returns false, but is never called (but it must be implemented).
     return false;
 }
 //-----------------------------------------------------------------------
-void PUOnClearObserver::updateObserver(PUParticle3D* particle, float timeElapsed, bool firstParticle)
+void PUOnClearObserver::updateObserver(PUParticle3D* /*particle*/, float /*timeElapsed*/, bool firstParticle)
 {
     // Override the _processParticle() function, because we don't observe individual particles.
     if (firstParticle)

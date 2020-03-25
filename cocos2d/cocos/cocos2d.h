@@ -2,7 +2,8 @@
 Copyright (c) 2008-2010 Ricardo Quesada
 Copyright (c) 2010-2012 cocos2d-x.org
 Copyright (c) 2011      Zynga Inc.
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -29,8 +30,8 @@ THE SOFTWARE.
 #define __COCOS2D_H__
 
 // 0x00 HI ME LO
-// 00   03 07 00
-#define COCOS2D_VERSION 0x00030700
+// 00   03 08 00
+#define COCOS2D_VERSION 0x00040000
 
 //
 // all cocos2d include files
@@ -75,8 +76,11 @@ THE SOFTWARE.
 #include "base/CCEventListenerFocus.h"
 #include "base/CCEventListenerKeyboard.h"
 #include "base/CCEventListenerMouse.h"
+#include "base/CCEventListenerController.h"
 #include "base/CCEventListenerTouch.h"
 #include "base/CCEventMouse.h"
+#include "base/CCEventController.h"
+#include "base/CCController.h"
 #include "base/CCEventTouch.h"
 #include "base/CCEventType.h"
 
@@ -112,12 +116,9 @@ THE SOFTWARE.
 #include "2d/CCClippingNode.h"
 #include "2d/CCClippingRectangleNode.h"
 #include "2d/CCDrawNode.h"
-#include "2d/CCDrawingPrimitives.h"
 #include "2d/CCFontFNT.h"
 #include "2d/CCLabel.h"
 #include "2d/CCLabelAtlas.h"
-#include "2d/CCLabelBMFont.h"
-#include "2d/CCLabelTTF.h"
 #include "2d/CCLayer.h"
 #include "2d/CCMenu.h"
 #include "2d/CCMenuItem.h"
@@ -139,7 +140,6 @@ THE SOFTWARE.
 // 2d utils
 #include "2d/CCCamera.h"
 #include "2d/CCCameraBackgroundBrush.h"
-#include "2d/CCGrabber.h"
 #include "2d/CCGrid.h"
 #include "2d/CCLight.h"
 
@@ -147,15 +147,11 @@ THE SOFTWARE.
 #include "base/CCProtocols.h"
 
 // renderer
+#include "renderer/CCCallbackCommand.h"
 #include "renderer/CCCustomCommand.h"
-#include "renderer/CCGLProgram.h"
-#include "renderer/CCGLProgramCache.h"
-#include "renderer/CCGLProgramState.h"
 #include "renderer/CCGroupCommand.h"
 #include "renderer/CCMaterial.h"
 #include "renderer/CCPass.h"
-#include "renderer/CCPrimitive.h"
-#include "renderer/CCPrimitiveCommand.h"
 #include "renderer/CCQuadCommand.h"
 #include "renderer/CCRenderCommand.h"
 #include "renderer/CCRenderCommandPool.h"
@@ -166,18 +162,6 @@ THE SOFTWARE.
 #include "renderer/CCTextureCube.h"
 #include "renderer/CCTextureCache.h"
 #include "renderer/CCTrianglesCommand.h"
-#include "renderer/CCVertexAttribBinding.h"
-#include "renderer/CCVertexIndexBuffer.h"
-#include "renderer/CCVertexIndexData.h"
-#include "renderer/CCPrimitive.h"
-#include "renderer/CCPrimitiveCommand.h"
-#include "renderer/CCTrianglesCommand.h"
-#include "renderer/CCMaterial.h"
-#include "renderer/CCTechnique.h"
-#include "renderer/CCPass.h"
-#include "renderer/CCRenderState.h"
-#include "renderer/CCFrameBuffer.h"
-#include "renderer/ccGLStateCache.h"
 #include "renderer/ccShaders.h"
 
 // physics
@@ -195,7 +179,6 @@ THE SOFTWARE.
 #include "platform/CCPlatformConfig.h"
 #include "platform/CCPlatformMacros.h"
 #include "platform/CCSAXParser.h"
-#include "platform/CCThread.h"
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
     #include "platform/ios/CCApplication-ios.h"
@@ -205,11 +188,12 @@ THE SOFTWARE.
 #endif // CC_TARGET_PLATFORM == CC_PLATFORM_IOS
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_TVOS)
-#include "platform/tvos/CCApplication-tvos.h"
-#include "platform/tvos/CCGLViewImpl-tvos.h"
-#include "platform/tvos/CCGL-tvos.h"
-#include "platform/tvos/CCStdC-tvos.h"
-#endif // CC_TARGET_PLATFORM == CC_PLATFORM_TVOS
+    #include "platform/tvos/CCApplication-tvos.h"
+    #include "platform/tvos/CCGLViewImpl-tvos.h"
+    #include "platform/tvos/CCGL-tvos.h"
+    #include "platform/tvos/CCStdC-tvos.h"
+#endif // CC_TARGET_PLATFORM == CC_PLATFORM_IOS
+
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
     #include "platform/android/CCApplication-android.h"
@@ -220,13 +204,6 @@ THE SOFTWARE.
     #include "platform/android/CCEnhanceAPI-android.h"
 //Enhance modification end
 #endif // CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
-
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_BLACKBERRY)
-    #include "platform/blackberry/CCApplication.h"
-    #include "platform/blackberry/CCGLViewImpl.h"
-    #include "platform/blackberry/CCGL.h"
-    #include "platform/blackberry/CCStdC.h"
-#endif // CC_TARGET_PLATFORM == CC_PLATFORM_BLACKBERRY
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
     #include "platform/win32/CCApplication-win32.h"
@@ -248,13 +225,6 @@ THE SOFTWARE.
     #include "platform/linux/CCGL-linux.h"
     #include "platform/linux/CCStdC-linux.h"
 #endif // CC_TARGET_PLATFORM == CC_PLATFORM_LINUX
-
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT)
-	#include "platform/winrt/CCApplication.h"
-	#include "platform/winrt/CCGLViewImpl-winrt.h"
-	#include "platform/winrt/CCGL.h"
-	#include "platform/winrt/CCStdC.h"
-#endif // CC_TARGET_PLATFORM == CC_PLATFORM_WINRT
 
 // script_support
 #include "base/CCScriptSupport.h"
@@ -297,6 +267,7 @@ THE SOFTWARE.
 #include "3d/CCFrustum.h"
 #include "3d/CCMesh.h"
 #include "3d/CCMeshSkin.h"
+#include "3d/CCMotionStreak3D.h"
 #include "3d/CCMeshVertexIndexData.h"
 #include "3d/CCOBB.h"
 #include "3d/CCPlane.h"
@@ -306,21 +277,7 @@ THE SOFTWARE.
 #include "3d/CCSprite3D.h"
 #include "3d/CCSprite3DMaterial.h"
 #include "3d/CCTerrain.h"
-
-
-// Deprecated include
-#include "deprecated/CCArray.h"
-#include "deprecated/CCBool.h"
-#include "deprecated/CCDictionary.h"
-#include "deprecated/CCDouble.h"
-#include "deprecated/CCFloat.h"
-#include "deprecated/CCInteger.h"
-#include "deprecated/CCNotificationCenter.h"
-#include "deprecated/CCSet.h"
-#include "deprecated/CCString.h"
-// CCDeprecated.h must be included at the end
-#include "deprecated/CCDeprecated.h"
-
+#include "3d/CCVertexAttribBinding.h"
 
 NS_CC_BEGIN
 

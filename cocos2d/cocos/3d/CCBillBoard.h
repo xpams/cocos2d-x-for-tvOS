@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2014 Chukong Technologies Inc.
+ Copyright (c) 2014-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos2d-x.org
 
@@ -22,8 +23,7 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-#ifndef __CCBILLBOARD_H__
-#define __CCBILLBOARD_H__
+#pragma once
 
 #include "2d/CCSprite.h"
 
@@ -111,9 +111,9 @@ CC_CONSTRUCTOR_ACCESS:
 protected:
 
     /**
-     * calculate a model matrix which keep orignal translate & scaling but always face to the camera
+     * calculate a model matrix which keep original translate & scaling but always face to the camera
      */
-    bool calculateBillbaordTransform();
+    bool calculateBillboardTransform();
     
     Mat4 _camWorldMat;
     Mat4 _mvTransform;
@@ -130,6 +130,3 @@ private:
 /// @}
 
 NS_CC_END
-
-
-#endif // __CCBILLBOARD_H__

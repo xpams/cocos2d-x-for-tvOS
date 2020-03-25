@@ -42,15 +42,6 @@ inline Vec2::Vec2(const Vec2& p1, const Vec2& p2)
     set(p1, p2);
 }
 
-inline Vec2::Vec2(const Vec2& copy)
-{
-    set(copy);
-}
-
-inline Vec2::~Vec2()
-{
-}
-
 inline bool Vec2::isZero() const
 {
     return x == 0.0f && y == 0.0f;
@@ -139,7 +130,7 @@ inline void Vec2::smooth(const Vec2& target, float elapsedTime, float responseTi
     }
 }
 
-inline const Vec2 Vec2::operator+(const Vec2& v) const
+inline Vec2 Vec2::operator+(const Vec2& v) const
 {
     Vec2 result(*this);
     result.add(v);
@@ -152,7 +143,7 @@ inline Vec2& Vec2::operator+=(const Vec2& v)
     return *this;
 }
 
-inline const Vec2 Vec2::operator-(const Vec2& v) const
+inline Vec2 Vec2::operator-(const Vec2& v) const
 {
     Vec2 result(*this);
     result.subtract(v);
@@ -165,14 +156,14 @@ inline Vec2& Vec2::operator-=(const Vec2& v)
     return *this;
 }
 
-inline const Vec2 Vec2::operator-() const
+inline Vec2 Vec2::operator-() const
 {
     Vec2 result(*this);
     result.negate();
     return result;
 }
 
-inline const Vec2 Vec2::operator*(float s) const
+inline Vec2 Vec2::operator*(float s) const
 {
     Vec2 result(*this);
     result.scale(s);
@@ -185,7 +176,7 @@ inline Vec2& Vec2::operator*=(float s)
     return *this;
 }
 
-inline const Vec2 Vec2::operator/(const float s) const
+inline Vec2 Vec2::operator/(const float s) const
 {
     return Vec2(this->x / s, this->y / s);
 }
@@ -218,7 +209,7 @@ inline bool Vec2::operator!=(const Vec2& v) const
     return x!=v.x || y!=v.y;
 }
 
-inline const Vec2 operator*(float x, const Vec2& v)
+inline Vec2 operator*(float x, const Vec2& v)
 {
     Vec2 result(v);
     result.scale(x);

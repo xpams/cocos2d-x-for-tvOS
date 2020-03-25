@@ -72,11 +72,6 @@ Application* Application::getInstance()
     return sm_pSharedApplication;
 }
 
-// @deprecated Use getInstance() instead
-Application* Application::sharedApplication()
-{
-    return Application::getInstance();
-}
 
 const char * Application::getCurrentLanguageCode()
 {
@@ -129,7 +124,15 @@ LanguageType Application::getCurrentLanguage()
 
 Application::Platform Application::getTargetPlatform()
 {
-    return Platform::OS_APPLETV;
+    return Platform::OS_TVOS;
+}
+
+std::string Application::getVersion() {
+    NSString* version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+    if (version) {
+        return [version UTF8String];
+    }
+    return "";
 }
 
 bool Application::openURL(const std::string &url)

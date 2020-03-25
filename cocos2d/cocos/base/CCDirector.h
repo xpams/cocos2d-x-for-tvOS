@@ -2,7 +2,8 @@
  Copyright (c) 2008-2010 Ricardo Quesada
  Copyright (c) 2010-2013 cocos2d-x.org
  Copyright (c) 2011      Zynga Inc.
- Copyright (c) 2013-2015 Chukong Technologies Inc.
+ Copyright (c) 2013-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2019 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -24,12 +25,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
-
-#ifndef __CCDIRECTOR_H__
-#define __CCDIRECTOR_H__
+#pragma once
 
 #include <stack>
 #include <thread>
+#include <chrono>
 
 #include "platform/CCPlatformMacros.h"
 #include "base/CCRef.h"
@@ -61,10 +61,6 @@ class Renderer;
 class Camera;
 
 class Console;
-namespace experimental
-{
-    class FrameBuffer;
-}
 
 /**
  * @brief Matrix stack type.
@@ -96,14 +92,25 @@ enum class MATRIX_STACK_TYPE
 class CC_DLL Director : public Ref
 {
 public:
+    /** Director will trigger an event before set next scene. */
+    static const char* EVENT_BEFORE_SET_NEXT_SCENE;
+    /** Director will trigger an event after set next scene. */
+    static const char* EVENT_AFTER_SET_NEXT_SCENE;
+    
     /** Director will trigger an event when projection type is changed. */
-    static const char *EVENT_PROJECTION_CHANGED;
+    static const char* EVENT_PROJECTION_CHANGED;
+    /** Director will trigger an event before Schedule::update() is invoked. */
+    static const char* EVENT_BEFORE_UPDATE;
     /** Director will trigger an event after Schedule::update() is invoked. */
     static const char* EVENT_AFTER_UPDATE;
+    /** Director will trigger an event while resetting Director */
+    static const char* EVENT_RESET;
     /** Director will trigger an event after Scene::render() is invoked. */
     static const char* EVENT_AFTER_VISIT;
     /** Director will trigger an event after a scene is drawn, the data is sent to GPU. */
     static const char* EVENT_AFTER_DRAW;
+    /** Director will trigger an event before a scene is drawn, right after clear. */
+    static const char* EVENT_BEFORE_DRAW;
 
     /**
      * @brief Possible OpenGL projections used by director
@@ -130,12 +137,6 @@ public:
     static Director* getInstance();
 
     /**
-     * @deprecated Use getInstance() instead.
-     * @js NA
-     */
-    CC_DEPRECATED_ATTRIBUTE static Director* sharedDirector() { return Director::getInstance(); }
-    
-    /**
      * @js ctor
      */
     Director();
@@ -144,32 +145,32 @@ public:
      * @js NA
      * @lua NA
      */
-    virtual ~Director();
-    virtual bool init();
+    ~Director();
+    bool init();
 
     // attribute
 
     /** Gets current running Scene. Director can only run one Scene at a time. */
-    inline Scene* getRunningScene() { return _runningScene; }
+    Scene* getRunningScene() { return _runningScene; }
 
     /** Gets the FPS value. */
-    inline float getAnimationInterval() { return _animationInterval; }
-    /** Sets the FPS value. FPS = 1/internal. */
-    virtual void setAnimationInterval(float interval) = 0;
+    float getAnimationInterval() { return _animationInterval; }
+    /** Sets the FPS value. FPS = 1/interval. */
+    void setAnimationInterval(float interval);
 
-    /** Whether or not to display the FPS on the bottom-left corner. */
-    inline bool isDisplayStats() { return _displayStats; }
-    /** Display the FPS on the bottom-left corner. */
-    inline void setDisplayStats(bool displayStats) { _displayStats = displayStats; }
+    /** Whether or not displaying the FPS on the bottom-left corner of the screen. */
+    bool isDisplayStats() { return _displayStats; }
+    /** Display the FPS on the bottom-left corner of the screen. */
+    void setDisplayStats(bool displayStats) { _displayStats = displayStats; }
     
     /** Get seconds per frame. */
-    inline float getSecondsPerFrame() { return _secondsPerFrame; }
+    float getSecondsPerFrame() { return _secondsPerFrame; }
 
     /** 
      * Get the GLView.
      * @lua NA
      */
-    inline GLView* getOpenGLView() { return _openGLView; }
+    GLView* getOpenGLView() { return _openGLView; }
     /** 
      * Sets the GLView. 
      * @lua NA
@@ -183,40 +184,37 @@ public:
     TextureCache* getTextureCache() const;
 
     /** Whether or not `_nextDeltaTimeZero` is set to 0. */
-    inline bool isNextDeltaTimeZero() { return _nextDeltaTimeZero; }
+    bool isNextDeltaTimeZero() { return _nextDeltaTimeZero; }
     /** 
-     * Sets the detal time between current frame and next frame is 0.
-     * This value will be used in Schedule, and will affect all functions that are using frame detal time, such as Actions.
+     * Sets the delta time between current frame and next frame is 0.
+     * This value will be used in Schedule, and will affect all functions that are using frame delta time, such as Actions.
      * This value will take effect only one time.
      */
     void setNextDeltaTimeZero(bool nextDeltaTimeZero);
 
     /** Whether or not the Director is paused. */
-    inline bool isPaused() { return _paused; }
+    bool isPaused() { return _paused; }
 
     /** How many frames were called since the director started */
-    inline unsigned int getTotalFrames() { return _totalFrames; }
+    unsigned int getTotalFrames() { return _totalFrames; }
     
     /** Gets an OpenGL projection.
      * @since v0.8.2
      * @lua NA
      */
-    inline Projection getProjection() { return _projection; }
+    Projection getProjection() { return _projection; }
     /** Sets OpenGL projection. */
     void setProjection(Projection projection);
     
     /** Sets the glViewport.*/
     void setViewport();
-
-    /** How many frames were called since the director started */
-    
     
     /** Whether or not the replaced scene will receive the cleanup message.
      * If the new scene is pushed, then the old scene won't receive the "cleanup" message.
      * If the new scene replaces the old one, the it will receive the "cleanup" message.
      * @since v0.99.0
      */
-    inline bool isSendCleanupToScene() { return _sendCleanupToScene; }
+    bool isSendCleanupToScene() { return _sendCleanupToScene; }
 
     /** This object will be visited after the main scene is visited.
      * This object MUST implement the "visit" function.
@@ -247,7 +245,12 @@ public:
     /** Returns visible origin coordinate of the OpenGL view in points. */
     Vec2 getVisibleOrigin() const;
 
-    /** 
+    /**
+     * Returns safe area rectangle of the OpenGL view in points.
+     */
+    Rect getSafeAreaRect() const;
+
+    /**
      * Converts a screen coordinate to an OpenGL coordinate.
      * Useful to convert (multi) touch coordinates to the current layout (portrait or landscape).
      */
@@ -260,8 +263,8 @@ public:
     Vec2 convertToUI(const Vec2& point);
 
     /** 
-     * Gets the distance between camera and near clipping frane.
-     * It is correct for default camera that near clipping frane is the same as screen.
+     * Gets the distance between camera and near clipping frame.
+     * It is correct for default camera that near clipping frame is same as the screen.
      */
     float getZEye() const;
 
@@ -339,13 +342,13 @@ public:
     /** Stops the animation. Nothing will be drawn. The main loop won't be triggered anymore.
      * If you don't want to pause your animation call [pause] instead.
      */
-    virtual void stopAnimation() = 0;
+    void stopAnimation();
 
     /** The main loop is triggered again.
      * Call this function only if [stopAnimation] was called earlier.
      * @warning Don't call this function to start the main loop. To run the main loop call runWithScene.
      */
-    virtual void startAnimation() = 0;
+    void startAnimation();
 
     /** Draw the scene.
      * This method is called every frame. Don't call it manually.
@@ -370,9 +373,6 @@ public:
      * @js NA
      */
     void setGLDefaultValues();
-
-    /** Enables/disables OpenGL alpha blending. */
-    void setAlphaBlending(bool on);
     
     /** Sets clear values for the color buffers,
      * value range of each element is [0.0, 1.0].
@@ -380,10 +380,12 @@ public:
      */
     void setClearColor(const Color4F& clearColor);
 
-    /** Enables/disables OpenGL depth test. */
-    void setDepthTest(bool on);
-
-    virtual void mainLoop() = 0;
+    void mainLoop();
+    /** Invoke main loop with delta time. Then `calculateDeltaTime` can just use the delta time directly.
+     * The delta time paseed may include vsync time. See issue #17806
+     * @since 3.16
+     */
+    void mainLoop(float dt);
 
     /** The size in pixels of the surface. It could be different than the screen size.
      * High-res devices might have a higher surface size than the screen size.
@@ -454,14 +456,17 @@ public:
      * @js NA
      */
     void pushMatrix(MATRIX_STACK_TYPE type);
+
     /** Pops the top matrix of the specified type of matrix stack.
      * @js NA
      */
     void popMatrix(MATRIX_STACK_TYPE type);
-    /** Adds an identity matrix to the top of specified type of matrxi stack.
+
+    /** Adds an identity matrix to the top of specified type of matrix stack.
      * @js NA
      */
     void loadIdentityMatrix(MATRIX_STACK_TYPE type);
+
     /**
      * Adds a matrix to the top of specified type of matrix stack.
      * 
@@ -470,21 +475,24 @@ public:
      * @js NA
      */
     void loadMatrix(MATRIX_STACK_TYPE type, const Mat4& mat);
+
     /**
-     * Multipies a matrix to the top of specified type of matrix stack.
+     * Multiplies a matrix to the top of specified type of matrix stack.
      *
      * @param type Matrix type.
-     * @param mat The matrix that to be multipied.
+     * @param mat The matrix that to be multiplied.
      * @js NA
      */
     void multiplyMatrix(MATRIX_STACK_TYPE type, const Mat4& mat);
+
     /**
      * Gets the top matrix of specified type of matrix stack.
      * @js NA
      */
-    const Mat4& getMatrix(MATRIX_STACK_TYPE type);
+    const Mat4& getMatrix(MATRIX_STACK_TYPE type) const;
+
     /**
-     * Cleras all types of matrix stack, and add indentity matrix to these matrix stacks.
+     * Clear all types of matrix stack, and add identity matrix to these matrix stacks.
      * @js NA
      */
     void resetMatrixStack();
@@ -495,21 +503,33 @@ public:
      */
     const std::thread::id& getCocos2dThreadId() const { return _cocos2d_thread_id; }
 
+    /**
+     * returns whether or not the Director is in a valid state
+     */
+    bool isValid() const { return !_invalid; }
+
 protected:
     void reset();
     
+
+    virtual void startAnimation(SetIntervalReason reason);
+    virtual void setAnimationInterval(float interval, SetIntervalReason reason);
+
     void purgeDirector();
-    bool _purgeDirectorInNextLoop; // this flag will be set to true in end()
+    bool _purgeDirectorInNextLoop = false; // this flag will be set to true in end()
     
     void restartDirector();
-    bool _restartDirectorInNextLoop; // this flag will be set to true in restart()
+    bool _restartDirectorInNextLoop = false; // this flag will be set to true in restart()
     
     void setNextScene();
     
+    void updateFrameRate();
+#if !CC_STRIP_FPS
     void showStats();
     void createStatsLabel();
     void calculateMPF();
     void getFPSImageData(unsigned char** datapointer, ssize_t* length);
+#endif
     
     /** calculates delta time since last time it was called */    
     void calculateDeltaTime();
@@ -521,100 +541,109 @@ protected:
     void initMatrixStack();
 
     std::stack<Mat4> _modelViewMatrixStack;
-    std::stack<Mat4> _projectionMatrixStack;
     std::stack<Mat4> _textureMatrixStack;
+    std::stack<Mat4> _projectionMatrixStack;
 
     /** Scheduler associated with this director
      @since v2.0
      */
-    Scheduler *_scheduler;
+    Scheduler *_scheduler = nullptr;
     
     /** ActionManager associated with this director
      @since v2.0
      */
-    ActionManager *_actionManager;
+    ActionManager *_actionManager = nullptr;
     
     /** EventDispatcher associated with this director
      @since v3.0
      */
-    EventDispatcher* _eventDispatcher;
-    EventCustom *_eventProjectionChanged, *_eventAfterDraw, *_eventAfterVisit, *_eventAfterUpdate;
+    EventDispatcher* _eventDispatcher = nullptr;
+    EventCustom* _eventProjectionChanged = nullptr;
+    EventCustom* _eventBeforeDraw =nullptr; 
+    EventCustom* _eventAfterDraw = nullptr;
+    EventCustom* _eventAfterVisit = nullptr;
+    EventCustom* _eventBeforeUpdate = nullptr;
+    EventCustom* _eventAfterUpdate = nullptr;
+    EventCustom* _eventResetDirector = nullptr;
+    EventCustom* _beforeSetNextScene = nullptr;
+    EventCustom* _afterSetNextScene = nullptr;
         
     /* delta time since last tick to main loop */
-	float _deltaTime;
+	float _deltaTime = 0.0f;
+    bool _deltaTimePassedByCaller = false;
     
     /* The _openGLView, where everything is rendered, GLView is a abstract class,cocos2d-x provide GLViewImpl
      which inherit from it as default renderer context,you can have your own by inherit from it*/
-    GLView *_openGLView;
+    GLView *_openGLView = nullptr;
 
     //texture cache belongs to this director
-    TextureCache *_textureCache;
+    TextureCache *_textureCache = nullptr;
 
-    float _animationInterval;
-    float _oldAnimationInterval;
-
-    /* landscape mode ? */
-    bool _landscape;
+    float _animationInterval = 0.0f;
+    float _oldAnimationInterval = 0.0f;
     
-    bool _displayStats;
-    float _accumDt;
-    float _frameRate;
+    bool _displayStats = false;
+    float _accumDt = 0.0f;
+    float _frameRate = 0.0f;
     
-    LabelAtlas *_FPSLabel;
-    LabelAtlas *_drawnBatchesLabel;
-    LabelAtlas *_drawnVerticesLabel;
+    LabelAtlas *_FPSLabel = nullptr;
+    LabelAtlas *_drawnBatchesLabel = nullptr;
+    LabelAtlas *_drawnVerticesLabel = nullptr;
     
     /** Whether or not the Director is paused */
-    bool _paused;
+    bool _paused = false;
 
     /* How many frames were called since the director started */
-    unsigned int _totalFrames;
-    float _secondsPerFrame;
+    unsigned int _totalFrames = 0;
+    unsigned int _frames = 0;
+    float _secondsPerFrame = 1.f;
     
     /* The running scene */
-    Scene *_runningScene;
+    Scene *_runningScene = nullptr;
     
     /* will be the next 'runningScene' in the next frame
      nextScene is a weak reference. */
-    Scene *_nextScene;
+    Scene *_nextScene = nullptr;
     
     /* If true, then "old" scene will receive the cleanup message */
-    bool _sendCleanupToScene;
+    bool _sendCleanupToScene = false;
 
     /* scheduled scenes */
     Vector<Scene*> _scenesStack;
     
     /* last time the main loop was updated */
-    struct timeval *_lastUpdate;
+    std::chrono::steady_clock::time_point _lastUpdate;
 
     /* whether or not the next delta time will be zero */
-    bool _nextDeltaTimeZero;
+    bool _nextDeltaTimeZero = false;
     
     /* projection used */
-    Projection _projection;
+    Projection _projection = Projection::DEFAULT;
 
     /* window size in points */
-    Size _winSizeInPoints;
+    Size _winSizeInPoints = Size::ZERO;
     
     /* content scale factor */
-    float _contentScaleFactor;
+    float _contentScaleFactor = 1.0f;
 
     /* This object will be visited after the scene. Useful to hook a notification node */
-    Node *_notificationNode;
+    Node *_notificationNode = nullptr;
 
     /* Renderer for the Director */
-    Renderer *_renderer;
-    
-    /* Default FrameBufferObject*/
-    experimental::FrameBuffer* _defaultFBO;
+    Renderer *_renderer = nullptr;
+
+    Color4F _clearColor = {0, 0, 0, 1};
 
     /* Console for the director */
-    Console *_console;
+    Console *_console = nullptr;
 
-    bool _isStatusLabelUpdated;
+    bool _isStatusLabelUpdated = true;
 
     /* cocos2d thread id */
     std::thread::id _cocos2d_thread_id;
+
+    /* whether or not the director is in a valid state */
+    bool _invalid = false;
 
     // GLView will recreate stats labels to fit visible rect
     friend class GLView;
@@ -623,35 +652,4 @@ protected:
 // end of base group
 /** @} */
 
-/** 
- @brief DisplayLinkDirector is a Director that synchronizes timers with the refresh rate of the display.
- 
- Features and Limitations:
-  - Scheduled timers & drawing are synchronizes with the refresh rate of the display
-  - Only supports animation intervals of 1/60 1/30 & 1/15
- 
- @since v0.8.2
- */
-class DisplayLinkDirector : public Director
-{
-public:
-    DisplayLinkDirector() 
-        : _invalid(false)
-    {}
-    virtual ~DisplayLinkDirector(){}
-
-    //
-    // Overrides
-    //
-    virtual void mainLoop() override;
-    virtual void setAnimationInterval(float value) override;
-    virtual void startAnimation() override;
-    virtual void stopAnimation() override;
-
-protected:
-    bool _invalid;
-};
-
 NS_CC_END
-
-#endif // __CCDIRECTOR_H__

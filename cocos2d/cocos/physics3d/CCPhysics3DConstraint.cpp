@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -22,7 +23,7 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-#include "CCPhysics3D.h"
+#include "physics3d/CCPhysics3D.h"
 
 #if CC_USE_3D_PHYSICS
 
@@ -31,9 +32,9 @@
 NS_CC_BEGIN
 
 Physics3DConstraint::Physics3DConstraint()
-: _bodyA(nullptr)
+: _constraint(nullptr)
+, _bodyA(nullptr)
 , _bodyB(nullptr)
-, _constraint(nullptr)
 , _type(Physics3DConstraint::ConstraintType::UNKNOWN)
 , _userData(nullptr)
 {
@@ -74,9 +75,9 @@ int	Physics3DConstraint::getOverrideNumSolverIterations() const
 
 ///override the number of constraint solver iterations used to solve this constraint
 ///-1 will use the default number of iterations, as specified in SolverInfo.m_numIterations
-void Physics3DConstraint::setOverrideNumSolverIterations(int overideNumIterations)
+void Physics3DConstraint::setOverrideNumSolverIterations(int overrideNumIterations)
 {
-    _constraint->setOverrideNumSolverIterations(overideNumIterations);
+    _constraint->setOverrideNumSolverIterations(overrideNumIterations);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

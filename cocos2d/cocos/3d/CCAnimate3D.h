@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2014 Chukong Technologies Inc.
+ Copyright (c) 2014-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos2d-x.org
 
@@ -41,7 +42,7 @@ class EventCustom;
 
 enum class Animate3DQuality
 {
-    QUALITY_NONE = 0,          // it'll be ignore the curve-evaluating(the animation looks like stop), just acculate transition time.
+    QUALITY_NONE = 0,          // it'll be ignore the curve-evaluating(the animation looks like stop), just accumulate transition time.
     QUALITY_LOW,               // low animation quality, it'll be more efficient.
     QUALITY_HIGH,              // high animation quality.
 };
@@ -64,7 +65,7 @@ public:
     /**
      * create Animate3D
      * @param animation used to generate animate3D
-     * @param formTime 
+     * @param fromTime
      * @param duration Time the Animate3D lasts
      * @return Animate3D created using animate
      */
@@ -108,10 +109,6 @@ public:
     
     /** set animate transition time between 3d animations */
     static void setTransitionTime(float transTime) { if (transTime >= 0.f) _transTime = transTime; }
-    
-    /**get & set play reverse, these are deprecated, use set negative speed instead*/
-    CC_DEPRECATED_ATTRIBUTE bool getPlayBack() const { return _playReverse; }
-    CC_DEPRECATED_ATTRIBUTE void setPlayBack(bool reverse) { _playReverse = reverse; }
     
     /**set animate quality*/
     void setQuality(Animate3DQuality quality);
@@ -161,7 +158,7 @@ protected:
     float      _last; //last time 0 - 1, used to generate sub Animate3D
     bool       _playReverse; // is playing reverse
     static float      _transTime; //transition time from one animate3d to another
-    float      _accTransTime; // acculate transition time
+    float      _accTransTime; // accumulate transition time
     float      _lastTime;     // last t (0 - 1)
     float      _originInterval;// save origin interval time
     float      _frameRate;

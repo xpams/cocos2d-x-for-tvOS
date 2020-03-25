@@ -1,5 +1,6 @@
 /****************************************************************************
  Copyright (c) 2013 cocos2d-x.org
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -28,7 +29,7 @@
 #include "base/ccConfig.h"
 #if CC_USE_PHYSICS
 
-#include "chipmunk.h"
+#include "chipmunk/chipmunk.h"
 #include "platform/CCPlatformMacros.h"
 #include "math/CCGeometry.h"
 
@@ -64,9 +65,6 @@ public:
     /** Make cpFloat type convert to float type. */
     static float cpfloat2float(cpFloat f) { return f; }
     
-    /** Make float type convert to cpFloat type. */
-    static cpFloat float2cpfloat(float f) { return f; }
-    
     /** Make Rect type convert to cpBB type. */
     static cpBB rect2cpbb(const Rect& rect) { return cpBBNew(rect.origin.x, rect.origin.y, rect.origin.x + rect.size.width, rect.origin.y + rect.size.height); }
     
@@ -77,7 +75,7 @@ public:
      Make cpVect array convert to Vec2 array.
      
      @param cpvs The be converted object, it's a cpVect array.
-     @param out The coverted object, it's a Vec2 array.
+     @param out The converted object, it's a Vec2 array.
      @param count It's cpvs array length.
      @return The out object's pointer.
      */
@@ -95,7 +93,7 @@ public:
      Make Vec2 array convert to cpVect array.
      
      @param points The be converted object, it's a Vec2 array.
-     @param out The coverted object, it's a cpVect array.
+     @param out The converted object, it's a cpVect array.
      @param count It's points array length.
      @return The out object's pointer.
      */

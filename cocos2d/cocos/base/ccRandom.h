@@ -1,6 +1,7 @@
 /****************************************************************************
 Copyright (c) 2010-2012 cocos2d-x.org
-Copyright (c) 2013-2015 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -45,14 +46,14 @@ NS_CC_BEGIN
 class CC_DLL RandomHelper {
 public:
     template<typename T>
-    static inline T random_real(T min, T max) {
+    static T random_real(T min, T max) {
         std::uniform_real_distribution<T> dist(min, max);
         auto &mt = RandomHelper::getEngine();
         return dist(mt);
     }
 
     template<typename T>
-    static inline T random_int(T min, T max) {
+    static T random_int(T min, T max) {
         std::uniform_int_distribution<T> dist(min, max);
         auto &mt = RandomHelper::getEngine();
         return dist(mt);

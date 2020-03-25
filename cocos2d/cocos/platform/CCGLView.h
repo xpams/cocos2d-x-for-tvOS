@@ -1,6 +1,7 @@
 /****************************************************************************
 Copyright (c) 2010-2012 cocos2d-x.org
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -38,6 +39,10 @@ THE SOFTWARE.
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 typedef void* id;
 #endif /* (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) */
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+#define CC_ICON_SET_SUPPORT true
+#endif /* (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX) */
 
 /** There are some Resolution Policy for Adapt to the screen. */
 enum class ResolutionPolicy
@@ -82,9 +87,13 @@ struct GLContextAttrs
     int alphaBits;
     int depthBits;
     int stencilBits;
+    int multisamplingCount;
 };
 
 NS_CC_BEGIN
+
+class Scene;
+class Renderer;
 
 /**
  * @addtogroup platform
@@ -106,7 +115,10 @@ public:
      */
     virtual ~GLView();
 
-    /** Force destroying EGL view, subclass must implement this method. */
+    /** Force destroying EGL view, subclass must implement this method. 
+     *
+     * @lua endToLua
+     */
     virtual void end() = 0;
 
     /** Get whether opengl render system is ready, subclass must implement this method. */
@@ -142,12 +154,6 @@ public:
     
     /** The OpenGL context attrs. */
     static GLContextAttrs _glContextAttrs;
-
-    /** @deprecated
-     * Polls input events. Subclass must implement methods if platform
-     * does not provide event callbacks.
-     */
-    CC_DEPRECATED_ATTRIBUTE virtual void pollInputEvents();
     
     /** Polls the events. */
     virtual void pollEvents();
@@ -158,7 +164,7 @@ public:
      *
      * @return The frame size of EGL view.
      */
-    virtual const Size& getFrameSize() const;
+    virtual Size getFrameSize() const;
 
     /**
      * Set the frame size of EGL view.
@@ -173,7 +179,7 @@ public:
      * 
      * @param zoomFactor The zoom factor for frame.
      */
-    virtual void setFrameZoomFactor(float zoomFactor) {}
+    virtual void setFrameZoomFactor(float /*zoomFactor*/) {}
     
     /** Get zoom factor for frame. This methods are for
      * debugging big resolution (e.g.new ipad) app on desktop.
@@ -187,7 +193,7 @@ public:
      *
      * @param isVisible Hide or Show the mouse cursor if there is one.
      */
-    virtual void setCursorVisible(bool isVisible) {}
+    virtual void setCursorVisible(bool /*isVisible*/) {}
 
     /** Get retina factor.
      *
@@ -196,7 +202,7 @@ public:
     virtual int getRetinaFactor() const { return 1; }
 
     /** Only works on ios platform. Set Content Scale of the Factor. */
-    virtual bool setContentScaleFactor(float scaleFactor) { return false; }
+    virtual bool setContentScaleFactor(float /*scaleFactor*/) { return false; }
     
     /** Only works on ios platform. Get Content Scale of the Factor. */
     virtual float getContentScaleFactor() const { return 1.0; }
@@ -207,7 +213,7 @@ public:
      */
     virtual bool isRetinaDisplay() const { return false; }
  
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS) || (CC_TARGET_PLATFORM == CC_PLATFORM_TVOS)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_TVOS)
     virtual void* getEAGLView() const { return nullptr; }
 #endif /* (CC_TARGET_PLATFORM == CC_PLATFORM_IOS) */
 
@@ -231,6 +237,11 @@ public:
      * @return The visible rectangle of opengl viewport.
      */
     virtual Rect getVisibleRect() const;
+
+    /**
+     * Gets safe area rectangle
+     */
+    virtual Rect getSafeAreaRect() const;
 
     /**
      * Set the design resolution size.
@@ -313,6 +324,17 @@ public:
      * @param ys The points of y.
      */
     virtual void handleTouchesMove(int num, intptr_t ids[], float xs[], float ys[]);
+
+    /** Touch events are handled by default; if you want to customize your handlers, please override this function.
+     *
+     * @param num The number of touch.
+     * @param ids The identity of the touch.
+     * @param xs The points of x.
+     * @param ys The points of y.
+     * @param fs The force of 3d touches.
+     # @param ms The maximum force of 3d touches
+     */
+    virtual void handleTouchesMove(int num, intptr_t ids[], float xs[], float ys[], float fs[], float ms[]);
     
     /** Touch events are handled by default; if you want to customize your handlers, please override this function.
      *
@@ -331,6 +353,25 @@ public:
      * @param ys The points of y.
      */
     virtual void handleTouchesCancel(int num, intptr_t ids[], float xs[], float ys[]);
+
+    /** Set window icon (implemented for windows and linux).
+     *
+     * @param filename A path to image file, e.g., "icons/cusom.png". 
+     */
+    virtual void setIcon(const std::string& filename) const {};
+
+    /** Set window icon (implemented for windows and linux).
+     * Best icon (based on size) will be auto selected.
+     * 
+     * @param filelist The array contains icons.
+     */
+    virtual void setIcon(const std::vector<std::string>& filelist) const {};
+
+    /** Set default window icon (implemented for windows and linux).
+     * On windows it will use icon from .exe file (if included).
+     * On linux it will use default window icon.
+     */
+    virtual void setDefaultIcon() const {};
 
     /**
      * Get the opengl view port rectangle.
@@ -372,7 +413,14 @@ public:
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
     virtual id getCocoaWindow() = 0;
+    virtual id getNSGLContext() = 0; // stevetranby: added
 #endif /* (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) */
+
+    /**
+     * Renders a Scene with a Renderer
+     * This method is called directly by the Director
+     */
+    void renderScene(Scene* scene, Renderer* renderer);
     
 protected:
     void updateDesignResolutionSize();

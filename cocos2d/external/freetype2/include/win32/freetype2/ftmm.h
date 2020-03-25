@@ -36,16 +36,16 @@ FT_BEGIN_HEADER
   /*    Multiple Masters                                                   */
   /*                                                                       */
   /* <Abstract>                                                            */
-  /*    How to manage Multiple Masters fonts.                              */
+  /*    How to manage Multiple Masters font.                              */
   /*                                                                       */
   /* <Description>                                                         */
   /*    The following types and functions are used to manage Multiple      */
-  /*    Master fonts, i.e., the selection of specific design instances by  */
+  /*    Master font, i.e., the selection of specific design instances by  */
   /*    setting design axis coordinates.                                   */
   /*                                                                       */
   /*    George Williams has extended this interface to make it work with   */
-  /*    both Type~1 Multiple Masters fonts and GX distortable (var)        */
-  /*    fonts.  Some of these routines only work with MM fonts, others     */
+  /*    both Type~1 Multiple Masters font and GX distortable (var)        */
+  /*    font.  Some of these routines only work with MM font, others     */
   /*    will work with both types.  They are similar enough that a         */
   /*    consistent interface makes sense.                                  */
   /*                                                                       */
@@ -59,9 +59,9 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Description>                                                         */
   /*    A simple structure used to model a given axis in design space for  */
-  /*    Multiple Masters fonts.                                            */
+  /*    Multiple Masters font.                                            */
   /*                                                                       */
-  /*    This structure can't be used for GX var fonts.                     */
+  /*    This structure can't be used for GX var font.                     */
   /*                                                                       */
   /* <Fields>                                                              */
   /*    name    :: The axis's name.                                        */
@@ -88,7 +88,7 @@ FT_BEGIN_HEADER
   /*    A structure used to model the axes and space of a Multiple Masters */
   /*    font.                                                              */
   /*                                                                       */
-  /*    This structure can't be used for GX var fonts.                     */
+  /*    This structure can't be used for GX var font.                     */
   /*                                                                       */
   /* <Fields>                                                              */
   /*    num_axis    :: Number of axes.  Cannot exceed~4.                   */
@@ -116,7 +116,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Description>                                                         */
   /*    A simple structure used to model a given axis in design space for  */
-  /*    Multiple Masters and GX var fonts.                                 */
+  /*    Multiple Masters and GX var font.                                 */
   /*                                                                       */
   /* <Fields>                                                              */
   /*    name    :: The axis's name.                                        */
@@ -159,7 +159,7 @@ FT_BEGIN_HEADER
   /* <Description>                                                         */
   /*    A simple structure used to model a named style in a GX var font.   */
   /*                                                                       */
-  /*    This structure can't be used for MM fonts.                         */
+  /*    This structure can't be used for MM font.                         */
   /*                                                                       */
   /* <Fields>                                                              */
   /*    coords :: The design coordinates for this style.                   */
@@ -191,7 +191,7 @@ FT_BEGIN_HEADER
   /*                       MM; no limit in GX.                             */
   /*                                                                       */
   /*    num_designs     :: The number of designs; should be normally       */
-  /*                       2^num_axis for MM fonts.  Not meaningful for GX */
+  /*                       2^num_axis for MM font.  Not meaningful for GX */
   /*                       (where every glyph could have a different       */
   /*                       number of designs).                             */
   /*                                                                       */
@@ -202,7 +202,7 @@ FT_BEGIN_HEADER
   /*                       user that, for example, Weight=1.5 is `Bold'.   */
   /*                                                                       */
   /*    axis            :: A table of axis descriptors.                    */
-  /*                       GX fonts contain slightly more data than MM.    */
+  /*                       GX font contain slightly more data than MM.    */
   /*                                                                       */
   /*    namedstyles     :: A table of named styles.                        */
   /*                       Only meaningful with GX.                        */
@@ -226,7 +226,7 @@ FT_BEGIN_HEADER
   /* <Description>                                                         */
   /*    Retrieve the Multiple Master descriptor of a given font.           */
   /*                                                                       */
-  /*    This function can't be used with GX fonts.                         */
+  /*    This function can't be used with GX font.                         */
   /*                                                                       */
   /* <Input>                                                               */
   /*    face    :: A handle to the source face.                            */
@@ -271,10 +271,10 @@ FT_BEGIN_HEADER
   /*    FT_Set_MM_Design_Coordinates                                       */
   /*                                                                       */
   /* <Description>                                                         */
-  /*    For Multiple Masters fonts, choose an interpolated font design     */
+  /*    For Multiple Masters font, choose an interpolated font design     */
   /*    through design coordinates.                                        */
   /*                                                                       */
-  /*    This function can't be used with GX fonts.                         */
+  /*    This function can't be used with GX font.                         */
   /*                                                                       */
   /* <InOut>                                                               */
   /*    face       :: A handle to the source face.                         */
@@ -300,7 +300,7 @@ FT_BEGIN_HEADER
   /*    FT_Set_Var_Design_Coordinates                                      */
   /*                                                                       */
   /* <Description>                                                         */
-  /*    For Multiple Master or GX Var fonts, choose an interpolated font   */
+  /*    For Multiple Master or GX Var font, choose an interpolated font   */
   /*    design through design coordinates.                                 */
   /*                                                                       */
   /* <InOut>                                                               */
@@ -327,7 +327,7 @@ FT_BEGIN_HEADER
   /*    FT_Set_MM_Blend_Coordinates                                        */
   /*                                                                       */
   /* <Description>                                                         */
-  /*    For Multiple Masters and GX var fonts, choose an interpolated font */
+  /*    For Multiple Masters and GX var font, choose an interpolated font */
   /*    design through normalized blend coordinates.                       */
   /*                                                                       */
   /* <InOut>                                                               */

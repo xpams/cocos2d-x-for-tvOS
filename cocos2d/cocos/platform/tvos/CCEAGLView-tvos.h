@@ -82,14 +82,15 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
  */
 @interface CCEAGLView : UIView <UIKeyInput, UITextInput>
 {
-    id                        <CCESRenderer> renderer_;    
+    id                        <CCESRenderer> renderer_;
     EAGLContext                *context_; // weak ref
 
     NSString                *pixelformat_;
     GLuint                    depthFormat_;
     BOOL                    preserveBackbuffer_;
 
-    CGSize                    size_;
+    CGSize                  size_;
+    CGRect                  safeArea_;
     BOOL                    discardFramebufferSupported_;
 
     //fsaa addition
@@ -152,8 +153,6 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 -(int) getWidth;
 -(int) getHeight;
 
-// -(void) doAnimationWhenKeyboardMoveWithDuration:(float) duration distance:(float) dis;
-// -(void) doAnimationWhenAnotherEditBeClicked;
 @end
 
 #endif // CC_PLATFORM_TVOS

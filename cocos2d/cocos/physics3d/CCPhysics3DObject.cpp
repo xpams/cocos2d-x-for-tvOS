@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -22,7 +23,7 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-#include "CCPhysics3D.h"
+#include "physics3d/CCPhysics3D.h"
 #include "base/ccUTF8.h"
 
 #if CC_USE_3D_PHYSICS
@@ -379,7 +380,7 @@ public:
     ~btCollider(){};
 
     ///this method is mainly for expert/internal use only.
-    virtual void	addOverlappingObjectInternal(btBroadphaseProxy* otherProxy, btBroadphaseProxy* thisProxy = 0) override
+    virtual void addOverlappingObjectInternal(btBroadphaseProxy* otherProxy, btBroadphaseProxy* thisProxy = nullptr) override
     {
         btCollisionObject* otherObject = (btCollisionObject*)otherProxy->m_clientObject;
         btAssert(otherObject);
@@ -395,7 +396,7 @@ public:
     }
 
     ///this method is mainly for expert/internal use only.
-    virtual void	removeOverlappingObjectInternal(btBroadphaseProxy* otherProxy, btDispatcher* dispatcher, btBroadphaseProxy* thisProxy = 0) override
+    virtual void removeOverlappingObjectInternal(btBroadphaseProxy* otherProxy, btDispatcher* /*dispatcher*/, btBroadphaseProxy* thisProxy = nullptr) override
     {
         btCollisionObject* otherObject = (btCollisionObject*)otherProxy->m_clientObject;
         btAssert(otherObject);

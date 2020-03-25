@@ -384,7 +384,7 @@ FT_BEGIN_HEADER
   /*      By default, outside contours of an outline are oriented in       */
   /*      clock-wise direction, as defined in the TrueType specification.  */
   /*      This flag is set if the outline uses the opposite direction      */
-  /*      (typically for Type~1 fonts).  This flag is ignored by the scan  */
+  /*      (typically for Type~1 font).  This flag is ignored by the scan  */
   /*      converter.                                                       */
   /*                                                                       */
   /*    FT_OUTLINE_IGNORE_DROPOUTS ::                                      */
@@ -712,7 +712,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*    FT_GLYPH_FORMAT_PLOTTER ::                                         */
   /*      The glyph image is a vectorial path with no inside and outside   */
-  /*      contours.  Some Type~1 fonts, like those in the Hershey family,  */
+  /*      contours.  Some Type~1 font, like those in the Hershey family,  */
   /*      contain glyphs in this format.  These are described as           */
   /*      @FT_Outline, but FreeType isn't currently capable of rendering   */
   /*      them correctly.                                                  */

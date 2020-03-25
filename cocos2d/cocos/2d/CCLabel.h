@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (c) 2013      Zynga Inc.
- Copyright (c) 2013-2015 Chukong Technologies Inc.
+ Copyright (c) 2013-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos2d-x.org
 
@@ -39,6 +40,7 @@ NS_CC_BEGIN
  * @{
  */
 
+#define CC_DEFAULT_FONT_LABEL_SIZE  12
 
 /**
  * @struct TTFConfig
@@ -47,7 +49,7 @@ NS_CC_BEGIN
 typedef struct _ttfConfig
 {
     std::string fontFilePath;
-    int fontSize;
+    float fontSize;
 
     GlyphCollection glyphs;
     const char *customGlyphs;
@@ -55,26 +57,37 @@ typedef struct _ttfConfig
     bool distanceFieldEnabled;
     int outlineSize;
 
-    _ttfConfig(const char* filePath = "",int size = 12, const GlyphCollection& glyphCollection = GlyphCollection::DYNAMIC,
-        const char *customGlyphCollection = nullptr,bool useDistanceField = false,int outline = 0)
-        :fontFilePath(filePath)
-        ,fontSize(size)
-        ,glyphs(glyphCollection)
-        ,customGlyphs(customGlyphCollection)
-        ,distanceFieldEnabled(useDistanceField)
-        ,outlineSize(outline)
+    bool italics;
+    bool bold;
+    bool underline;
+    bool strikethrough;
+
+    _ttfConfig(const std::string& filePath = "",float size = CC_DEFAULT_FONT_LABEL_SIZE, const GlyphCollection& glyphCollection = GlyphCollection::DYNAMIC,
+        const char *customGlyphCollection = nullptr, bool useDistanceField = false, int outline = 0,
+               bool useItalics = false, bool useBold = false, bool useUnderline = false, bool useStrikethrough = false)
+        : fontFilePath(filePath)
+        , fontSize(size)
+        , glyphs(glyphCollection)
+        , customGlyphs(customGlyphCollection)
+        , distanceFieldEnabled(useDistanceField)
+        , outlineSize(outline)
+        , italics(useItalics)
+        , bold(useBold)
+        , underline(useUnderline)
+        , strikethrough(useStrikethrough)
     {
         if(outline > 0)
         {
             distanceFieldEnabled = false;
         }
     }
-}TTFConfig;
+} TTFConfig;
 
 class Sprite;
 class SpriteBatchNode;
 class DrawNode;
 class EventListenerCustom;
+class TextureAtlas;
 
 /**
  * @brief Label is a subclass of Node that knows how to render text labels.
@@ -95,6 +108,31 @@ class EventListenerCustom;
 class CC_DLL Label : public Node, public LabelProtocol, public BlendProtocol
 {
 public:
+    enum class Overflow
+    {
+        //In NONE mode, the dimensions is (0,0) and the content size will change dynamically to fit the label.
+        NONE,
+        /**
+         *In CLAMP mode, when label content goes out of the bounding box, it will be clipped.
+         */
+        CLAMP,
+        /**
+         * In SHRINK mode, the font size will change dynamically to adapt the content size.
+         */
+        SHRINK,
+        /**
+         *In RESIZE_HEIGHT mode, you can only change the width of label and the height is changed automatically.
+         */
+        RESIZE_HEIGHT
+    };
+    
+    enum class LabelType {
+        TTF,
+        BMFONT,
+        CHARMAP,
+        STRING_TEXTURE
+    };
+    
     /// @name Creators
     /// @{
 
@@ -150,7 +188,7 @@ public:
     * @return An automatically released Label object.
     * @see TTFConfig setTTFConfig setMaxLineWidth
     */
-    static Label* createWithTTF(const TTFConfig& ttfConfig, const std::string& text, 
+    static Label* createWithTTF(const TTFConfig& ttfConfig, const std::string& text,
         TextHAlignment hAlignment = TextHAlignment::LEFT, int maxLineWidth = 0);
 
     /**
@@ -221,7 +259,7 @@ public:
     virtual const TTFConfig& getTTFConfig() const { return _fontConfig;}
 
     /** Sets a new bitmap font to Label */
-    virtual bool setBMFontFilePath(const std::string& bmfontFilePath, const Vec2& imageOffset = Vec2::ZERO);
+    virtual bool setBMFontFilePath(const std::string& bmfontFilePath, const Vec2& imageOffset = Vec2::ZERO, float fontSize = 0);
 
     /** Returns the bitmap font used by the Label.*/
     const std::string& getBMFontFilePath() const { return _bmFontPath;}
@@ -275,7 +313,7 @@ public:
     /** Sets the text that this Label is to display.*/
     virtual void setString(const std::string& text) override;
 
-    /** Return the text the Label is displaying.*/
+    /** Return the text the Label is currently displaying.*/
     virtual const std::string& getString() const override {  return _utf8Text; }
 
     /**
@@ -320,7 +358,28 @@ public:
     virtual void enableGlow(const Color4B& glowColor);
 
     /**
-     * Disable all effect to Label.
+     * Enable italics rendering
+     */
+    void enableItalics();
+
+    /**
+     * Enable bold rendering
+     */
+    void enableBold();
+
+    /**
+     * Enable underline
+     */
+    void enableUnderline();
+
+    /**
+     * Enables strikethrough.
+     * Underline and Strikethrough cannot be enabled at the same time.
+     * Strikethrough is like an underline but at the middle of the glyph
+     */
+    void enableStrikethrough();
+    /**
+     * Disable all effect applied to Label.
      * @warning Please use disableEffect(LabelEffect::ALL) instead of this API.
      */
     virtual void disableEffect();
@@ -331,6 +390,41 @@ public:
      * @see `LabelEffect`
      */
     virtual void disableEffect(LabelEffect effect);
+
+    /**
+    * Return whether the shadow effect is enabled.
+    */
+    bool isShadowEnabled() const { return _shadowEnabled; }
+
+    /**
+    * Return shadow effect offset value.
+    */
+    Size getShadowOffset() const { return _shadowOffset; }
+
+    /**
+    * Return the shadow effect blur radius.
+    */
+    float getShadowBlurRadius() const { return _shadowBlurRadius; }
+
+    /**
+    * Return the shadow effect color value.
+    */
+    Color4F getShadowColor() const { return _shadowColor4F; }
+
+    /**
+    * Return the outline effect size value.
+    */
+    float getOutlineSize() const { return _outlineSize; }
+
+    /**
+    * Return current effect type.
+    */
+    LabelEffect getLabelEffectType() const { return _currLabelEffect; }
+
+    /**
+    * Return current effect color value.
+    */
+    Color4F getEffectColor() const { return _effectColorF; }
 
     /** Sets the Label's text horizontal alignment.*/
     void setAlignment(TextHAlignment hAlignment) { setAlignment(hAlignment,_vAlignment);}
@@ -366,12 +460,55 @@ public:
      */
     void setMaxLineWidth(float maxLineWidth);
     float getMaxLineWidth() { return _maxLineWidth; }
+    /**
+     * Change font size of label type BMFONT
+     * Note: This function only scale the BMFONT letter to mimic the font size change effect.
+     *
+     * @param fontSize The desired font size in float.
+     */
+    void setBMFontSize(float fontSize);
 
+    /**
+     * Return the user define BMFont size.
+     *
+     * @return The BMFont size in float value.
+     */
+    float getBMFontSize()const;
+
+    /**
+     * Toggle wrap option of the label.
+     * Note: System font doesn't support manually toggle wrap.
+     *
+     * @param enable Set true to enable wrap and false to disable wrap.
+     */
+    void enableWrap(bool enable);
+
+    /**
+     * Query the wrap is enabled or not.
+     * Note: System font will always return true.
+     */
+    bool isWrapEnabled()const;
+
+    /**
+     * Change the label's Overflow type, currently only TTF and BMFont support all the valid Overflow type.
+     * Char Map font supports all the Overflow type except for SHRINK, because we can't measure it's font size.
+     * System font only support Overflow::Normal and Overflow::RESIZE_HEIGHT.
+     *
+     * @param overflow   see `Overflow`
+     */
+    void setOverflow(Overflow overflow);
+
+    /**
+     * Query the label's Overflow type.
+     *
+     * @return see `Overflow`
+     */
+    Overflow getOverflow()const;
     /**
      * Makes the Label exactly this untransformed width.
      *
      * The Label's width be used for text align if the value not equal zero.
-     */
+                                                           */
     void setWidth(float width) { setDimensions(width,_labelHeight);}
     float getWidth() const { return _labelWidth; }
 
@@ -379,7 +516,7 @@ public:
      * Makes the Label exactly this untransformed height.
      *
      * The Label's height be used for text align if the value not equal zero.
-     * The text will display of incomplete when the size of Label not enough to support display all text.
+     * The text will display incomplete if the size of Label is not large enough to display all text.
      */
     void setHeight(float height){ setDimensions(_labelWidth, height); }
     float getHeight() const { return _labelHeight; }
@@ -392,12 +529,12 @@ public:
     virtual void updateContent();
 
     /**
-     * Provides a way to treats each character like a Sprite.
+     * Provides a way to treat each character like a Sprite.
      * @warning No support system font.
      */
     virtual Sprite * getLetter(int lettetIndex);
 
-    /** Makes the Label to clip upper and lower margin for reduce height of Label.*/
+    /** Clips upper and lower margin to reduce height of Label.*/
     void setClipMarginEnabled(bool clipEnabled) { _clipEnabled = clipEnabled; }
 
     bool isClipMarginEnabled() const { return _clipEnabled; }
@@ -415,6 +552,23 @@ public:
      */
     float getLineHeight() const;
 
+    void setLineSpacing(float height);
+    float getLineSpacing() const;
+    
+    /**
+     Returns type of label
+     
+     @warning Not support system font.
+     @return the type of label
+     @since v3.18.0
+     */
+    LabelType getLabelType() const { return _currentLabelType; }
+    
+    /**
+     Returns font size
+     */
+    float getRenderingFontSize()const;
+
     /**
      * Sets the additional kerning of the Label.
      *
@@ -431,6 +585,11 @@ public:
      */
     float getAdditionalKerning() const;
 
+    /**
+    * set ProgramState of current render command
+    */
+    virtual void setProgramState(backend::ProgramState *programState) override;
+
     FontAtlas* getFontAtlas() { return _fontAtlas; }
 
     virtual const BlendFunc& getBlendFunc() const override { return _blendFunc; }
@@ -439,7 +598,7 @@ public:
     virtual bool isOpacityModifyRGB() const override { return _isOpacityModifyRGB; }
     virtual void setOpacityModifyRGB(bool isOpacityModifyRGB) override;
     virtual void updateDisplayedColor(const Color3B& parentColor) override;
-    virtual void updateDisplayedOpacity(GLubyte parentOpacity) override;
+    virtual void updateDisplayedOpacity(uint8_t parentOpacity) override;
 
     virtual std::string getDescription() const override;
 
@@ -454,13 +613,6 @@ public:
     virtual void removeAllChildrenWithCleanup(bool cleanup) override;
     virtual void removeChild(Node* child, bool cleanup = true) override;
     virtual void setGlobalZOrder(float globalZOrder) override;
-
-    CC_DEPRECATED_ATTRIBUTE static Label* create(const std::string& text, const std::string& font, float fontSize,
-        const Size& dimensions = Size::ZERO, TextHAlignment hAlignment = TextHAlignment::LEFT,
-        TextVAlignment vAlignment = TextVAlignment::TOP);
-    CC_DEPRECATED_ATTRIBUTE virtual void setFontDefinition(const FontDefinition& textDefinition);
-    CC_DEPRECATED_ATTRIBUTE FontDefinition getFontDefinition() const { return _getFontDefinition(); }
-    CC_DEPRECATED_ATTRIBUTE int getCommonLineHeight() const { return (int)getLineHeight();}
 
 CC_CONSTRUCTOR_ACCESS:
     /**
@@ -477,10 +629,17 @@ CC_CONSTRUCTOR_ACCESS:
      */
     virtual ~Label();
 
+    bool initWithTTF(const std::string& text, const std::string& fontFilePath, float fontSize,
+                     const Size& dimensions = Size::ZERO, TextHAlignment hAlignment = TextHAlignment::LEFT,
+                     TextVAlignment vAlignment = TextVAlignment::TOP);
+
+    bool initWithTTF(const TTFConfig& ttfConfig, const std::string& text,
+                     TextHAlignment hAlignment = TextHAlignment::LEFT, int maxLineWidth = 0);
+
 protected:
     struct LetterInfo
     {
-        char16_t utf16Char;
+        char32_t utf32Char;
         bool valid;
         float positionX;
         float positionY;
@@ -488,48 +647,73 @@ protected:
         int lineIndex;
     };
 
-    enum class LabelType {
-        TTF,
-        BMFONT,
-        CHARMAP,
-        STRING_TEXTURE
+    struct BatchCommand {
+        BatchCommand();
+        ~BatchCommand();
+
+        CustomCommand textCommand;
+        CustomCommand outLineCommand;
+        CustomCommand shadowCommand;
+
+        std::array<CustomCommand*, 3> getCommandArray();
     };
 
     virtual void setFontAtlas(FontAtlas* atlas, bool distanceFieldEnabled = false, bool useA8Shader = false);
+    bool getFontLetterDef(char32_t character, FontLetterDefinition& letterDef) const;
 
     void computeStringNumLines();
 
-    void onDraw(const Mat4& transform, bool transformUpdated);
-    void onDrawShadow(GLProgram* glProgram);
     void drawSelf(bool visibleByCamera, Renderer* renderer, uint32_t flags);
 
     bool multilineTextWrapByChar();
     bool multilineTextWrapByWord();
+    bool multilineTextWrap(const std::function<int(const std::u32string&, int, int)>& lambda);
+    void shrinkLabelToContentSize(const std::function<bool(void)>& lambda);
+    bool isHorizontalClamp();
+    bool isVerticalClamp();
+    void rescaleWithOriginalFontSize();
 
     void updateLabelLetters();
-    virtual void alignText();
+    virtual bool alignText();
     void computeAlignmentOffset();
-    bool computeHorizontalKernings(const std::u16string& stringToRender);
+    bool computeHorizontalKernings(const std::u32string& stringToRender);
 
-    void recordLetterInfo(const cocos2d::Vec2& point, char16_t utf16Char, int letterIndex, int lineIndex);
-    void recordPlaceholderInfo(int letterIndex, char16_t utf16Char);
+    void recordLetterInfo(const cocos2d::Vec2& point, char32_t utf32Char, int letterIndex, int lineIndex);
+    void recordPlaceholderInfo(int letterIndex, char32_t utf16Char);
     
-    void updateQuads();
+    bool updateQuads();
 
     void createSpriteForSystemFont(const FontDefinition& fontDef);
     void createShadowSpriteForSystemFont(const FontDefinition& fontDef);
 
     virtual void updateShaderProgram();
+    void updateBMFontScale();
+    void scaleFontSizeDown(float fontSize);
+    bool setTTFConfigInternal(const TTFConfig& ttfConfig);
+    void setBMFontSizeInternal(float fontSize);
+    bool isHorizontalClamped(float letterPositionX, int lineIndex);
+    void restoreFontSize();
+    void updateLetterSpriteScale(Sprite* sprite);
+    int getFirstCharLen(const std::u32string& utf32Text, int startIndex, int textLen) const;
+    int getFirstWordLen(const std::u32string& utf32Text, int startIndex, int textLen) const;
 
     void reset();
 
     FontDefinition _getFontDefinition() const;
 
     virtual void updateColor() override;
+    
+    void updateUniformLocations();
+    void setVertexLayout(PipelineDescriptor& vertexLayout);
+    void updateBlendState();
+    void updateEffectUniforms(BatchCommand &batch, TextureAtlas* textureAtlas, Renderer *renderer, const Mat4 &transform);
+    void updateBuffer(TextureAtlas* textureAtlas, CustomCommand& customCommand);
+
+    void updateBatchCommand(BatchCommand &batch);
 
     LabelType _currentLabelType;
     bool _contentDirty;
-    std::u16string _utf16Text;
+    std::u32string _utf32Text;
     std::string _utf8Text;
     int _numberOfLines;
 
@@ -554,6 +738,7 @@ protected:
 
     //layout relevant properties.
     float _lineHeight;
+    float _lineSpacing;
     float _additionalKerning;
     int* _horizontalKernings;
     bool _lineBreakWithoutSpaces;
@@ -577,10 +762,13 @@ protected:
     Color4F _textColorF;
 
     QuadCommand _quadCommand;
-    CustomCommand _customCommand;
+
+    std::vector<BatchCommand> _batchCommands;
+    
     Mat4  _shadowTransform;
-    GLuint _uniformEffectColor;
-    GLuint _uniformTextColor;
+    int  _uniformEffectColor;
+    int  _uniformEffectType; // 0: None, 1: Outline, 2: Shadow; Only used when outline is enabled.
+    int  _uniformTextColor;
     bool _useDistanceField;
     bool _useA8Shader;
 
@@ -590,7 +778,7 @@ protected:
     
     Color4F _shadowColor4F;
     Color3B _shadowColor3B;
-    GLubyte _shadowOpacity;
+    uint8_t _shadowOpacity;
     float _shadowBlurRadius;
 
     bool _clipEnabled;
@@ -610,6 +798,26 @@ protected:
 #if CC_LABEL_DEBUG_DRAW
     DrawNode* _debugDrawNode;
 #endif
+
+    bool _enableWrap;
+    float _bmFontSize;
+    float _bmfontScale;
+    Overflow _overflow;
+    float _originalFontSize;
+
+    bool _boldEnabled;
+    DrawNode* _underlineNode;
+    bool _strikethroughEnabled;
+    
+    backend::UniformLocation _mvpMatrixLocation;
+    backend::UniformLocation _textureLocation;
+    backend::UniformLocation _alphaTextureLocation;
+    backend::UniformLocation _textColorLocation;
+    backend::UniformLocation _effectColorLocation;
+    backend::UniformLocation _effectTypeLocation;
+    
+    backend::ProgramState* _programState = nullptr;
+
 private:
     CC_DISALLOW_COPY_AND_ASSIGN(Label);
 };

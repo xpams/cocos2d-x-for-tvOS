@@ -1,5 +1,6 @@
 /****************************************************************************
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -22,12 +23,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
 
-#include "cocostudio/CCBone.h"
-#include "cocostudio/CCArmature.h"
-#include "cocostudio/CCUtilMath.h"
-#include "cocostudio/CCArmatureDataManager.h"
-#include "cocostudio/CCTransformHelp.h"
-#include "cocostudio/CCDisplayManager.h"
+#include "editor-support/cocostudio/CCBone.h"
+#include "editor-support/cocostudio/CCArmature.h"
+#include "editor-support/cocostudio/CCUtilMath.h"
+#include "editor-support/cocostudio/CCArmatureDataManager.h"
+#include "editor-support/cocostudio/CCTransformHelp.h"
+#include "editor-support/cocostudio/CCDisplayManager.h"
 
 using namespace cocos2d;
 
@@ -68,10 +69,8 @@ Bone::Bone()
     _childArmature = nullptr;
     _boneData = nullptr;
     _tween = nullptr;
-    _tween = nullptr;
     _displayManager = nullptr;
     _ignoreMovementBoneData = false;
-//    _worldTransform = AffineTransformMake(1, 0, 0, 1, 0, 0);
     _worldTransform = Mat4::IDENTITY;
     _boneTransformDirty = true;
     _blendFunc = BlendFunc::ALPHA_PREMULTIPLIED;
@@ -83,7 +82,7 @@ Bone::Bone()
 }
 
 
-Bone::~Bone(void)
+Bone::~Bone()
 {
     CC_SAFE_DELETE(_tweenData);
     CC_SAFE_DELETE(_tween);
@@ -97,7 +96,7 @@ Bone::~Bone(void)
 
 bool Bone::init()
 {
-    return Bone::init(nullptr);
+    return Bone::init("");
 }
 
 
@@ -145,7 +144,7 @@ void Bone::setBoneData(BoneData *boneData)
     }
 
     _name = _boneData->name;
-    _localZOrder = _boneData->zOrder;
+    _setLocalZOrder(_boneData->zOrder);
 
     _displayManager->initDisplayList(boneData);
 }
@@ -263,7 +262,7 @@ void Bone::updateDisplayedColor(const Color3B &parentColor)
     Node::updateDisplayedColor(parentColor);
 }
 
-void Bone::updateDisplayedOpacity(GLubyte parentOpacity)
+void Bone::updateDisplayedOpacity(uint8_t parentOpacity)
 {
 #ifdef CC_STUDIO_ENABLED_VIEW
     _realOpacity = 255;
@@ -379,7 +378,7 @@ Tween *Bone::getTween()
 
 void Bone::setLocalZOrder(int zOrder)
 {
-    if (_localZOrder != zOrder)
+    if (getLocalZOrder() != zOrder)
         Node::setLocalZOrder(zOrder);
 }
 

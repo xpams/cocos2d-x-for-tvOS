@@ -1,5 +1,6 @@
 /****************************************************************************
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -22,12 +23,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
 
-#include "cocostudio/CCDisplayFactory.h"
-#include "cocostudio/CCBone.h"
-#include "cocostudio/CCArmature.h"
-#include "cocostudio/CCSkin.h"
-#include "cocostudio/CCArmatureDataManager.h"
-#include "cocostudio/CCTransformHelp.h"
+#include "editor-support/cocostudio/CCDisplayFactory.h"
+#include "editor-support/cocostudio/CCBone.h"
+#include "editor-support/cocostudio/CCArmature.h"
+#include "editor-support/cocostudio/CCSkin.h"
+#include "editor-support/cocostudio/CCArmatureDataManager.h"
+#include "editor-support/cocostudio/CCTransformHelp.h"
 
 #include "2d/CCParticleSystemQuad.h"
 
@@ -143,7 +144,7 @@ void DisplayFactory::createSpriteDisplay(Bone *bone, DecorativeDisplay *decoDisp
     SpriteDisplayData *displayData = (SpriteDisplayData *)decoDisplay->getDisplayData();
 
     std::string textureName = displayData->displayName;
-    size_t startPos = textureName.find_last_of(".");
+    size_t startPos = textureName.find_last_of('.');
 
     if(startPos != std::string::npos)
     {
@@ -151,13 +152,13 @@ void DisplayFactory::createSpriteDisplay(Bone *bone, DecorativeDisplay *decoDisp
     }
 
     //! create display
-    if(textureName.length() == 0)
+    if(textureName.empty())
     {
         skin = Skin::create();
     }
     else
     {
-        skin = Skin::createWithSpriteFrameName((textureName + ".png").c_str());
+        skin = Skin::createWithSpriteFrameName((textureName + ".png"));
     }
 
     decoDisplay->setDisplay(skin);
@@ -190,14 +191,14 @@ void DisplayFactory::initSpriteDisplay(Bone *bone, DecorativeDisplay *decoDispla
 {
     //! remove .xxx
     std::string textureName = displayName;
-    size_t startPos = textureName.find_last_of(".");
+    size_t startPos = textureName.find_last_of('.');
 
     if(startPos != std::string::npos)
     {
         textureName = textureName.erase(startPos);
     }
 
-    TextureData *textureData = ArmatureDataManager::getInstance()->getTextureData(textureName.c_str());
+    TextureData *textureData = ArmatureDataManager::getInstance()->getTextureData(textureName);
     if(textureData)
     {
         //! Init display anchorPoint, every Texture have a anchor point
@@ -232,11 +233,11 @@ void DisplayFactory::createArmatureDisplay(Bone *bone, DecorativeDisplay *decoDi
 {
     ArmatureDisplayData *displayData = (ArmatureDisplayData *)decoDisplay->getDisplayData();
 
-    Armature *armature = Armature::create(displayData->displayName.c_str(), bone);
+    Armature *armature = Armature::create(displayData->displayName, bone);
 
     decoDisplay->setDisplay(armature);
 }
-void DisplayFactory::updateArmatureDisplay(Bone *bone, Node *display, float dt)
+void DisplayFactory::updateArmatureDisplay(Bone* /*bone*/, Node *display, float dt)
 {
     Armature *armature = (Armature *)display;
     if(armature)
@@ -259,7 +260,7 @@ void DisplayFactory::addParticleDisplay(Bone *bone, DecorativeDisplay *decoDispl
 void DisplayFactory::createParticleDisplay(Bone *bone, DecorativeDisplay *decoDisplay)
 {
     ParticleDisplayData *displayData = (ParticleDisplayData *)decoDisplay->getDisplayData();
-    ParticleSystem *system = ParticleSystemQuad::create(displayData->displayName.c_str());
+    ParticleSystem *system = ParticleSystemQuad::create(displayData->displayName);
 
     system->removeFromParent();
     system->cleanup();

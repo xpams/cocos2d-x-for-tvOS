@@ -1,5 +1,6 @@
 /****************************************************************************
-Copyright (c) 2015 Chukong Technologies Inc.
+Copyright (c) 2015-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
 http://www.cocos2d-x.org
 
@@ -25,12 +26,12 @@ THE SOFTWARE.
 #ifndef __CCSKELETONNODE_H__
 #define  __CCSKELETONNODE_H__
 
-#include "CCTimelineMacro.h"
+#include "editor-support/cocostudio/ActionTimeline/CCTimelineMacro.h"
 #include "renderer/CCRenderer.h"
-#include "cocostudio/CocosStudioExport.h"
+#include "editor-support/cocostudio/CocosStudioExport.h"
 #include "base/CCMap.h"
 
-#include "CCBoneNode.h"
+#include "editor-support/cocostudio/ActionTimeline/CCBoneNode.h"
 
 NS_TIMELINE_BEGIN
 
@@ -83,15 +84,19 @@ protected:
 
     virtual void visit(cocos2d::Renderer *renderer, const cocos2d::Mat4& parentTransform, uint32_t parentFlags) override;
     virtual void draw(cocos2d::Renderer *renderer, const cocos2d::Mat4 &transform, uint32_t flags) override;
-    virtual void onDraw(const cocos2d::Mat4 &transform, uint32_t flags) override;
 
 protected:
     cocos2d::Map<std::string, BoneNode*> _subBonesMap;
 
 private:
-    cocos2d::Vec2          _squareVertices[8];
-    cocos2d::Color4F       _squareColors[8];
-    cocos2d::Vec3          _noMVPVertices[8];
+    struct VertexData
+    {
+        cocos2d::Vec3 vertex;
+        cocos2d::Color4F color;
+    };
+
+    cocos2d::Vec2 _squareVertices[8];
+    VertexData _vertexData[8];
 
     std::map<std::string, std::map<std::string, std::string> > _skinGroupMap; // map< suit name, map< bone name, skin name> >
     CC_DISALLOW_COPY_AND_ASSIGN(SkeletonNode);
@@ -105,13 +110,11 @@ private:
     // for batch draw sub bones
     bool                           _subBonesDirty;
     bool                           _subBonesOrderDirty;
-    std::vector<cocos2d::Vec3>     _batchedBoneVetices;
-    std::vector<cocos2d::Color4F>  _batchedBoneColors;
+    std::vector<VertexData> _batchedBoneVertexData;
     int                            _batchedVeticesCount;
     cocos2d::CustomCommand         _batchBoneCommand;
 
-    void batchDrawAllSubBones(const cocos2d::Mat4 &transform);
-    void batchSubBone(BoneNode* bone);
+    void batchDrawAllSubBones();
 };
 
 NS_TIMELINE_END

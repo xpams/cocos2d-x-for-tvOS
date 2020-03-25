@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -52,9 +53,9 @@ void LinearAllocator::free(void* /*ptr*/)
 void* LinearAllocator::alloc(const int size)
 {
     if (!buffer)
-        return 0;
+        return nullptr;
     if (top + size > capacity)
-        return 0;
+        return nullptr;
     unsigned char* mem = &buffer[top];
     top += size;
     return mem;
@@ -193,8 +194,8 @@ int fixupShortcuts(dtPolyRef* path, int npath, dtNavMeshQuery* navQuery)
     dtPolyRef neis[maxNeis];
     int nneis = 0;
 
-    const dtMeshTile* tile = 0;
-    const dtPoly* poly = 0;
+    const dtMeshTile* tile = nullptr;
+    const dtPoly* poly = nullptr;
     if (dtStatusFailed(navQuery->getAttachedNavMesh()->getTileAndPolyByRef(path[0], &tile, &poly)))
         return npath;
 

@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2014 Chukong Technologies Inc.
+ Copyright (c) 2014-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos2d-x.org
 
@@ -224,7 +225,7 @@ void Animate3D::startWithTarget(Node *target)
         
         if (!hasCurve)
         {
-            CCLOG("warning: no animation finde for the skeleton");
+            CCLOG("warning: no animation found for the skeleton");
         }
     }
     
@@ -248,7 +249,7 @@ void Animate3D::startWithTarget(Node *target)
                 action->_accTransTime = 0.0f;
                 action->_weight = 1.0f;
                 action->_lastTime = 0.f;
-                
+                s_runningAnimates.erase(target);
                 s_fadeInAnimates[target] = this;
                 _accTransTime = 0.0f;
                 _state = Animate3D::Animate3DState::FadeIn;
@@ -337,7 +338,7 @@ void Animate3D::update(float t)
                 float* trans = nullptr, *rot = nullptr, *scale = nullptr;
                 if (_playReverse){
                     t = 1 - t;
-                    lastTime = 1.0 - lastTime;
+                    lastTime = 1.0f - lastTime;
                 }
                 
                 t = _start + t * _last;
@@ -391,7 +392,7 @@ void Animate3D::update(float t)
                     float prekeyTime = lastTime * getDuration() * _frameRate;
                     float keyTime = t * getDuration() * _frameRate;
                     std::vector<Animate3DDisplayedEventInfo*> eventInfos;
-                    for (auto keyFrame : _keyFrameUserInfos)
+                    for (const auto& keyFrame : _keyFrameUserInfos)
                     {
                         if ((!_playReverse && keyFrame.first >= prekeyTime && keyFrame.first < keyTime)
                             || (_playReverse && keyFrame.first >= keyTime && keyFrame.first < prekeyTime))

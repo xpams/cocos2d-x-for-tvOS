@@ -1,7 +1,8 @@
 /****************************************************************************
 Copyright (c) 2011      Zynga Inc.
 Copyright (c) 2012 		cocos2d-x.org
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -23,81 +24,54 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
-
 #include "renderer/ccShaders.h"
-
-#define STRINGIFY(A)  #A
 
 NS_CC_BEGIN
 //
 
-#include "ccShader_Position_uColor.frag"
+//backend shader file
+#include "renderer/shaders/positionColor.vert"
+#include "renderer/shaders/positionColor.frag"
+#include "renderer/shaders/positionTexture.vert"
+#include "renderer/shaders/positionTexture.frag"
+#include "renderer/shaders/positionTextureColor.vert"
+#include "renderer/shaders/positionTextureColor.frag"
+#include "renderer/shaders/positionTextureColorAlphaTest.frag"
+#include "renderer/shaders/label_normal.frag"
+#include "renderer/shaders/label_distanceNormal.frag"
+#include "renderer/shaders/label_outline.frag"
+#include "renderer/shaders/label_distanceFieldGlow.frag"
+#include "renderer/shaders/positionColorLengthTexture.vert"
+#include "renderer/shaders/positionColorLengthTexture.frag"
+#include "renderer/shaders/positionColorTextureAsPointsize.vert"
+#include "renderer/shaders/position.vert"
+#include "renderer/shaders/positionNoMVP.vert"
+#include "renderer/shaders/layer_radialGradient.frag"
+#include "renderer/shaders/ui_Gray.frag"
+#include "renderer/shaders/positionTextureUColor.vert"
+#include "renderer/shaders/positionTextureUColor.frag"
+#include "renderer/shaders/positionUColor.vert"
+#include "renderer/shaders/positionUColor.frag"
+#include "renderer/shaders/etc1.frag"
+#include "renderer/shaders/etc1_Gray.frag"
+#include "renderer/shaders/cameraClear.vert"
+#include "renderer/shaders/cameraClear.frag"
 
-#ifdef CC_WINDOWS_PHONE_8_1
-#include "ccShader_Position_uColor_wp81.vert"
-#else
-#include "ccShader_Position_uColor.vert"
-#endif
 
-//
-#include "ccShader_PositionColor.frag"
-#include "ccShader_PositionColor.vert"
+#include "renderer/shaders/3D_color.frag"
+#include "renderer/shaders/3D_colorNormal.frag"
+#include "renderer/shaders/3D_colorNormalTexture.frag"
+#include "renderer/shaders/3D_colorTexture.frag"
+#include "renderer/shaders/3D_particle.vert"
+#include "renderer/shaders/3D_particle.frag"
+#include "renderer/shaders/3D_positionNormalTexture.vert"
+#include "renderer/shaders/3D_positionTexture.vert"
+#include "renderer/shaders/3D_skybox.vert"
+#include "renderer/shaders/3D_skybox.frag"
+#include "renderer/shaders/3D_terrain.frag"
+#include "renderer/shaders/3D_terrain.vert"
 
-//
-#ifdef CC_WINDOWS_PHONE_8_1
-#include "ccShader_PositionColorTextureAsPointsize_wp81.vert"
-#else
-#include "ccShader_PositionColorTextureAsPointsize.vert"
-#endif
-
-//
-#include "ccShader_PositionTexture.frag"
-#include "ccShader_PositionTexture.vert"
-
-//
-#include "ccShader_PositionTextureA8Color.frag"
-#include "ccShader_PositionTextureA8Color.vert"
-
-//
-#include "ccShader_PositionTextureColor.frag"
-#include "ccShader_PositionTextureColor.vert"
-
-//
-#include "ccShader_PositionTextureColor_noMVP.frag"
-#include "ccShader_PositionTextureColor_noMVP.vert"
-
-//
-#include "ccShader_PositionTextureColorAlphaTest.frag"
-
-//
-#include "ccShader_PositionTexture_uColor.frag"
-#include "ccShader_PositionTexture_uColor.vert"
-
-#include "ccShader_PositionColorLengthTexture.frag"
-#include "ccShader_PositionColorLengthTexture.vert"
-
-#include "ccShader_UI_Gray.frag"
-//
-#include "ccShader_Label.vert"
-#include "ccShader_Label_df.frag"
-#include "ccShader_Label_df_glow.frag"
-#include "ccShader_Label_normal.frag"
-#include "ccShader_Label_outline.frag"
-
-//
-#include "ccShader_3D_PositionTex.vert"
-#include "ccShader_3D_Color.frag"
-#include "ccShader_3D_ColorTex.frag"
-#include "ccShader_3D_PositionNormalTex.vert"
-#include "ccShader_3D_ColorNormal.frag"
-#include "ccShader_3D_ColorNormalTex.frag"
-#include "ccShader_3D_Particle.vert"
-#include "ccShader_3D_Particle.frag"
-#include "ccShader_3D_Skybox.vert"
-#include "ccShader_3D_Skybox.frag"
-#include "ccShader_3D_Terrain.vert"
-#include "ccShader_3D_Terrain.frag"
-#include "ccShader_CameraClear.vert"
-#include "ccShader_CameraClear.frag"
+#include "renderer/shaders/lineColor.frag"
+#include "renderer/shaders/lineColor.vert"
 
 NS_CC_END

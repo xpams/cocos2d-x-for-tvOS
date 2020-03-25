@@ -241,7 +241,7 @@ FT_BEGIN_HEADER
   /*    acbox   :: The outline's control box.                              */
   /*                                                                       */
   /* <Note>                                                                */
-  /*    See @FT_Glyph_Get_CBox for a discussion of tricky fonts.           */
+  /*    See @FT_Glyph_Get_CBox for a discussion of tricky font.           */
   /*                                                                       */
   FT_EXPORT( void )
   FT_Outline_Get_CBox( const FT_Outline*  outline,

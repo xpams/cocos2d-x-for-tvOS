@@ -1,5 +1,6 @@
 /****************************************************************************
  Copyright (c) 2014 cocos2d-x.org
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -22,10 +23,10 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-#include "ProjectNodeReader.h"
+#include "editor-support/cocostudio/WidgetReader/ProjectNodeReader/ProjectNodeReader.h"
 
-#include "cocostudio/CSParseBinary_generated.h"
-#include "cocostudio/WidgetReader/NodeReader/NodeReader.h"
+#include "editor-support/cocostudio/CSParseBinary_generated.h"
+#include "editor-support/cocostudio/WidgetReader/NodeReader/NodeReader.h"
 
 #include "tinyxml2.h"
 #include "flatbuffers/flatbuffers.h"
@@ -51,7 +52,7 @@ namespace cocostudio
     {
         if (!_instanceProjectNodeReader)
         {
-            _instanceProjectNodeReader = new ProjectNodeReader();
+            _instanceProjectNodeReader = new (std::nothrow) ProjectNodeReader();
         }
         
         return _instanceProjectNodeReader;
@@ -135,5 +136,10 @@ namespace cocostudio
         auto nodeReader = NodeReader::getInstance();
         
         nodeReader->setPropsWithFlatBuffers(node, (Table*)options->nodeOptions());
+    }
+    
+    Node* ProjectNodeReader::createNodeWithFlatBuffers(const flatbuffers::Table* /*nodeOptions*/)
+    {
+        return nullptr;
     }
 }

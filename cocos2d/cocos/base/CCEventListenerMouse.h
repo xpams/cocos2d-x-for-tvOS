@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2013-2014 Chukong Technologies Inc.
+ Copyright (c) 2013-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos2d-x.org
 
@@ -23,11 +24,11 @@
 
  ****************************************************************************/
 
-#include "base/CCEventListener.h"
-#include "base/CCEventMouse.h"
-
 #ifndef __cocos2d_libs__CCMouseEventListener__
 #define __cocos2d_libs__CCMouseEventListener__
+
+#include "base/CCEventListener.h"
+#include "base/CCEventMouse.h"
 
 /**
  * @addtogroup base
@@ -57,10 +58,10 @@ public:
     virtual EventListenerMouse* clone() override;
     virtual bool checkAvailable() override;
 
-    std::function<void(Event* event)> onMouseDown;
-    std::function<void(Event* event)> onMouseUp;
-    std::function<void(Event* event)> onMouseMove;
-    std::function<void(Event* event)> onMouseScroll;
+    std::function<void(EventMouse* event)> onMouseDown;
+    std::function<void(EventMouse* event)> onMouseUp;
+    std::function<void(EventMouse* event)> onMouseMove;
+    std::function<void(EventMouse* event)> onMouseScroll;
 
 CC_CONSTRUCTOR_ACCESS:
     EventListenerMouse();

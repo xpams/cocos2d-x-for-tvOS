@@ -1,5 +1,6 @@
 ﻿/****************************************************************************
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -25,9 +26,9 @@ THE SOFTWARE.
 #ifndef __ActionNODE_H__
 #define __ActionNODE_H__
 
-#include "cocostudio/CCActionFrame.h"
-#include "cocostudio/DictionaryHelper.h"
-#include "cocostudio/CocosStudioExport.h"
+#include "editor-support/cocostudio/CCActionFrame.h"
+#include "editor-support/cocostudio/DictionaryHelper.h"
+#include "editor-support/cocostudio/CocosStudioExport.h"
 
 namespace cocostudio {
     
@@ -101,7 +102,7 @@ public:
     void insertFrame(int index, ActionFrame* frame);
 
     /**
-    * Pushs back a ActionFrame to ActionNode.
+    * Pushes back a ActionFrame to ActionNode.
     *
     * @param frame  the ActionFrame which will be added
     */

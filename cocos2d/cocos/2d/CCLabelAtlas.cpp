@@ -2,7 +2,8 @@
 Copyright (c) 2008-2010 Ricardo Quesada
 Copyright (c) 2010-2012 cocos2d-x.org
 Copyright (c) 2011      Zynga Inc.
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -28,13 +29,11 @@ THE SOFTWARE.
 #include "renderer/CCTextureAtlas.h"
 #include "platform/CCFileUtils.h"
 #include "base/CCDirector.h"
+#include "base/ccUTF8.h"
 #include "renderer/CCTextureCache.h"
-
-#include "deprecated/CCString.h"
 
 #if CC_LABELATLAS_DEBUG_DRAW
 #include "renderer/CCRenderer.h"
-#include "base/CCDirector.h"
 #endif
 
 NS_CC_BEGIN
@@ -106,9 +105,9 @@ LabelAtlas* LabelAtlas::create(const std::string& string, const std::string& fnt
 bool LabelAtlas::initWithString(const std::string& theString, const std::string& fntFile)
 {
     std::string pathStr = FileUtils::getInstance()->fullPathForFilename(fntFile);
-    std::string relPathStr = pathStr.substr(0, pathStr.find_last_of("/"))+"/";
+    std::string relPathStr = pathStr.substr(0, pathStr.find_last_of('/'))+"/";
     
-    ValueMap dict = FileUtils::getInstance()->getValueMapFromFile(pathStr.c_str());
+    ValueMap dict = FileUtils::getInstance()->getValueMapFromFile(pathStr);
 
     CCASSERT(dict["version"].asInt() == 1, "Unsupported version. Upgrade cocos2d version");
 
@@ -119,7 +118,7 @@ bool LabelAtlas::initWithString(const std::string& theString, const std::string&
     unsigned int startChar = dict["firstChar"].asInt();
 
 
-    this->initWithString(theString, textureFilename.c_str(), width, height, startChar);
+    this->initWithString(theString, textureFilename, width, height, startChar);
 
     return true;
 }
@@ -223,7 +222,7 @@ void LabelAtlas::setString(const std::string &label)
     _quadsToDraw = len;
 }
 
-const std::string& LabelAtlas::getString(void) const
+const std::string& LabelAtlas::getString() const
 {
     return _string;
 }

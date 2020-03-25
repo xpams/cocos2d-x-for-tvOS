@@ -1,6 +1,7 @@
 /****************************************************************************
 Copyright (c) 2010-2012 cocos2d-x.org
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -37,7 +38,7 @@ NS_CC_BEGIN
 
 
 /**
- * A pool for managing autorlease objects.
+ * A pool for managing autorelease objects.
  * @js NA
  */
 class CC_DLL AutoreleasePool
@@ -93,7 +94,7 @@ public:
     /**
      * Whether the autorelease pool is doing `clear` operation.
      *
-     * @return True if autorelase pool is clearning, false if not.
+     * @return True if autorelease pool is clearing, false if not.
      *
      * @js NA
      * @lua NA
@@ -153,15 +154,12 @@ class CC_DLL PoolManager
 {
 public:
 
-    CC_DEPRECATED_ATTRIBUTE static PoolManager* sharedPoolManager() { return getInstance(); }
     static PoolManager* getInstance();
-    
-    CC_DEPRECATED_ATTRIBUTE static void purgePoolManager() { destroyInstance(); }
     static void destroyInstance();
     
     /**
      * Get current auto release pool, there is at least one auto release pool that created by engine.
-     * You can create your own auto release pool at demand, which will be put into auto releae pool stack.
+     * You can create your own auto release pool at demand, which will be put into auto release pool stack.
      */
     AutoreleasePool *getCurrentPool() const;
 

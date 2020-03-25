@@ -2,7 +2,7 @@
 /*                                                                         */
 /*  psaux.h                                                                */
 /*                                                                         */
-/*    Auxiliary functions and data structures related to PostScript fonts  */
+/*    Auxiliary functions and data structures related to PostScript font  */
 /*    (specification).                                                     */
 /*                                                                         */
 /*  Copyright 1996-2004, 2006, 2008, 2009, 2012 by                         */

@@ -1,7 +1,8 @@
 /****************************************************************************
 Copyright (c) 2009      On-Core
 Copyright (c) 2010-2012 cocos2d-x.org
-Copyright (C) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
 http://www.cocos2d-x.org
 
@@ -23,18 +24,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ****************************************************************************/
-#ifndef __EFFECTS_CCGRID_H__
-#define __EFFECTS_CCGRID_H__
+#pragma once
 
 #include "base/CCRef.h"
 #include "base/ccTypes.h"
 #include "base/CCDirector.h"
+#include "renderer/CCGroupCommand.h"
+#include "renderer/CCCustomCommand.h"
+#include "renderer/CCCallbackCommand.h"
 
 NS_CC_BEGIN
 
 class Texture2D;
-class Grabber;
-class GLProgram;
+// class Grabber;
+// class GLProgram;
 class Node;
 
 /**
@@ -47,23 +50,34 @@ class Node;
 class CC_DLL GridBase : public Ref
 {
 public:
-    /** create one Grid */
-    static GridBase* create(const Size& gridSize, Texture2D *texture, bool flipped);
-    /** create one Grid */
-    static GridBase* create(const Size& gridSize);
     /**
     Destructor.
      * @js NA
      * @lua NA
      */
-    virtual ~GridBase(void);
+    virtual ~GridBase();
+
+    /**@{
+     Interface for custom action when before or after draw.
+     @js NA
+     */
+    virtual void beforeBlit() {}
+    virtual void afterBlit() {}
+    /**@}*/
+
+    /**Interface used to blit the texture with grid to screen.*/
+    virtual void blit() = 0;
+    /**Interface, Reuse the grid vertices.*/
+    virtual void reuse() = 0;
+    /**Interface, Calculate the vertices used for the blit.*/
+    virtual void calculateVertexPoints() = 0;
 
     /**@{
      Init the Grid base.
      @param gridSize the size of the grid.
      @param texture The texture used for grab.
      @param flipped whether or not the grab texture should be flip by Y or not.
-     @param rect The effct grid rect.
+     @param rect The effective grid rect.
     */
     bool initWithSize(const Size& gridSize);
     bool initWithSize(const Size& gridSize, const Rect& rect);
@@ -74,54 +88,39 @@ public:
     /** @{
     Getter and setter of the active state of the grid.
     */
-    inline bool isActive(void) const { return _active; }
+    bool isActive() const { return _active; }
     void setActive(bool active);
     /**@}*/
 
     /** Get number of times that the grid will be reused. */
-    inline int getReuseGrid(void) const { return _reuseGrid; }
+    int getReuseGrid() const { return _reuseGrid; }
     /** Set number of times that the grid will be reused. */
-    inline void setReuseGrid(int reuseGrid) { _reuseGrid = reuseGrid; }
+    void setReuseGrid(int reuseGrid) { _reuseGrid = reuseGrid; }
 
     /** Size of the grid. */
-    inline const Size& getGridSize(void) const { return _gridSize; }
+    const Size& getGridSize() const { return _gridSize; }
     /**Set the size of the grid.*/
-    inline void setGridSize(const Size& gridSize) { _gridSize = gridSize; }
+    void setGridSize(const Size& gridSize) { _gridSize = gridSize; }
 
     /** Pixels between the grids. */
-    inline const Vec2& getStep(void) const { return _step; }
+    const Vec2& getStep() const { return _step; }
     /**Get the pixels between the grids.*/
-    inline void setStep(const Vec2& step) { _step = step; }
+    void setStep(const Vec2& step) { _step = step; }
 
     /** is texture flipped. */
-    inline bool isTextureFlipped(void) const { return _isTextureFlipped; }
+    bool isTextureFlipped() const { return _isTextureFlipped; }
     /**Set the texture flipped or not.*/
     void setTextureFlipped(bool flipped);
     
     /**@{
      Init and reset the status when render effects by using the grid.
      */
-    void beforeDraw(void);
+    void beforeDraw();
     void afterDraw(Node *target);
     /**@}*/
     
-    /**@{
-     Interface for custom action when before or after draw.
-     @js NA
-     */
-    virtual void beforeBlit() {}
-    virtual void afterBlit() {}
-    /**@}*/
-    
-    /**Interface used to blit the texture with grid to screen.*/
-    virtual void blit(void);
-    /**Interface, Reuse the grid vertices.*/
-    virtual void reuse(void);
-    /**Interface, Calculate the vertices used for the blit.*/
-    virtual void calculateVertexPoints(void);
-    
     /**Change projection to 2D for grabbing.*/
-    void set2DProjection(void);
+    void set2DProjection();
     
     /**
      * @brief Set the effect grid rect.
@@ -132,19 +131,38 @@ public:
      * @brief Get the effect grid rect.
      * @return Return the effect grid rect.
      */
-    inline const Rect& getGridRect() const {return _gridRect;}
+    const Rect& getGridRect() const { return _gridRect; }
 
 protected:
-    bool _active;
-    int  _reuseGrid;
+    void updateBlendState();
+    
+    bool _active = false;
+    int  _reuseGrid = 0;
     Size _gridSize;
-    Texture2D *_texture;
+    Texture2D *_texture = nullptr;
     Vec2 _step;
-    Grabber *_grabber;
-    bool _isTextureFlipped;
-    GLProgram* _shaderProgram;
-    Director::Projection _directorProjection;
+    bool _isTextureFlipped = false;
+    Director::Projection _directorProjection = Director::Projection::_2D;
     Rect _gridRect;
+
+    Color4F _clearColor = {0, 0, 0, 0};
+
+    GroupCommand _groupCommand;
+    CustomCommand _drawCommand;
+    CallbackCommand _beforeDrawCommand;
+    CallbackCommand _afterDrawCommand;
+    CallbackCommand _beforeBlitCommand;
+    CallbackCommand _afterBlitCommand;
+    RenderTargetFlag _oldRenderTargetFlag;
+    Texture2D* _oldColorAttachment = nullptr;
+    Texture2D* _oldDepthAttachment = nullptr;
+    Texture2D* _oldStencilAttachment = nullptr;
+    
+    backend::UniformLocation _mvpMatrixLocation;
+    backend::UniformLocation _textureLocation;
+    backend::ProgramState* _programState = nullptr;
+    
+    BlendFunc  _blendFunc;
 };
 
 /**
@@ -155,7 +173,7 @@ class CC_DLL Grid3D : public GridBase
 public:
     /** create one Grid. */
     static Grid3D* create(const Size& gridSize);
-    /** craete one Grid. */
+    /** create one Grid. */
     static Grid3D* create(const Size& gridSize, const Rect& rect);
     /** create one Grid. */
     static Grid3D* create(const Size& gridSize, Texture2D *texture, bool flipped);
@@ -171,33 +189,26 @@ public:
      * @js NA
      * @lua NA
      */
-    ~Grid3D(void);
+    ~Grid3D();
 
     /** Returns the vertex at a given position.
      * @js NA
      * @lua NA
      */
     Vec3 getVertex(const Vec2& pos) const;
-    /** @deprecated Use getVertex() instead 
-     * @lua NA
-     */
-    CC_DEPRECATED_ATTRIBUTE Vec3 vertex(const Vec2& pos) const { return getVertex(pos); }
+
     /** Returns the original (non-transformed) vertex at a given position.
      * @js NA
      * @lua NA
      */
     Vec3 getOriginalVertex(const Vec2& pos) const;
-    /** @deprecated Use getOriginalVertex() instead 
-     * @lua NA
-     */
-    CC_DEPRECATED_ATTRIBUTE Vec3 originalVertex(const Vec2& pos) const { return getOriginalVertex(pos); }
 
     /** Sets a new vertex at a given position.
      * @lua NA
      */
     void setVertex(const Vec2& pos, const Vec3& vertex);
     /**@{
-     Implementations for interfaces in base calss.
+     Implementations for interfaces in base class.
      */
     virtual void beforeBlit() override;
     virtual void afterBlit() override;
@@ -210,17 +221,21 @@ public:
      Getter and Setter for depth test state when blit.
      @js NA
      */
-    void setNeedDepthTestForBlit( bool neededDepthTest) { _needDepthTestForBlit = neededDepthTest; }
+    void setNeedDepthTestForBlit(bool neededDepthTest) { _needDepthTestForBlit = neededDepthTest; }
     bool getNeedDepthTestForBlit() const { return _needDepthTestForBlit; }
     /**@}*/
 protected:
-    GLvoid *_texCoordinates;
-    GLvoid *_vertices;
-    GLvoid *_originalVertices;
-    GLushort *_indices;
-    bool _needDepthTestForBlit;
-    bool _oldDepthTestValue;
-    bool _oldDepthWriteValue;
+    void updateVertexBuffer();
+    void updateVertexAndTexCoordinate();
+
+    void* _vertexBuffer = nullptr;
+    void* _texCoordinates = nullptr;
+    void* _vertices = nullptr;
+    void* _originalVertices = nullptr;
+    unsigned short *_indices = nullptr;
+    bool _needDepthTestForBlit = false;
+    bool _oldDepthTest = false;
+    bool _oldDepthWrite = false;
 };
 
 /**
@@ -238,11 +253,37 @@ public:
     static TiledGrid3D* create(const Size& gridSize, Texture2D *texture, bool flipped);
     /** Create one Grid. */
     static TiledGrid3D* create(const Size& gridSize, Texture2D *texture, bool flipped, const Rect& rect);
+
+    /**@{
+     Implementations for interfaces in base class.
+     */
+    virtual void blit() override;
+    virtual void reuse() override;
+    virtual void calculateVertexPoints() override;
+    /**@}*/
+
+    /** Returns the tile at the given position.
+     * @js NA
+     * @lua NA
+     */
+    Quad3 getTile(const Vec2& pos) const;
+    /** Returns the original tile (untransformed) at the given position.
+     * @js NA
+     * @lua NA
+     */
+    Quad3 getOriginalTile(const Vec2& pos) const;
+
+    /** Sets a new tile.
+     * @lua NA
+     */
+    void setTile(const Vec2& pos, const Quad3& coords);
+
+protected:
     /**
      Constructor.
      * @js ctor
      */
-    TiledGrid3D();
+    TiledGrid3D() = default;
     /**
      Destructor.
      * @js NA
@@ -250,47 +291,17 @@ public:
      */
     ~TiledGrid3D();
 
-    /** Returns the tile at the given position.
-     * @js NA
-     * @lua NA
-     */
-    Quad3 getTile(const Vec2& pos) const;
-    /** returns the tile at the given position 
-     * @lua NA
-     */
-    CC_DEPRECATED_ATTRIBUTE Quad3 tile(const Vec2& pos) const { return getTile(pos); }
-    /** Returns the original tile (untransformed) at the given position.
-     * @js NA
-     * @lua NA
-     */
-    Quad3 getOriginalTile(const Vec2& pos) const;
-    /** returns the original tile (untransformed) at the given position 
-     * @lua NA
-     */
-    CC_DEPRECATED_ATTRIBUTE Quad3 originalTile(const Vec2& pos) const { return getOriginalTile(pos); }
+    void updateVertexBuffer();
+    void updateVertexAndTexCoordinate();
 
-    /** Sets a new tile.
-     * @lua NA
-     */
-    void setTile(const Vec2& pos, const Quad3& coords);
-
-    /**@{
-     Implementations for interfaces in base calss.
-     */
-    virtual void blit() override;
-    virtual void reuse() override;
-    virtual void calculateVertexPoints() override;
-    /**@}*/
-protected:
-    GLvoid *_texCoordinates;
-    GLvoid *_vertices;
-    GLvoid *_originalVertices;
-    GLushort *_indices;
+    void* _texCoordinates = nullptr;
+    void* _vertices = nullptr;
+    void* _originalVertices = nullptr;
+    unsigned short* _indices = nullptr;
+    void* _vertexBuffer = nullptr;
 };
 
 // end of effects group
 /// @}
 
 NS_CC_END
-
-#endif // __EFFECTS_CCGRID_H__

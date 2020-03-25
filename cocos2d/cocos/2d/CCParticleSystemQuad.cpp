@@ -3,7 +3,8 @@ Copyright (c) 2008-2010 Ricardo Quesada
 Copyright (c) 2009      Leonardo Kasperavičius
 Copyright (c) 2010-2012 cocos2d-x.org
 Copyright (c) 2011      Zynga Inc.
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
  
@@ -34,24 +35,44 @@ THE SOFTWARE.
 #include "2d/CCSpriteFrame.h"
 #include "2d/CCParticleBatchNode.h"
 #include "renderer/CCTextureAtlas.h"
-#include "renderer/ccGLStateCache.h"
 #include "renderer/CCRenderer.h"
 #include "base/CCDirector.h"
 #include "base/CCEventType.h"
 #include "base/CCConfiguration.h"
 #include "base/CCEventListenerCustom.h"
 #include "base/CCEventDispatcher.h"
-
-#include "deprecated/CCString.h"
+#include "base/ccUTF8.h"
+#include "renderer/ccShaders.h"
+#include "renderer/backend/ProgramState.h"
 
 NS_CC_BEGIN
 
 ParticleSystemQuad::ParticleSystemQuad()
-:_quads(nullptr)
-,_indices(nullptr)
-,_VAOname(0)
 {
-    memset(_buffersVBO, 0, sizeof(_buffersVBO));
+    auto& pipelieDescriptor = _quadCommand.getPipelineDescriptor();
+    _programState = new (std::nothrow) backend::ProgramState(positionTextureColor_vert, positionTextureColor_frag);
+    pipelieDescriptor.programState = _programState;
+    _mvpMatrixLocaiton = pipelieDescriptor.programState->getUniformLocation("u_MVPMatrix");
+    _textureLocation = pipelieDescriptor.programState->getUniformLocation("u_texture");
+    
+    auto vertexLayout = _programState->getVertexLayout();
+    const auto& attributeInfo = _programState->getProgram()->getActiveAttributes();
+    auto iter = attributeInfo.find("a_position");
+    if(iter != attributeInfo.end())
+    {
+        vertexLayout->setAttribute("a_position", iter->second.location, backend::VertexFormat::FLOAT3, 0, false);
+    }
+    iter = attributeInfo.find("a_texCoord");
+    if(iter != attributeInfo.end())
+    {
+        vertexLayout->setAttribute("a_texCoord", iter->second.location, backend::VertexFormat::FLOAT2, offsetof(V3F_C4B_T2F, texCoords), false);
+    }
+    iter = attributeInfo.find("a_color");
+    if(iter != attributeInfo.end())
+    {
+        vertexLayout->setAttribute("a_color", iter->second.location, backend::VertexFormat::UBYTE4, offsetof(V3F_C4B_T2F, colors), true);
+    }
+    vertexLayout->setLayout(sizeof(V3F_C4B_T2F));
 }
 
 ParticleSystemQuad::~ParticleSystemQuad()
@@ -60,13 +81,8 @@ ParticleSystemQuad::~ParticleSystemQuad()
     {
         CC_SAFE_FREE(_quads);
         CC_SAFE_FREE(_indices);
-        glDeleteBuffers(2, &_buffersVBO[0]);
-        if (Configuration::getInstance()->supportsShareableVAO())
-        {
-            glDeleteVertexArrays(1, &_VAOname);
-            GL::bindVAO(0);
-        }
     }
+    CC_SAFE_RELEASE(_programState);
 }
 
 // implementation ParticleSystemQuad
@@ -120,16 +136,7 @@ bool ParticleSystemQuad::initWithTotalParticles(int numberOfParticles)
         }
 
         initIndices();
-        if (Configuration::getInstance()->supportsShareableVAO())
-        {
-            setupVBOandVAO();
-        }
-        else
-        {
-            setupVBO();
-        }
-
-        setGLProgramState(GLProgramState::getOrCreateWithGLProgramName(GLProgram::SHADER_NAME_POSITION_TEXTURE_COLOR_NO_MVP));
+//        setupVBO();
 
 #if CC_ENABLE_CACHE_TEXTURE_DATA
         // Need to listen the event only when not use batchnode, because it will use VBO
@@ -153,25 +160,25 @@ void ParticleSystemQuad::initTexCoordsWithRect(const Rect& pointRect)
         pointRect.size.width * CC_CONTENT_SCALE_FACTOR(),
         pointRect.size.height * CC_CONTENT_SCALE_FACTOR());
 
-    GLfloat wide = (GLfloat) pointRect.size.width;
-    GLfloat high = (GLfloat) pointRect.size.height;
+    float wide = (float) pointRect.size.width;
+    float high = (float) pointRect.size.height;
 
     if (_texture)
     {
-        wide = (GLfloat)_texture->getPixelsWide();
-        high = (GLfloat)_texture->getPixelsHigh();
+        wide = (float)_texture->getPixelsWide();
+        high = (float)_texture->getPixelsHigh();
     }
 
 #if CC_FIX_ARTIFACTS_BY_STRECHING_TEXEL
-    GLfloat left = (rect.origin.x*2+1) / (wide*2);
-    GLfloat bottom = (rect.origin.y*2+1) / (high*2);
-    GLfloat right = left + (rect.size.width*2-2) / (wide*2);
-    GLfloat top = bottom + (rect.size.height*2-2) / (high*2);
+    float left = (rect.origin.x*2+1) / (wide*2);
+    float bottom = (rect.origin.y*2+1) / (high*2);
+    float right = left + (rect.size.width*2-2) / (wide*2);
+    float top = bottom + (rect.size.height*2-2) / (high*2);
 #else
-    GLfloat left = rect.origin.x / wide;
-    GLfloat bottom = rect.origin.y / high;
-    GLfloat right = left + rect.size.width / wide;
-    GLfloat top = bottom + rect.size.height / high;
+    float left = rect.origin.x / wide;
+    float bottom = rect.origin.y / high;
+    float right = left + rect.size.width / wide;
+    float top = bottom + rect.size.height / high;
 #endif // ! CC_FIX_ARTIFACTS_BY_STRECHING_TEXEL
 
     // Important. Texture in cocos2d are inverted, so the Y component should be inverted
@@ -221,7 +228,7 @@ void ParticleSystemQuad::updateTexCoords()
 void ParticleSystemQuad::setTextureWithRect(Texture2D *texture, const Rect& rect)
 {
     // Only update the texture if is different from the current one
-    if( !_texture || texture->getName() != _texture->getName() )
+    if( !_texture || texture->getBackendTexture() != _texture->getBackendTexture() )
     {
         ParticleSystem::setTexture(texture);
     }
@@ -240,11 +247,7 @@ void ParticleSystemQuad::setDisplayFrame(SpriteFrame *spriteFrame)
     CCASSERT(spriteFrame->getOffsetInPixels().isZero(), 
              "QuadParticle only supports SpriteFrames with no offsets");
 
-    // update texture before updating texture rect
-    if ( !_texture || spriteFrame->getTexture()->getName() != _texture->getName())
-    {
-        this->setTexture(spriteFrame->getTexture());
-    }
+    this->setTextureWithRect(spriteFrame->getTexture(), spriteFrame->getRect());
 }
 
 void ParticleSystemQuad::initIndices()
@@ -253,126 +256,203 @@ void ParticleSystemQuad::initIndices()
     {
         const unsigned int i6 = i*6;
         const unsigned int i4 = i*4;
-        _indices[i6+0] = (GLushort) i4+0;
-        _indices[i6+1] = (GLushort) i4+1;
-        _indices[i6+2] = (GLushort) i4+2;
+        _indices[i6+0] = (unsigned short) i4+0;
+        _indices[i6+1] = (unsigned short) i4+1;
+        _indices[i6+2] = (unsigned short) i4+2;
 
-        _indices[i6+5] = (GLushort) i4+1;
-        _indices[i6+4] = (GLushort) i4+2;
-        _indices[i6+3] = (GLushort) i4+3;
+        _indices[i6+5] = (unsigned short) i4+1;
+        _indices[i6+4] = (unsigned short) i4+2;
+        _indices[i6+3] = (unsigned short) i4+3;
     }
 }
 
-void ParticleSystemQuad::updateQuadWithParticle(tParticle* particle, const Vec2& newPosition)
+inline void updatePosWithParticle(V3F_C4B_T2F_Quad *quad, const Vec2& newPosition,float size,float rotation)
 {
-    V3F_C4B_T2F_Quad *quad;
+    // vertices
+    float size_2 = size/2;
+    float x1 = -size_2;
+    float y1 = -size_2;
+    
+    float x2 = size_2;
+    float y2 = size_2;
+    float x = newPosition.x;
+    float y = newPosition.y;
+    
+    float r = (float)-CC_DEGREES_TO_RADIANS(rotation);
+    float cr = cosf(r);
+    float sr = sinf(r);
+    float ax = x1 * cr - y1 * sr + x;
+    float ay = x1 * sr + y1 * cr + y;
+    float bx = x2 * cr - y1 * sr + x;
+    float by = x2 * sr + y1 * cr + y;
+    float cx = x2 * cr - y2 * sr + x;
+    float cy = x2 * sr + y2 * cr + y;
+    float dx = x1 * cr - y2 * sr + x;
+    float dy = x1 * sr + y2 * cr + y;
+    
+    // bottom-left
+    quad->bl.vertices.x = ax;
+    quad->bl.vertices.y = ay;
+    
+    // bottom-right vertex:
+    quad->br.vertices.x = bx;
+    quad->br.vertices.y = by;
+    
+    // top-left vertex:
+    quad->tl.vertices.x = dx;
+    quad->tl.vertices.y = dy;
+    
+    // top-right vertex:
+    quad->tr.vertices.x = cx;
+    quad->tr.vertices.y = cy;
+}
 
+void ParticleSystemQuad::updateParticleQuads()
+{
+    if (_particleCount <= 0) {
+        return;
+    }
+ 
+    Vec2 currentPosition;
+    if (_positionType == PositionType::FREE)
+    {
+        currentPosition = this->convertToWorldSpace(Vec2::ZERO);
+    }
+    else if (_positionType == PositionType::RELATIVE)
+    {
+        currentPosition = _position;
+    }
+    
+    V3F_C4B_T2F_Quad *startQuad;
+    Vec2 pos = Vec2::ZERO;
     if (_batchNode)
     {
         V3F_C4B_T2F_Quad *batchQuads = _batchNode->getTextureAtlas()->getQuads();
-        quad = &(batchQuads[_atlasIndex+particle->atlasIndex]);
+        startQuad = &(batchQuads[_atlasIndex]);
+        pos = _position;
     }
     else
     {
-        quad = &(_quads[_particleIdx]);
+        startQuad = &(_quads[0]);
     }
-    Color4B color = (_opacityModifyRGB)
-        ? Color4B( particle->color.r*particle->color.a*255, particle->color.g*particle->color.a*255, particle->color.b*particle->color.a*255, particle->color.a*255)
-        : Color4B( particle->color.r*255, particle->color.g*255, particle->color.b*255, particle->color.a*255);
-
-    quad->bl.colors = color;
-    quad->br.colors = color;
-    quad->tl.colors = color;
-    quad->tr.colors = color;
-
-    // vertices
-    GLfloat size_2 = particle->size/2;
-    if (particle->rotation) 
+    
+    if( _positionType == PositionType::FREE )
     {
-        GLfloat x1 = -size_2;
-        GLfloat y1 = -size_2;
-
-        GLfloat x2 = size_2;
-        GLfloat y2 = size_2;
-        GLfloat x = newPosition.x;
-        GLfloat y = newPosition.y;
-
-        GLfloat r = (GLfloat)-CC_DEGREES_TO_RADIANS(particle->rotation);
-        GLfloat cr = cosf(r);
-        GLfloat sr = sinf(r);
-        GLfloat ax = x1 * cr - y1 * sr + x;
-        GLfloat ay = x1 * sr + y1 * cr + y;
-        GLfloat bx = x2 * cr - y1 * sr + x;
-        GLfloat by = x2 * sr + y1 * cr + y;
-        GLfloat cx = x2 * cr - y2 * sr + x;
-        GLfloat cy = x2 * sr + y2 * cr + y;
-        GLfloat dx = x1 * cr - y2 * sr + x;
-        GLfloat dy = x1 * sr + y2 * cr + y;
-
-        // bottom-left
-        quad->bl.vertices.x = ax;
-        quad->bl.vertices.y = ay;
-
-        // bottom-right vertex:
-        quad->br.vertices.x = bx;
-        quad->br.vertices.y = by;
-
-        // top-left vertex:
-        quad->tl.vertices.x = dx;
-        quad->tl.vertices.y = dy;
-
-        // top-right vertex:
-        quad->tr.vertices.x = cx;
-        quad->tr.vertices.y = cy;
-    } 
-    else 
-    {
-        // bottom-left vertex:
-        quad->bl.vertices.x = newPosition.x - size_2;
-        quad->bl.vertices.y = newPosition.y - size_2;
-
-        // bottom-right vertex:
-        quad->br.vertices.x = newPosition.x + size_2;
-        quad->br.vertices.y = newPosition.y - size_2;
-
-        // top-left vertex:
-        quad->tl.vertices.x = newPosition.x - size_2;
-        quad->tl.vertices.y = newPosition.y + size_2;
-
-        // top-right vertex:
-        quad->tr.vertices.x = newPosition.x + size_2;
-        quad->tr.vertices.y = newPosition.y + size_2;                
+        Vec3 p1(currentPosition.x, currentPosition.y, 0);
+        Mat4 worldToNodeTM = getWorldToNodeTransform();
+        worldToNodeTM.transformPoint(&p1);
+        Vec3 p2;
+        Vec2 newPos;
+        float* startX = _particleData.startPosX;
+        float* startY = _particleData.startPosY;
+        float* x = _particleData.posx;
+        float* y = _particleData.posy;
+        float* s = _particleData.size;
+        float* r = _particleData.rotation;
+        V3F_C4B_T2F_Quad* quadStart = startQuad;
+        for (int i = 0 ; i < _particleCount; ++i, ++startX, ++startY, ++x, ++y, ++quadStart, ++s, ++r)
+        {
+            p2.set(*startX, *startY, 0);
+            worldToNodeTM.transformPoint(&p2);
+            newPos.set(*x,*y);
+            p2 = p1 - p2;
+            newPos.x -= p2.x - pos.x;
+            newPos.y -= p2.y - pos.y;
+            updatePosWithParticle(quadStart, newPos, *s, *r);
+        }
     }
-}
-void ParticleSystemQuad::postStep()
-{
-    glBindBuffer(GL_ARRAY_BUFFER, _buffersVBO[0]);
+    else if( _positionType == PositionType::RELATIVE )
+    {
+        Vec2 newPos;
+        float* startX = _particleData.startPosX;
+        float* startY = _particleData.startPosY;
+        float* x = _particleData.posx;
+        float* y = _particleData.posy;
+        float* s = _particleData.size;
+        float* r = _particleData.rotation;
+        V3F_C4B_T2F_Quad* quadStart = startQuad;
+        for (int i = 0 ; i < _particleCount; ++i, ++startX, ++startY, ++x, ++y, ++quadStart, ++s, ++r)
+        {
+            newPos.set(*x, *y);
+            newPos.x = *x - (currentPosition.x - *startX);
+            newPos.y = *y - (currentPosition.y - *startY);
+            newPos += pos;
+            updatePosWithParticle(quadStart, newPos, *s, *r);
+        }
+    }
+    else
+    {
+        Vec2 newPos;
+        float* startX = _particleData.startPosX;
+        float* startY = _particleData.startPosY;
+        float* x = _particleData.posx;
+        float* y = _particleData.posy;
+        float* s = _particleData.size;
+        float* r = _particleData.rotation;
+        V3F_C4B_T2F_Quad* quadStart = startQuad;
+        for (int i = 0 ; i < _particleCount; ++i, ++startX, ++startY, ++x, ++y, ++quadStart, ++s, ++r)
+        {
+            newPos.set(*x + pos.x, *y + pos.y);
+            updatePosWithParticle(quadStart, newPos, *s, *r);
+        }
+    }
     
-    // Option 1: Sub Data
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(_quads[0])*_totalParticles, _quads);
-    
-    // Option 2: Data
-    //  glBufferData(GL_ARRAY_BUFFER, sizeof(quads_[0]) * particleCount, quads_, GL_DYNAMIC_DRAW);
-    
-    // Option 3: Orphaning + glMapBuffer
-    // glBufferData(GL_ARRAY_BUFFER, sizeof(_quads[0])*_totalParticles, nullptr, GL_STREAM_DRAW);
-    // void *buf = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-    // memcpy(buf, _quads, sizeof(_quads[0])*_totalParticles);
-    // glUnmapBuffer(GL_ARRAY_BUFFER);
-    
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    
-    CHECK_GL_ERROR_DEBUG();
+    //set color
+    if(_opacityModifyRGB)
+    {
+        V3F_C4B_T2F_Quad* quad = startQuad;
+        float* r = _particleData.colorR;
+        float* g = _particleData.colorG;
+        float* b = _particleData.colorB;
+        float* a = _particleData.colorA;
+        
+        for (int i = 0; i < _particleCount; ++i,++quad,++r,++g,++b,++a)
+        {
+            uint8_t colorR = *r * *a * 255;
+            uint8_t colorG = *g * *a * 255;
+            uint8_t colorB = *b * *a * 255;
+            uint8_t colorA = *a * 255;
+            quad->bl.colors.set(colorR, colorG, colorB, colorA);
+            quad->br.colors.set(colorR, colorG, colorB, colorA);
+            quad->tl.colors.set(colorR, colorG, colorB, colorA);
+            quad->tr.colors.set(colorR, colorG, colorB, colorA);
+        }
+    }
+    else
+    {
+        V3F_C4B_T2F_Quad* quad = startQuad;
+        float* r = _particleData.colorR;
+        float* g = _particleData.colorG;
+        float* b = _particleData.colorB;
+        float* a = _particleData.colorA;
+        
+        for (int i = 0; i < _particleCount; ++i,++quad,++r,++g,++b,++a)
+        {
+            uint8_t colorR = *r * 255;
+            uint8_t colorG = *g * 255;
+            uint8_t colorB = *b * 255;
+            uint8_t colorA = *a * 255;
+            quad->bl.colors.set(colorR, colorG, colorB, colorA);
+            quad->br.colors.set(colorR, colorG, colorB, colorA);
+            quad->tl.colors.set(colorR, colorG, colorB, colorA);
+            quad->tr.colors.set(colorR, colorG, colorB, colorA);
+        }
+    }
 }
 
 // overriding draw method
 void ParticleSystemQuad::draw(Renderer *renderer, const Mat4 &transform, uint32_t flags)
 {
-    CCASSERT( _particleIdx == 0 || _particleIdx == _particleCount, "Abnormal error in particle quad");
     //quad command
-    if(_particleIdx > 0)
+    if(_particleCount > 0)
     {
-        _quadCommand.init(_globalZOrder, _texture->getName(), getGLProgramState(), _blendFunc, _quads, _particleIdx, transform, flags);
+        auto programState = _quadCommand.getPipelineDescriptor().programState;
+        programState->setTexture(_textureLocation, 0, _texture->getBackendTexture());
+        
+        cocos2d::Mat4 projectionMat = Director::getInstance()->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_PROJECTION);
+        programState->setUniform(_mvpMatrixLocaiton, projectionMat.m, sizeof(projectionMat.m));
+        
+        _quadCommand.init(_globalZOrder, _texture, _blendFunc, _quads, _particleCount, transform, flags);
         renderer->addCommand(&_quadCommand);
     }
 }
@@ -384,23 +464,25 @@ void ParticleSystemQuad::setTotalParticles(int tp)
     if( tp > _allocatedParticles )
     {
         // Allocate new memory
-        size_t particlesSize = tp * sizeof(tParticle);
         size_t quadsSize = sizeof(_quads[0]) * tp * 1;
         size_t indicesSize = sizeof(_indices[0]) * tp * 6 * 1;
 
-        tParticle* particlesNew = (tParticle*)realloc(_particles, particlesSize);
+        _particleData.release();
+        if (!_particleData.init(tp))
+        {
+            CCLOG("Particle system: not enough memory");
+            return;
+        }
         V3F_C4B_T2F_Quad* quadsNew = (V3F_C4B_T2F_Quad*)realloc(_quads, quadsSize);
-        GLushort* indicesNew = (GLushort*)realloc(_indices, indicesSize);
+        unsigned short* indicesNew = (unsigned short*)realloc(_indices, indicesSize);
 
-        if (particlesNew && quadsNew && indicesNew)
+        if (quadsNew && indicesNew)
         {
             // Assign pointers
-            _particles = particlesNew;
             _quads = quadsNew;
             _indices = indicesNew;
 
             // Clear the memory
-            memset(_particles, 0, particlesSize);
             memset(_quads, 0, quadsSize);
             memset(_indices, 0, indicesSize);
             
@@ -409,7 +491,6 @@ void ParticleSystemQuad::setTotalParticles(int tp)
         else
         {
             // Out of memory, failed to resize some array
-            if (particlesNew) _particles = particlesNew;
             if (quadsNew) _quads = quadsNew;
             if (indicesNew) _indices = indicesNew;
 
@@ -424,19 +505,12 @@ void ParticleSystemQuad::setTotalParticles(int tp)
         {
             for (int i = 0; i < _totalParticles; i++)
             {
-                _particles[i].atlasIndex=i;
+                _particleData.atlasIndex[i] = i;
             }
         }
 
         initIndices();
-        if (Configuration::getInstance()->supportsShareableVAO())
-        {
-            setupVBOandVAO();
-        }
-        else
-        {
-            setupVBO();
-        }
+//        setupVBO();
         
         // fixed http://www.cocos2d-x.org/issues/3990
         // Updates texture coords.
@@ -454,77 +528,20 @@ void ParticleSystemQuad::setTotalParticles(int tp)
     resetSystem();
 }
 
-void ParticleSystemQuad::setupVBOandVAO()
-{
-    // clean VAO
-    glDeleteBuffers(2, &_buffersVBO[0]);
-    glDeleteVertexArrays(1, &_VAOname);
-    GL::bindVAO(0);
-    
-    glGenVertexArrays(1, &_VAOname);
-    GL::bindVAO(_VAOname);
-
-#define kQuadSize sizeof(_quads[0].bl)
-
-    glGenBuffers(2, &_buffersVBO[0]);
-
-    glBindBuffer(GL_ARRAY_BUFFER, _buffersVBO[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(_quads[0]) * _totalParticles, _quads, GL_DYNAMIC_DRAW);
-
-    // vertices
-    glEnableVertexAttribArray(GLProgram::VERTEX_ATTRIB_POSITION);
-    glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_POSITION, 2, GL_FLOAT, GL_FALSE, kQuadSize, (GLvoid*) offsetof( V3F_C4B_T2F, vertices));
-
-    // colors
-    glEnableVertexAttribArray(GLProgram::VERTEX_ATTRIB_COLOR);
-    glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, kQuadSize, (GLvoid*) offsetof( V3F_C4B_T2F, colors));
-
-    // tex coords
-    glEnableVertexAttribArray(GLProgram::VERTEX_ATTRIB_TEX_COORD);
-    glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_TEX_COORD, 2, GL_FLOAT, GL_FALSE, kQuadSize, (GLvoid*) offsetof( V3F_C4B_T2F, texCoords));
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _buffersVBO[1]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(_indices[0]) * _totalParticles * 6, _indices, GL_STATIC_DRAW);
-
-    // Must unbind the VAO before changing the element buffer.
-    GL::bindVAO(0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    CHECK_GL_ERROR_DEBUG();
-}
-
-void ParticleSystemQuad::setupVBO()
-{
-    glDeleteBuffers(2, &_buffersVBO[0]);
-    
-    glGenBuffers(2, &_buffersVBO[0]);
-
-    glBindBuffer(GL_ARRAY_BUFFER, _buffersVBO[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(_quads[0]) * _totalParticles, _quads, GL_DYNAMIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _buffersVBO[1]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(_indices[0]) * _totalParticles * 6, _indices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-    CHECK_GL_ERROR_DEBUG();
-}
-
-void ParticleSystemQuad::listenRendererRecreated(EventCustom* event)
+void ParticleSystemQuad::listenRendererRecreated(EventCustom* /*event*/)
 {
     //when comes to foreground in android, _buffersVBO and _VAOname is a wild handle
     //before recreating, we need to reset them to 0
-    memset(_buffersVBO, 0, sizeof(_buffersVBO));
-    if (Configuration::getInstance()->supportsShareableVAO())
-    {
-        _VAOname = 0;
-        setupVBOandVAO();
-    }
-    else
-    {
-        setupVBO();
-    }
+//    memset(_buffersVBO, 0, sizeof(_buffersVBO));
+//    if (Configuration::getInstance()->supportsShareableVAO())
+//    {
+//        _VAOname = 0;
+//        setupVBOandVAO();
+//    }
+//    else
+//    {
+//        setupVBO();
+//    }
 }
 
 bool ParticleSystemQuad::allocMemory()
@@ -535,7 +552,7 @@ bool ParticleSystemQuad::allocMemory()
     CC_SAFE_FREE(_indices);
 
     _quads = (V3F_C4B_T2F_Quad*)malloc(_totalParticles * sizeof(V3F_C4B_T2F_Quad));
-    _indices = (GLushort*)malloc(_totalParticles * 6 * sizeof(GLushort));
+    _indices = (unsigned short*)malloc(_totalParticles * 6 * sizeof(unsigned short));
     
     if( !_quads || !_indices) 
     {
@@ -547,7 +564,7 @@ bool ParticleSystemQuad::allocMemory()
     }
 
     memset(_quads, 0, _totalParticles * sizeof(V3F_C4B_T2F_Quad));
-    memset(_indices, 0, _totalParticles * 6 * sizeof(GLushort));
+    memset(_indices, 0, _totalParticles * 6 * sizeof(unsigned short));
 
     return true;
 }
@@ -566,14 +583,7 @@ void ParticleSystemQuad::setBatchNode(ParticleBatchNode * batchNode)
             allocMemory();
             initIndices();
             setTexture(oldBatch->getTexture());
-            if (Configuration::getInstance()->supportsShareableVAO())
-            {
-                setupVBOandVAO();
-            }
-            else
-            {
-                setupVBO();
-            }
+//            setupVBO();
         }
         // OLD: was it self render ? cleanup
         else if( !oldBatch )
@@ -585,15 +595,6 @@ void ParticleSystemQuad::setBatchNode(ParticleBatchNode * batchNode)
 
             CC_SAFE_FREE(_quads);
             CC_SAFE_FREE(_indices);
-
-            glDeleteBuffers(2, &_buffersVBO[0]);
-            memset(_buffersVBO, 0, sizeof(_buffersVBO));
-            if (Configuration::getInstance()->supportsShareableVAO())
-            {
-                glDeleteVertexArrays(1, &_VAOname);
-                GL::bindVAO(0);
-                _VAOname = 0;
-            }
         }
     }
 }
@@ -613,5 +614,4 @@ std::string ParticleSystemQuad::getDescription() const
 {
     return StringUtils::format("<ParticleSystemQuad | Tag = %d, Total Particles = %d>", _tag, _totalParticles);
 }
-
 NS_CC_END

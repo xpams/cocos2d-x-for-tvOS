@@ -1,10 +1,36 @@
+/****************************************************************************
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
+ 
+ http://www.cocos2d-x.org
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+ 
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+ 
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ ****************************************************************************/
 
 
-#include "TextFieldReader.h"
+
+#include "editor-support/cocostudio/WidgetReader/TextFieldReader/TextFieldReader.h"
 
 #include "ui/UITextField.h"
-#include "cocostudio/CocoLoader.h"
-#include "cocostudio/CSParseBinary_generated.h"
+#include "platform/CCFileUtils.h"
+#include "editor-support/cocostudio/CocoLoader.h"
+#include "editor-support/cocostudio/CSParseBinary_generated.h"
+#include "editor-support/cocostudio/LocalizationManager.h"
 
 #include "tinyxml2.h"
 #include "flatbuffers/flatbuffers.h"
@@ -164,6 +190,7 @@ namespace cocostudio
         std::string fontName = "";
         int fontSize = 20;
         std::string text = "";
+        bool isLocalized = false;
         std::string placeHolder = "Text Field";
         bool passwordEnabled = false;
         std::string passwordStyleText = "*";
@@ -188,6 +215,10 @@ namespace cocostudio
             else if (name == "LabelText")
             {
                 text = value;
+            }
+            else if (name == "IsLocalized")
+            {
+                isLocalized = (value == "True") ? true : false;
             }
             else if (name == "FontSize")
             {
@@ -273,8 +304,8 @@ namespace cocostudio
                                               maxLength,
                                               areaWidth,
                                               areaHeight,
-                                              isCustomSize
-                                              );
+                                              isCustomSize,
+                                              isLocalized);
         
         return *(Offset<Table>*)(&options);
     }
@@ -288,7 +319,20 @@ namespace cocostudio
         textField->setPlaceHolder(placeholder);
         
         std::string text = options->text()->c_str();
-        textField->setString(text);
+        bool isLocalized = options->isLocalized() != 0;
+        if (isLocalized)
+        {
+            ILocalizationManager* lm = LocalizationHelper::getCurrentManager();
+            std::string localizedTxt = lm->getLocalizationString(text);
+            std::string::size_type newlineIndex = localizedTxt.find('\n');
+            if (newlineIndex != std::string::npos)
+                localizedTxt = localizedTxt.substr(0, newlineIndex);
+            textField->setString(localizedTxt);
+        }
+        else
+        {
+            textField->setString(text);
+        }
         
         int fontSize = options->fontSize();
         textField->setFontSize(fontSize);
@@ -332,12 +376,6 @@ namespace cocostudio
             {
                 textField->setFontName(path);
             }
-            //else
-            //{
-            //    auto label = Label::create();
-            //    label->setString(__String::createWithFormat("%s missed", errorFilePath.c_str())->getCString());
-            //    textField->addChild(label);
-            //}
         }
         
         auto widgetReader = WidgetReader::getInstance();

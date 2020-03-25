@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (C) 2013 Henry van Merode. All rights reserved.
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -108,7 +109,7 @@ void PUEmitterTranslator::translate(PUScriptCompiler* compiler, PUAbstractNode *
             }
             else if (prop->name == token[TOKEN_POSITION])
             {
-                // Property: positon
+                // Property: position
                 if (passValidateProperty(compiler, prop, token[TOKEN_POSITION], VAL_VECTOR3))
                 {
                     Vec3 val;

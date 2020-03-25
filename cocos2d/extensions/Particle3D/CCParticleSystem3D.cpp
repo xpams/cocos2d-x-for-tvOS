@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -177,7 +178,7 @@ void ParticleSystem3D::update(float delta)
     }
 }
 
-void ParticleSystem3D::draw(Renderer *renderer, const Mat4 &transform, uint32_t flags)
+void ParticleSystem3D::draw(Renderer *renderer, const Mat4 &transform, uint32_t /*flags*/)
 {
     if (getAliveParticleCount() && _render)
     {

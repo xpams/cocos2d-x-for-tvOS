@@ -1,7 +1,8 @@
 /****************************************************************************
 Copyright (c) 2009      Valentin Milea
 Copyright (c) 2010-2012 cocos2d-x.org
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -44,8 +45,8 @@ struct AffineTransform;
  @param m The Mat4*4 pointer.
  @param t Affine transform.
  */
-CC_DLL void CGAffineToGL(const AffineTransform &t, GLfloat *m);
-CC_DLL void GLToCGAffine(const GLfloat *m, AffineTransform *t);
+CC_DLL void CGAffineToGL(const AffineTransform &t, float *m);
+CC_DLL void GLToCGAffine(const float *m, AffineTransform *t);
 /**@}*/
 }//namespace   cocos2d 
 /**

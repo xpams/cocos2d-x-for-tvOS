@@ -1,5 +1,6 @@
 /**
  Copyright 2013 BlackBerry Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -18,7 +19,9 @@
  This file was modified to fit the cocos2d-x project
  */
 
-#include "Quaternion.h"
+#include "math/Quaternion.h"
+
+#include <cmath>
 #include "base/ccMacros.h"
 
 NS_CC_MATH_BEGIN
@@ -177,7 +180,7 @@ void Quaternion::normalize()
     if (n == 1.0f)
         return;
     
-    n = sqrt(n);
+    n = std::sqrt(n);
     // Too close to zero.
     if (n < 0.000001f)
         return;
@@ -251,7 +254,7 @@ float Quaternion::toAxisAngle(Vec3* axis) const
     axis->z = q.z;
     axis->normalize();
 
-    return (2.0f * acos(q.w));
+    return (2.0f * std::acos(q.w));
 }
 
 void Quaternion::lerp(const Quaternion& q1, const Quaternion& q2, float t, Quaternion* dst)
@@ -405,7 +408,7 @@ void Quaternion::slerpForSquad(const Quaternion& q1, const Quaternion& q2, float
     // This is a straight-forward implementation of the formula of slerp. It does not do any sign switching.
     float c = q1.x * q2.x + q1.y * q2.y + q1.z * q2.z + q1.w * q2.w;
 
-    if (fabs(c) >= 1.0f)
+    if (std::abs(c) >= 1.0f)
     {
         dst->x = q1.x;
         dst->y = q1.y;
@@ -414,9 +417,9 @@ void Quaternion::slerpForSquad(const Quaternion& q1, const Quaternion& q2, float
         return;
     }
 
-    float omega = acos(c);
-    float s = sqrt(1.0f - c * c);
-    if (fabs(s) <= 0.00001f)
+    float omega = std::acos(c);
+    float s = std::sqrt(1.0f - c * c);
+    if (std::abs(s) <= 0.00001f)
     {
         dst->x = q1.x;
         dst->y = q1.y;
@@ -425,8 +428,8 @@ void Quaternion::slerpForSquad(const Quaternion& q1, const Quaternion& q2, float
         return;
     }
 
-    float r1 = sin((1 - t) * omega) / s;
-    float r2 = sin(t * omega) / s;
+    float r1 = std::sin((1 - t) * omega) / s;
+    float r2 = std::sin(t * omega) / s;
     dst->x = (q1.x * r1 + q2.x * r2);
     dst->y = (q1.y * r1 + q2.y * r2);
     dst->z = (q1.z * r1 + q2.z * r2);

@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (c) 2010-2012 cocos2d-x.org
- Copyright (c) 2013-2014 Chukong Technologies Inc.
+ Copyright (c) 2013-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos2d-x.org
 
@@ -27,7 +28,7 @@
 #define __CC_EGLVIEWIMPL_IPHONE_H__
 
 #include "platform/CCPlatformConfig.h"
-#if CC_TARGET_PLATFORM == CC_PLATFORM_IOS
+#if CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_TVOS
 
 #include "base/CCRef.h"
 #include "platform/CCCommon.h"
@@ -48,7 +49,7 @@ public:
     static GLViewImpl* create(const std::string& viewName);
 
     /** creates a GLViewImpl with a title name, a rect and the zoom factor */
-    static GLViewImpl* createWithRect(const std::string& viewName, Rect rect, float frameZoomFactor = 1.0f);
+    static GLViewImpl* createWithRect(const std::string& viewName, const Rect& rect, float frameZoomFactor = 1.0f);
 
     /** creates a GLViewImpl with a name in fullscreen mode */
     static GLViewImpl* createWithFullScreen(const std::string& viewName);
@@ -56,18 +57,19 @@ public:
     static void convertAttrs();
     static void* _pixelFormat;
     static int _depthFormat;
+    static int _multisamplingCount;
 
     /** sets the content scale factor */
-    bool setContentScaleFactor(float contentScaleFactor) override;
+    virtual bool setContentScaleFactor(float contentScaleFactor) override;
 
     /** returns the content scale factor */
-    float getContentScaleFactor() const override;
+    virtual float getContentScaleFactor() const override;
 
     /** returns whether or not the view is in Retina Display mode */
-    bool isRetinaDisplay() const override { return getContentScaleFactor() == 2.0; }
+    virtual bool isRetinaDisplay() const override { return getContentScaleFactor() == 2.0; }
 
     /** returns the objective-c CCEAGLView instance */
-    void* getEAGLView() const override { return _eaglview; }
+    virtual void* getEAGLView() const override { return _eaglview; }
 
     // overrides
     virtual bool isOpenGLReady() override;
@@ -75,12 +77,14 @@ public:
     virtual void swapBuffers() override;
     virtual void setIMEKeyboardState(bool bOpen) override;
 
+    virtual Rect getSafeAreaRect() const override;
+
 protected:
     GLViewImpl();
     virtual ~GLViewImpl();
 
     bool initWithEAGLView(void* eaGLView);
-    bool initWithRect(const std::string& viewName, Rect rect, float frameZoomFactor);
+    bool initWithRect(const std::string& viewName, const Rect& rect, float frameZoomFactor);
     bool initWithFullScreen(const std::string& viewName);
 
     // the objective-c CCEAGLView instance

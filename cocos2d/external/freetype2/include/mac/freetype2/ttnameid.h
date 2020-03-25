@@ -20,7 +20,7 @@
 #define __TTNAMEID_H__
 
 
-#include <ft2build.h>
+#include "ft2build.h"
 
 
 FT_BEGIN_HEADER
@@ -787,7 +787,7 @@ FT_BEGIN_HEADER
 #define TT_MS_LANGID_UIGHUR_CHINA                      0x0480
 #define TT_MS_LANGID_MAORI_NEW_ZEALAND                 0x0481
 
-#if 0  /* not deemed useful for fonts */
+#if 0  /* not deemed useful for font */
 #define TT_MS_LANGID_HUMAN_INTERFACE_DEVICE            0x04FF
 #endif
 

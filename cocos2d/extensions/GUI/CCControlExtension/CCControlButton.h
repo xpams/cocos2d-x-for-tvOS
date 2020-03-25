@@ -5,6 +5,8 @@
  * Copyright 2011 Yannick Loriot. All rights reserved.
  * http://yannickloriot.com
  * 
+ * Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -58,8 +60,9 @@ public:
     static ControlButton* create(cocos2d::ui::Scale9Sprite* sprite);
     static ControlButton* create(Node* label, cocos2d::ui::Scale9Sprite* backgroundSprite);
     static ControlButton* create(const std::string& title, const std::string& fontName, float fontSize);
+    static ControlButton* create(Node* label, cocos2d::ui::Scale9Sprite* backgroundSprite, bool adjustBackGroundSize);
 
-    virtual void needsLayout(void) override;
+    virtual void needsLayout() override;
 
     virtual void setEnabled(bool enabled) override;
     virtual void setSelected(bool enabled) override;
@@ -134,7 +137,7 @@ public:
     virtual float getTitleTTFSizeForState(State state);
 
     /**
-     * Sets the font of the label, changes the label to a BMFont if neccessary.
+     * Sets the font of the label, changes the label to a BMFont if necessary.
      * @param fntFile The name of the font to change to
      * @param state The state that uses the specified fntFile. The values are described
      * in "CCControlState".
@@ -172,7 +175,7 @@ public:
     virtual void setMargins(int marginH, int marginV);
 
     /** Adjust the background image. YES by default. If the property is set to NO, the
-     background will use the prefered size of the background image. */
+     background will use the preferred size of the background image. */
     bool doesAdjustBackgroundImage();
     void setAdjustBackgroundImage(bool adjustBackgroundImage);
 
@@ -202,7 +205,7 @@ CC_CONSTRUCTOR_ACCESS:
     virtual ~ControlButton();
     
     virtual bool init() override;
-    virtual bool initWithLabelAndBackgroundSprite(Node* label, cocos2d::ui::Scale9Sprite* backgroundSprite);
+    virtual bool initWithLabelAndBackgroundSprite(Node* label, cocos2d::ui::Scale9Sprite* backgroundSprite, bool adjustBackGroundSize);
     virtual bool initWithBackgroundSprite(cocos2d::ui::Scale9Sprite* sprite);
     virtual bool initWithTitleAndFontNameAndFontSize(const std::string& title, const std::string& fontName, float fontSize);
     
@@ -223,7 +226,7 @@ protected:
     /** The current background sprite. */
     CC_SYNTHESIZE_RETAIN(cocos2d::ui::Scale9Sprite*, _backgroundSprite, BackgroundSprite);
 
-    /** The prefered size of the button, if label is larger it will be expanded. */
+    /** The preferred size of the button, if label is larger it will be expanded. */
     CC_PROPERTY_PASS_BY_REF(Size, _preferredSize, PreferredSize);
 
     /** Adjust the button zooming on touchdown. Default value is YES. */

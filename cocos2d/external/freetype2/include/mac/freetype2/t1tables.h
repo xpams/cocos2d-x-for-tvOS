@@ -21,7 +21,7 @@
 #define __T1TABLES_H__
 
 
-#include <ft2build.h>
+#include "ft2build.h"
 #include FT_FREETYPE_H
 
 #ifdef FREETYPE_H
@@ -73,7 +73,7 @@ FT_BEGIN_HEADER
 
 
   /* Note that we separate font data in PS_FontInfoRec and PS_PrivateRec */
-  /* structures in order to support Multiple Master fonts.               */
+  /* structures in order to support Multiple Master font.               */
 
 
   /*************************************************************************/
@@ -83,7 +83,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Description>                                                         */
   /*    A structure used to model a Type~1 or Type~2 FontInfo dictionary.  */
-  /*    Note that for Multiple Master fonts, each instance has its own     */
+  /*    Note that for Multiple Master font, each instance has its own     */
   /*    FontInfo dictionary.                                               */
   /*                                                                       */
   typedef struct  PS_FontInfoRec_
@@ -132,7 +132,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Description>                                                         */
   /*    A structure used to model a Type~1 or Type~2 private dictionary.   */
-  /*    Note that for Multiple Master fonts, each instance has its own     */
+  /*    Note that for Multiple Master font, each instance has its own     */
   /*    Private dictionary.                                                */
   /*                                                                       */
   typedef struct  PS_PrivateRec_
@@ -208,7 +208,7 @@ FT_BEGIN_HEADER
   /* <Description>                                                         */
   /*    A set of flags used to indicate which fields are present in a      */
   /*    given blend dictionary (font info or private).  Used to support    */
-  /*    Multiple Masters fonts.                                            */
+  /*    Multiple Masters font.                                            */
   /*                                                                       */
   /* <Values>                                                              */
   /*    T1_BLEND_UNDERLINE_POSITION ::                                     */

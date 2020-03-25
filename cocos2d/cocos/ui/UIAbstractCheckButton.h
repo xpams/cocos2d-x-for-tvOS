@@ -1,5 +1,6 @@
 /****************************************************************************
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -34,6 +35,7 @@ THE SOFTWARE.
  */
 NS_CC_BEGIN
 class Sprite;
+struct CC_DLL ResourceData;
 
 namespace ui {
     
@@ -160,11 +162,17 @@ public:
      * @return the sprite instance of front cross when disabled
      */
     Sprite* getRendererFrontCrossDisabled() const { return _frontCrossDisabledRenderer; }
-    
+
+    ResourceData getBackNormalFile();
+    ResourceData getBackPressedFile();
+    ResourceData getBackDisabledFile();
+    ResourceData getCrossNormalFile();
+    ResourceData getCrossDisabledFile();
+
 CC_CONSTRUCTOR_ACCESS:
     virtual bool init() override;
     virtual bool init(const std::string& backGround,
-                      const std::string& backGroundSeleted,
+                      const std::string& backGroundSelected,
                       const std::string& cross,
                       const std::string& backGroundDisabled,
                       const std::string& frontCrossDisabled,
@@ -237,6 +245,12 @@ protected:
     bool _frontCrossRendererAdaptDirty;
     bool _backGroundBoxDisabledRendererAdaptDirty;
     bool _frontCrossDisabledRendererAdaptDirty;
+
+    std::string _backGroundFileName;
+    std::string _backGroundSelectedFileName;
+    std::string _frontCrossFileName;
+    std::string _backGroundDisabledFileName;
+    std::string _frontCrossDisabledFileName;
 };
     
 }

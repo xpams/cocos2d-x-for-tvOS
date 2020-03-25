@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (C) 2013 Henry van Merode. All rights reserved.
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -50,16 +51,16 @@ public:
 
     /** Getters/Setters
     */
-    bool isInheritPosition(void) const {return _inheritPosition;};
-    bool isInheritDirection(void) const {return _inheritDirection;};
-    bool isInheritOrientation(void) const {return _inheritOrientation;};
-    bool isInheritTimeToLive(void) const {return _inheritTimeToLive;};
-    bool isInheritMass(void) const {return _inheritMass;};
-    bool isInheritTextureCoordinate(void) const {return _inheritTextureCoordinate;};
-    bool isInheritColour(void) const {return _inheritColour;};
-    bool isInheritParticleWidth(void) const {return _inheritParticleWidth;};
-    bool isInheritParticleHeight(void) const {return _inheritParticleHeight;};
-    bool isInheritParticleDepth(void) const {return _inheritParticleDepth;};
+    bool isInheritPosition() const {return _inheritPosition;};
+    bool isInheritDirection() const {return _inheritDirection;};
+    bool isInheritOrientation() const {return _inheritOrientation;};
+    bool isInheritTimeToLive() const {return _inheritTimeToLive;};
+    bool isInheritMass() const {return _inheritMass;};
+    bool isInheritTextureCoordinate() const {return _inheritTextureCoordinate;};
+    bool isInheritColour() const {return _inheritColour;};
+    bool isInheritParticleWidth() const {return _inheritParticleWidth;};
+    bool isInheritParticleHeight() const {return _inheritParticleHeight;};
+    bool isInheritParticleDepth() const {return _inheritParticleDepth;};
 
     void setInheritPosition(bool inheritPosition) {_inheritPosition = inheritPosition;};
     void setInheritDirection(bool inheritDirection) {_inheritDirection = inheritDirection;};
@@ -74,7 +75,7 @@ public:
 
     /** Get the name of the emitter that is used to emit its particles.
     */
-    const std::string& getForceEmitterName(void) const {return _forceEmitterName;};
+    const std::string& getForceEmitterName() const {return _forceEmitterName;};
 
     /** Set the name of the emitter that is used to emit its particles.
     */
@@ -82,20 +83,20 @@ public:
 
     /** Returns a pointer to the emitter that is used as a force emitter.
     */
-    PUEmitter* getForceEmitter(void) const;
+    PUEmitter* getForceEmitter() const;
 
     /** Remove this as a listener from the technique.
     @remarks
         If a new force-emitter name has been set, the removeAsListener must be called, to remove the DoPlacementParticleEventHandler
         from the old technique (to which the force-emitter belongs. Only then the new force-emitter is used. 
-        The reason why it is not called automatically in the setForceEmitterName() funtion is to offer some flexibility on 
+        The reason why it is not called automatically in the setForceEmitterName() function is to offer some flexibility on 
         the moment the removeAsListener() is called.
     */
-    void removeAsListener(void);
+    void removeAsListener();
 
     /** Get the number of particles to emit.
     */
-    unsigned int getNumberOfParticles(void) const {return _numberOfParticles;};
+    unsigned int getNumberOfParticles() const {return _numberOfParticles;};
 
     /** Set the number of particles to emit.
     */
@@ -104,10 +105,10 @@ public:
     /** Boolean that determines whether always the position of the particle that is handled must be used for emission of 
         the new particle.
     */
-    bool alwaysUsePosition(void) const {return _alwaysUsePosition;};
+    bool alwaysUsePosition() const {return _alwaysUsePosition;};
 
     /** Set the boolean to indicate whether the position of the particle that is handled must be used for emission of 
-        the new particle or whether the contact point of the physics actor must be used. This only applies if a physics angine
+        the new particle or whether the contact point of the physics actor must be used. This only applies if a physics engine
         is used, otherwise the default is used.
     */
     void setAlwaysUsePosition(bool alwaysUsePosition) {_alwaysUsePosition = alwaysUsePosition;};
@@ -126,13 +127,13 @@ public:
 
     /** No implementation.
     */
-    virtual void particleExpired(PUParticleSystem3D* particleSystem, PUParticle3D* particle) override {};
+    virtual void particleExpired(PUParticleSystem3D* particleSystem, PUParticle3D* particle) override;
 
     virtual void copyAttributesTo (PUEventHandler* eventHandler) override;
 
 CC_CONSTRUCTOR_ACCESS:
-    PUDoPlacementParticleEventHandler(void);
-    virtual ~PUDoPlacementParticleEventHandler(void);
+    PUDoPlacementParticleEventHandler();
+    virtual ~PUDoPlacementParticleEventHandler();
 
 protected:
     // Identifies the name of emitter
@@ -143,14 +144,14 @@ protected:
 
     /** Store the technique value to keep up to speed.
     @remarks
-        If the ParticleTechnique has been destroyed, the DoPlacementParticleEventHandler isn´t automatically
+        If the ParticleTechnique has been destroyed, the DoPlacementParticleEventHandler isn't automatically
         notified. Using the pointer causes an exception.
     */
     PUParticleSystem3D* _system;
 
     /** Store the emitter value to keep up to speed.
     @remarks
-        If the ParticleEmitter has been destroyed, the DoPlacementParticleEventHandler isn´t automatically
+        If the ParticleEmitter has been destroyed, the DoPlacementParticleEventHandler isn't automatically
         notified. Using the pointer causes an exception.
     */
     PUEmitter* _emitter;

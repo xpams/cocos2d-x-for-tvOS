@@ -63,7 +63,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* FT_VALIDATE_PARANOID ::                                               */
   /*   Only for font debugging.  Checks that a table follows the           */
-  /*   specification by 100%.  Very few fonts will be able to pass this    */
+  /*   specification by 100%.  Very few font will be able to pass this    */
   /*   level anyway but it can be useful for certain tools like font       */
   /*   editors/converters.                                                 */
   /*                                                                       */

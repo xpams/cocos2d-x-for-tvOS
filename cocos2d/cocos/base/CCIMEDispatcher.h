@@ -1,6 +1,7 @@
 /****************************************************************************
 Copyright (c) 2010      cocos2d-x.org
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
 http://www.cocos2d-x.org
 
@@ -67,6 +68,12 @@ public:
     void dispatchDeleteBackward();
 
     /**
+    * @brief Dispatches the press control key operation.
+    * @lua NA
+    */
+    void dispatchControlKey(EventKeyboard::KeyCode keyCode);
+
+    /**
      * @brief Get the content text from IMEDelegate, retrieved previously from IME.
      * @lua NA
      */
@@ -110,7 +117,7 @@ protected:
     bool attachDelegateWithIME(IMEDelegate * delegate);
 
     /**
-     * Dettach the delegate to the IME
+     * Detach the delegate to the IME
      *@see `attachDelegateWithIME(IMEDelegate*)`
      *@param delegate  A instance implements IMEDelegate delegate.
      *@return Whether the IME is detached or not.

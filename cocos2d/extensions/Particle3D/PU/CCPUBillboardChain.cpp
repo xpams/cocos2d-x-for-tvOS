@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (C) 2013 Henry van Merode. All rights reserved.
- Copyright (c) 2015 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -57,7 +58,7 @@ orientation(ori)
 {
 }
 //-----------------------------------------------------------------------
-PUBillboardChain::PUBillboardChain(const std::string& name, const std::string &texFile, size_t maxElements,
+PUBillboardChain::PUBillboardChain(const std::string& /*name*/, const std::string &texFile, size_t maxElements,
                                size_t numberOfChains, bool useTextureCoords, bool useColours, bool dynamic)
                                :_maxElementsPerChain(maxElements),
                                _chainCount(numberOfChains),
@@ -76,7 +77,8 @@ PUBillboardChain::PUBillboardChain(const std::string& name, const std::string &t
                                _texture(nullptr),
                                _glProgramState(nullptr),
                                _indexBuffer(nullptr),
-                               _vertexBuffer(nullptr)
+                               _vertexBuffer(nullptr),
+                               _texFile(texFile)
 {
 
     _stateBlock = RenderState::StateBlock::create();
@@ -106,7 +108,7 @@ PUBillboardChain::~PUBillboardChain()
     CC_SAFE_RELEASE(_indexBuffer);
 }
 //-----------------------------------------------------------------------
-void PUBillboardChain::setupChainContainers(void)
+void PUBillboardChain::setupChainContainers()
 {
     // Allocate enough space for everything
     _chainElementList.resize(_chainCount * _maxElementsPerChain);
@@ -122,7 +124,7 @@ void PUBillboardChain::setupChainContainers(void)
     }
 }
 //-----------------------------------------------------------------------
-void PUBillboardChain::setupVertexDeclaration(void)
+void PUBillboardChain::setupVertexDeclaration()
 {
     //if (_vertexDeclDirty)
     //{
@@ -157,7 +159,7 @@ void PUBillboardChain::setupVertexDeclaration(void)
     //}
 }
 //-----------------------------------------------------------------------
-void PUBillboardChain::setupBuffers(void)
+void PUBillboardChain::setupBuffers()
 {
     //setupVertexDeclaration();
     if (_buffersNeedRecreating)
@@ -343,7 +345,7 @@ void PUBillboardChain::clearChain(size_t chainIndex)
 
 }
 //-----------------------------------------------------------------------
-void PUBillboardChain::clearAllChains(void)
+void PUBillboardChain::clearAllChains()
 {
     for (size_t i = 0; i < _chainCount; ++i)
     {
@@ -578,14 +580,14 @@ void PUBillboardChain::updateVertexBuffer(const Mat4 &camMat)
     } // each segment
 
 
-    _vertexBuffer->updateVertices(&_vertices[0], (int)_vertices.size(), 0);;
+    _vertexBuffer->updateVertices(&_vertices[0], (int)_vertices.size(), 0);
     //pBuffer->unlock();
     //_vertexCameraUsed = cam;
     _vertexContentDirty = false;
 
 }
 //-----------------------------------------------------------------------
-void PUBillboardChain::updateIndexBuffer(void)
+void PUBillboardChain::updateIndexBuffer()
 {
 
     setupBuffers();
@@ -695,7 +697,7 @@ void PUBillboardChain::render( Renderer* renderer, const Mat4 &transform, Partic
         updateIndexBuffer();
         if (!_vertices.empty() && !_indices.empty())
         {
-            GLuint texId = (_texture ? _texture->getName() : 0);
+            GLuint texId = this->getTextureName();
             _stateBlock->setBlendFunc(particleSystem->getBlendFunc());
             _meshCommand->init(0,
                                texId,
@@ -729,6 +731,24 @@ void PUBillboardChain::setDepthWrite( bool isDepthWrite )
 void PUBillboardChain::setBlendFunc(const BlendFunc& blendFunc)
 {
     _stateBlock->setBlendFunc(blendFunc);
+}
+
+GLuint PUBillboardChain::getTextureName()
+{
+    if (Director::getInstance()->getTextureCache()->getTextureForKey(_texFile) == nullptr)
+    {
+        _texture = nullptr;
+        this->init("");
+    }
+    else if (_texture == nullptr)
+    {
+        this->init(_texFile);
+    }
+
+    if (_texture == nullptr)
+        return 0;
+
+    return _texture->getName();
 }
 
 //-----------------------------------------------------------------------
